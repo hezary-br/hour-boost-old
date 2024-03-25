@@ -1,15 +1,10 @@
 import {
-  type 
-  AccountSteamGamesList,
   CacheState,
-  type 
-  IRefreshToken,
-  type 
-  InitProps,
-  type 
-  SteamAccountClientStateCacheRepository,
-  type 
-  SteamAccountPersonaState,
+  type AccountSteamGamesList,
+  type IRefreshToken,
+  type InitProps,
+  type SteamAccountClientStateCacheRepository,
+  type SteamAccountPersonaState,
 } from "core"
 import type { SACCacheInMemory } from "~/infra/repository/SACCacheInMemory"
 import { testUsers as s } from "~/infra/services/UserAuthenticationInMemory"
@@ -30,7 +25,7 @@ export class SteamAccountClientStateCacheInMemory implements SteamAccountClientS
         props.accountName,
         CacheState.create({
           ...props,
-          status: "offline",
+          status: "online",
         })
       )
     }

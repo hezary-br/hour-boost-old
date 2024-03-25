@@ -1,13 +1,11 @@
 import type { PrismaClient } from "@prisma/client"
 import {
+  PlanInfinity,
+  PlanUsage,
   type DatabaseSteamAccount,
   type GameSession,
   type Persona,
-  PlanInfinity,
-  PlanInfinitySession,
   type PlanRepository,
-  PlanUsage,
-  PlanUsageSession,
   type PurchaseSession,
   type SteamAccountClientStateCacheRepository,
   type SteamAccountSession,
@@ -220,41 +218,6 @@ export class UsersDAODatabase implements UsersDAO {
 
     return userSteamAccounts
   }
-}
-
-export function userPlanToPlanSession(
-  userPlan: PlanUsage | PlanInfinity,
-  farmUsedTime: number | null
-): PlanUsageSession | PlanInfinitySession {
-  if (userPlan instanceof PlanUsage) {
-    const planSession: PlanUsageSession = {
-      id_plan: userPlan.id_plan,
-      autoRestarter: userPlan.autoRestarter,
-      maxGamesAllowed: userPlan.maxGamesAllowed,
-      maxSteamAccounts: userPlan.maxSteamAccounts,
-      maxUsageTime: userPlan.maxUsageTime,
-      name: userPlan.name,
-      type: userPlan.type as "USAGE",
-      farmUsedTime: farmUsedTime ?? 0,
-      custom: userPlan.custom,
-    }
-    return planSession
-  }
-  if (userPlan instanceof PlanInfinity) {
-    const planSession: PlanInfinitySession = {
-      id_plan: userPlan.id_plan,
-      autoRestarter: userPlan.autoRestarter,
-      maxGamesAllowed: userPlan.maxGamesAllowed,
-      maxSteamAccounts: userPlan.maxSteamAccounts,
-      name: userPlan.name,
-      type: userPlan.type as "INFINITY",
-      custom: userPlan.custom,
-    }
-
-    return planSession
-  }
-
-  throw new Error("Invariant! Plano não é nem usage nem infinity.")
 }
 
 type DBSteamAccount = {
