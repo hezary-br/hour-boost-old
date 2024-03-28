@@ -17,6 +17,7 @@ export type SteamAccountAppProps = SteamAccountSession
 export type SteamAccountListItemViewProps = {
   handleClickFarmButton(): Promise<NSSteamAccountListItemViewProps.HandleClickFarmButton.Response>
   actionText: JSX.Element
+  displayUpdateInServerMessage: boolean
 }
 
 export namespace NSSteamAccountListItemViewProps {

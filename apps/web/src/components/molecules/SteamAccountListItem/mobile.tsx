@@ -8,6 +8,7 @@ import { ChooseFarmingGames } from "@/components/molecules/FarmGames/controller"
 import { AlertDialogRemoveSteamAccount } from "@/components/molecules/RemoveSteamAccount/components/controller"
 import { ToggleAutoRelogin, useSteamAccount } from "@/components/molecules/ToggleAutoRelogin/controller"
 import { IMG_USER_PLACEHOLDER } from "@/consts"
+import { useUser } from "@/contexts/UserContext"
 import { cn } from "@/lib/utils"
 import { Message } from "@/util/DataOrMessage"
 import { showToastFarmingGame } from "@/util/toaster"
@@ -17,15 +18,17 @@ import twc from "tailwindcss/colors"
 import { ButtonAddNewAccount } from "./components"
 import { useSteamAccountListItem } from "./context"
 import { SteamAccountListItemViewProps } from "./types"
-import { useUser } from "@/contexts/UserContext"
 
 type SteamAccountListItemViewMobileProps = SteamAccountListItemViewProps
 
 export const SteamAccountListItemViewMobile = React.memo(
   React.forwardRef<React.ElementRef<"div">, SteamAccountListItemViewMobileProps>(
-    function SteamAccountListItemViewMobileComponent({ handleClickFarmButton, actionText }, ref) {
+    function SteamAccountListItemViewMobileComponent(
+      { displayUpdateInServerMessage, handleClickFarmButton, actionText },
+      ref
+    ) {
       const { header, steamGuard, mutations, app, status } = useSteamAccountListItem()
-      const { accountName, profilePictureUrl, farmStartedAt } = app
+      const { accountName, profilePictureUrl, farmStartedAt, isRestoringConnection } = app
       const autoRestarter = useUser(user => user.plan.autoRestarter)
       const isFarming = useSteamAccount(sa => sa.farmingGames.length > 0)
 
@@ -42,6 +45,18 @@ export const SteamAccountListItemViewMobile = React.memo(
           className={cn("relative flex flex-col border-t border-slate-800", header && "mt-[4.5rem]")}
           ref={ref}
         >
+          {isRestoringConnection && (
+            <div className="absolute inset-0 z-50 flex cursor-not-allowed items-center justify-center bg-black/80 text-white">
+              <div className="flex flex-col items-center">
+                {displayUpdateInServerMessage && (
+                  <span className="text-sm text-slate-300">
+                    Houve updates no servidor e ele precisou ser reiniciado 😁
+                  </span>
+                )}
+                <span className="font-semibold">A conta está reconectando...</span>
+              </div>
+            </div>
+          )}
           {header && (
             <div className="absolute bottom-full left-4">
               <ButtonAddNewAccount />

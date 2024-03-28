@@ -3,13 +3,14 @@ import { useChangeAccountStatus } from "@/components/molecules/ChangeAccountStat
 import { IntentionCodes as IntentionCodes_ChangeStatus } from "@/components/molecules/ChangeAccountStatus/types"
 import { IntentionCodes, useFarmGamesMutation } from "@/components/molecules/FarmGames"
 import { useSteamAccountStore } from "@/components/molecules/SteamAccountListItem/store/useSteamAccountStore"
+import { useToggleAutoReloginMutation } from "@/components/molecules/ToggleAutoRelogin/mutation"
+import { useUpdateStagingGames } from "@/components/molecules/UpdateStagingGames"
 import { useUser, useUserId } from "@/contexts/UserContext"
 import { api } from "@/lib/axios"
 import { useRefreshGamesMutation, useStopFarmMutation } from "@/mutations"
 import { DataOrMessage, Message } from "@/util/DataOrMessage"
 import { planIsUsage } from "@/util/thisPlanIsUsage"
 import { useAuth } from "@clerk/clerk-react"
-import { useQueryClient } from "@tanstack/react-query"
 import { AppAccountStatus, GameSession, formatTimeSince } from "core"
 import React, { createContext, useContext, useMemo, useState } from "react"
 import { ISteamAccountListItemContext, SteamAccountListItemContext } from "./context"
@@ -17,15 +18,15 @@ import { SteamAccountListItemViewDesktop } from "./desktop"
 import { useHandlers } from "./hooks/useHandlers"
 import { SteamAccountListItemViewMobile } from "./mobile"
 import { SteamAccountAppProps, SteamAccountListItemViewProps, SteamAccountStatusProps } from "./types"
-import { useToggleAutoReloginMutation } from "@/components/molecules/ToggleAutoRelogin/mutation"
-import { useUpdateStagingGames } from "@/components/molecules/UpdateStagingGames"
 
 export function SteamAccountList({
   app,
   status: statusProps,
+  displayUpdateInServerMessage,
 }: {
   status: SteamAccountStatusProps
   app: SteamAccountAppProps
+  displayUpdateInServerMessage: boolean
 }) {
   const [status, setStatusState] = useState<AppAccountStatus>(app.status)
   const [autoRelogin, setAutoRelogin] = useState(app.autoRelogin)
@@ -173,6 +174,7 @@ export function SteamAccountList({
   const props: SteamAccountListItemViewProps = {
     handleClickFarmButton,
     actionText,
+    displayUpdateInServerMessage,
   }
 
   return (

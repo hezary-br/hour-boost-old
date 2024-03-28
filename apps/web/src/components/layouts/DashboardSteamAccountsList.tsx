@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { useUser } from "@/contexts/UserContext"
 import { useUserControl } from "@/contexts/hook"
 import { cn } from "@/lib/utils"
-import React from "react"
+import React, { useMemo } from "react"
 
 const SteamAccountList = React.memo(SteamAccountListComp)
 
@@ -18,6 +18,10 @@ export const DashboardSteamAccountsList = React.forwardRef<
   const hasAccounts = useUserControl(user => user.hasAccounts)
   const plan = useUser(user => user.plan)
   const steamAccounts = useUser(user => user.steamAccounts)
+
+  const firstAccountBeingRestored = useMemo(() => {
+    return steamAccounts.filter(sa => sa.isRestoringConnection).at(0)?.id_steamAccount
+  }, [steamAccounts])
 
   return (
     <section
@@ -45,6 +49,7 @@ export const DashboardSteamAccountsList = React.forwardRef<
               <SteamAccountList
                 key={app.id_steamAccount}
                 app={app}
+                displayUpdateInServerMessage={firstAccountBeingRestored === app.id_steamAccount}
                 status={{
                   maxGamesAllowed: plan.maxGamesAllowed,
                   header: index === 0,

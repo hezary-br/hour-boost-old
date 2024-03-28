@@ -24,11 +24,15 @@ const SteamAccountAdminItem = React.forwardRef<React.ElementRef<"div">, SteamAcc
     return (
       <div
         {...props}
-        className={cn("pl-[--sa-padding-left]", className)}
+        className={cn("relative pl-[--sa-padding-left]", className)}
         ref={ref}
       >
-        {isRestoringConnection && <div className="absolute inset-0 bg-[#f00]" />}
-        <div className="flex h-[--container-height] cursor-pointer select-none items-center bg-black/10 hover:bg-slate-900/50">
+        {isRestoringConnection && (
+          <div className="absolute inset-0 z-50 flex cursor-not-allowed items-center justify-center bg-black/80 font-semibold text-white">
+            Conta reconectando...
+          </div>
+        )}
+        <div className="flex h-[--container-height] cursor-pointer select-none items-center hover:bg-slate-900/50">
           <div className="pr-2">
             <div className="grid h-[--container-height] w-[--container-height] place-items-center">
               <div className="grid h-11 w-11 place-items-center">
