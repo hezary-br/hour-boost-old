@@ -125,7 +125,7 @@ test("should stop farming once interrupt occurs", async () => {
     gamesStaging: [],
     planId: meInstances.me.plan.id_plan,
     username: s.me.username,
-    status: "offline",
+    status: "online",
   }
   expect(sacEmitterCalls[0]).toStrictEqual([
     "interrupt",

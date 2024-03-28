@@ -7,9 +7,9 @@ import { testUsers as s } from "~/infra/services/UserAuthenticationInMemory"
 import {
   CustomInstances,
   MakeTestInstancesProps,
-  type PrefixKeys,
   makeTestInstances,
   password,
+  type PrefixKeys,
 } from "~/__tests__/instances"
 
 const validSteamAccounts = [
@@ -73,7 +73,7 @@ describe("2 infinity plan and 1 usage plan farming ", () => {
           gamesStaging: [],
           logged: true,
           farmStartedAt: "2024-02-20T00:00:00.000Z",
-          status: "offline",
+          status: "online",
         },
         [s.me.accountName2]: {
           farming: true,
@@ -81,7 +81,7 @@ describe("2 infinity plan and 1 usage plan farming ", () => {
           gamesStaging: [],
           logged: true,
           farmStartedAt: "2024-02-20T00:00:00.000Z",
-          status: "offline",
+          status: "online",
         },
       },
       [s.friend.userId]: {
@@ -91,7 +91,7 @@ describe("2 infinity plan and 1 usage plan farming ", () => {
           gamesStaging: [],
           logged: true,
           farmStartedAt: "2024-02-20T00:00:00.000Z",
-          status: "offline",
+          status: "online",
         },
         [s.friend.accountName2]: {
           farming: false,
@@ -99,7 +99,7 @@ describe("2 infinity plan and 1 usage plan farming ", () => {
           gamesStaging: [],
           logged: false,
           farmStartedAt: null,
-          status: "offline",
+          status: "online",
         },
       },
     })
@@ -136,7 +136,7 @@ describe("2 infinity plan and 1 usage plan farming ", () => {
             gamesStaging: [],
             logged: true,
             farmStartedAt: null,
-            status: "offline",
+            status: "online",
           },
           [s.me.accountName2]: {
             farming: false,
@@ -144,7 +144,7 @@ describe("2 infinity plan and 1 usage plan farming ", () => {
             gamesStaging: [],
             logged: true,
             farmStartedAt: null,
-            status: "offline",
+            status: "online",
           },
         },
         [s.friend.userId]: {
@@ -154,7 +154,7 @@ describe("2 infinity plan and 1 usage plan farming ", () => {
             gamesStaging: [],
             logged: true,
             farmStartedAt: null,
-            status: "offline",
+            status: "online",
           },
           [s.friend.accountName2]: {
             farming: false,
@@ -162,7 +162,7 @@ describe("2 infinity plan and 1 usage plan farming ", () => {
             gamesStaging: [],
             logged: false,
             farmStartedAt: null,
-            status: "offline",
+            status: "online",
           },
         },
       })
