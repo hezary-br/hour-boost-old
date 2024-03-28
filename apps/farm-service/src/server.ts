@@ -79,8 +79,8 @@ async function main() {
   await restoreAccountManySessionsUseCase.execute({
     batchOptions: {
       batchAmount: 5,
-      noiseInSeconds: 5,
-      intervalInSeconds: 60 * 3, // 3 minutes
+      noiseInSeconds: 10,
+      intervalInSeconds: 60, // 1 minuto
     },
   })
   // await restoreAccountManySessionsUseCase.execute({

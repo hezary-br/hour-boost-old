@@ -73,7 +73,7 @@ query_routerAdmin.post("/set-max-steam-accounts", async (req, res) => {
   const [invalidBody, body] = validateBody(
     req.body,
     z.object({
-      newMaxSteamAccountsAllowed: z.number().min(1).max(2, "Um usuário pode ter no máximo 2 contas."),
+      newMaxSteamAccountsAllowed: z.number().min(1),
       mutatingUserId: z.string().min(1),
     })
   )

@@ -6,7 +6,7 @@ export class EditablePlan implements IEditablePlan {
   constructor(private readonly plan: Plan) {}
 
   setMaxAccountsAmount(amount: number): void {
-    if (amount < 0 || amount > 2) {
+    if (amount < 0) {
       throw makeError("Invariant! Tentou setar máximos de contas do plano com um valor fora do esperado.", {
         amount,
       })

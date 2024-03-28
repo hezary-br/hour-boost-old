@@ -5,20 +5,12 @@ import { DropdownMenuSubContent } from "@/components/ui/dropdown-menu"
 import { api } from "@/lib/axios"
 import { ECacheKeys } from "@/mutations/queryKeys"
 import { useAuth } from "@clerk/clerk-react"
-import React, { useState } from "react"
+import React, { useCallback, useReducer, useState } from "react"
 import { toast } from "sonner"
 import twc from "tailwindcss/colors"
 import { useUserAdminListItem } from "../../../hooks/useUserAdminListItem"
 import { isMutationPending } from "../../ActionSetGamesLimit/components/MenuSubContent"
-import {
-  ActionSelect,
-  ActionSelectContent,
-  ActionSelectItem,
-  ActionSelectTrigger,
-  ActionSelectValue,
-  HoverCard,
-  Pieces,
-} from "../../components"
+import { HoverCard, Pieces } from "../../components"
 import { useUserAdminActionSetAccounts } from "../mutation"
 
 export type ActionSetAccountsLimitMenuSubContentProps = React.ComponentPropsWithoutRef<
@@ -33,9 +25,22 @@ export const ActionSetAccountsLimitMenuSubContent = React.forwardRef<
 >(function ActionSetAccountsLimitMenuSubContentComponent({ render, ...props }, ref) {
   const userId = useUserAdminItemId()
   const maxSteamAccounts = useUserAdminListItem(userId, user => user.plan.maxSteamAccounts)
+  const valueIsDirty = useCallback(
+    function check(value: number) {
+      return value !== maxSteamAccounts
+    },
+    [maxSteamAccounts]
+  )
   const [isSure, setIsSure] = useState(false)
-  const [inputValueMaxAccounts, setInputValueMaxAccounts] = useState(maxSteamAccounts)
-  const isDirty = maxSteamAccounts !== inputValueMaxAccounts
+  const [inputValueMaxAccounts, setInputValueMaxAccounts] = useReducer((_: string, value: string) => {
+    let finalValue = value
+    if (parseInt(value) < 1) finalValue = "1"
+    const newMaxAccountsNumber = finalValue === "" ? 1 : parseInt(finalValue)
+    if (!valueIsDirty(newMaxAccountsNumber)) setIsSure(false)
+    return finalValue
+  }, maxSteamAccounts.toString())
+  const inputValueMaxAccountsFinal = inputValueMaxAccounts === "" ? 1 : parseInt(inputValueMaxAccounts)
+  const isDirty = valueIsDirty(inputValueMaxAccountsFinal)
   const isPending = isMutationPending(ECacheKeys.setAccounts)
 
   const { getToken } = useAuth()
@@ -47,13 +52,18 @@ export const ActionSetAccountsLimitMenuSubContent = React.forwardRef<
   const mutationSetAccounts = useUserAdminActionSetAccounts(getAPI)
 
   const handleClick = () => {
-    if (!isSure && inputValueMaxAccounts === maxSteamAccounts) return
+    let localNewMax = parseInt(inputValueMaxAccounts)
+    if (inputValueMaxAccounts === "" || inputValueMaxAccountsFinal < 0) {
+      localNewMax = 1
+      setInputValueMaxAccounts("1")
+    }
+    if (!isSure && !valueIsDirty(localNewMax)) return
     setIsSure(s => !s)
 
     if (isSure) {
       mutationSetAccounts.mutate(
         {
-          newMaxSteamAccountsAllowed: inputValueMaxAccounts,
+          newMaxSteamAccountsAllowed: inputValueMaxAccountsFinal,
           mutatingUserId: userId,
         },
         {
@@ -67,12 +77,6 @@ export const ActionSetAccountsLimitMenuSubContent = React.forwardRef<
         }
       )
     }
-  }
-
-  const handleOnChange = (newValue: string) => {
-    const value = parseInt(newValue)
-    if (value !== inputValueMaxAccounts) setIsSure(false)
-    setInputValueMaxAccounts(value)
   }
 
   return (
@@ -91,25 +95,12 @@ export const ActionSetAccountsLimitMenuSubContent = React.forwardRef<
         </Pieces.ThinMiddle>
       )}
       <Pieces.Footer>
-        <ActionSelect
-          value={inputValueMaxAccounts.toString()}
-          onValueChange={handleOnChange}
-        >
-          <ActionSelectTrigger>
-            <ActionSelectValue placeholder="Novo máx. de contas" />
-          </ActionSelectTrigger>
-          <ActionSelectContent>
-            {options.map(opt => (
-              <ActionSelectItem
-                key={opt.value}
-                data-selected={maxSteamAccounts === opt.value}
-                value={opt.value.toString()}
-              >
-                {opt.text}
-              </ActionSelectItem>
-            ))}
-          </ActionSelectContent>
-        </ActionSelect>
+        <Pieces.Input
+          className="w-[180px]"
+          type="number"
+          value={inputValueMaxAccounts}
+          onChange={e => setInputValueMaxAccounts(e.target.value)}
+        />
 
         {isPending && (
           <Pieces.Loading>
@@ -126,7 +117,7 @@ export const ActionSetAccountsLimitMenuSubContent = React.forwardRef<
             <HoverCard data-open={isSure}>
               <p>- Máximo de contas -</p>
               <p className="bg-accent border-accent-500 mt-1 rounded-md border px-2 py-1 text-sm/none tabular-nums">
-                De <strong>{maxSteamAccounts}</strong> para <strong>{inputValueMaxAccounts}</strong>
+                De <strong>{maxSteamAccounts}</strong> para <strong>{inputValueMaxAccountsFinal}</strong>
               </p>
               <span className="mt-1 text-xs text-slate-500">Tem certeza que deseja fazer alteração?</span>
             </HoverCard>
@@ -138,8 +129,3 @@ export const ActionSetAccountsLimitMenuSubContent = React.forwardRef<
 })
 
 ActionSetAccountsLimitMenuSubContent.displayName = "ActionSetAccountsLimitMenuSubContent"
-
-const options = Array.from({ length: 2 }).map((_, i) => ({
-  value: ++i,
-  text: `${i} contas`,
-}))

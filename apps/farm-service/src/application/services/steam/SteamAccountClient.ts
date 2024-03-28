@@ -1,3 +1,4 @@
+import { appendFile } from "fs"
 import {
   AccountGames,
   AccountSteamGamesList,
@@ -13,7 +14,6 @@ import {
   IRefreshToken,
   SteamAccountPersonaState,
 } from "core"
-import { appendFile } from "fs"
 import SteamUser from "steam-user"
 import { connection } from "~/__tests__/connection"
 import type { EventEmitter } from "~/application/services"
