@@ -6,7 +6,8 @@
       "processId": "${command:PickProcess}",
       "request": "attach",
       "skipFiles": [
-        "<node_internals>/**"
+        "<node_internals>/**",
+        "${workspaceFolder}/node_modules/**"
       ],
       "type": "node"
     },

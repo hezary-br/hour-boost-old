@@ -8,6 +8,7 @@ export type EventNames =
   | "user-farmed"
   | "error-occured-on-steam-client"
   | "user-complete-farm-session"
+  | "user-changed-plan"
   | "STEAMCLIENT:add-more-games"
   | "STEAMCLIENT:paused-some-games"
   | "STEAMCLIENT:start-farming"

@@ -11,6 +11,7 @@ export interface SteamAccountClientStateCacheRepository {
   setAccountGames(accountName: string, games: AccountSteamGamesList): Promise<void>
   setRefreshToken(accountName: string, refreshToken: IRefreshToken): Promise<void>
   getRefreshToken(accountName: string): Promise<IRefreshToken | null>
+  setRefreshTokenPlanId(accountName: string, planId: string): Promise<void>
   // setPlayingGames(accountName: string, gamesId: number[], planId: string, username: string): Promise<void>
   // setStagingGames(accountName: string, gamesId: number[]): Promise<void>
   init(props: InitProps): Promise<void>

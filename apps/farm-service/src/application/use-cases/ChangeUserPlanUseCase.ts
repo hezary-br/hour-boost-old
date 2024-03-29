@@ -1,17 +1,19 @@
 import {
-  type DataOrFail,
   Fail,
+  PlanRepository,
+  type DataOrFail,
   type GetError,
   type PlanAllNames,
-  PlanRepository,
   type SteamAccountClientStateCacheRepository,
   type User,
   type UsersRepository,
 } from "core"
+import { UserChangedPlanCommand } from "~/application/commands/steam-client/UserChangedPlanCommand"
 import { persistUsagesOnDatabase } from "~/application/utils/persistUsagesOnDatabase"
 import type { PlanService } from "~/domain/services/PlanService"
 import type { UserService } from "~/domain/services/UserService"
 import { TrimSteamAccounts } from "~/domain/utils/trim-steam-accounts"
+import { Publisher } from "~/infra/queue"
 import { getUserSACs_OnStorage_ByUser } from "~/utils/getUser"
 import { bad, nice } from "~/utils/helpers"
 import type { RestoreAccountSessionUseCase } from "."
@@ -26,7 +28,8 @@ export class ChangeUserPlanUseCase implements IChangeUserPlanUseCase {
     private readonly restoreAccountSessionUseCase: RestoreAccountSessionUseCase,
     private readonly userService: UserService,
     private readonly trimSteamAccounts: TrimSteamAccounts,
-    private readonly planRepository: PlanRepository
+    private readonly planRepository: PlanRepository,
+    private readonly publisher: Publisher
   ) {}
 
   private async executeImpl({ user, newPlanName }: ChangeUserPlanUseCasePayload) {
@@ -107,6 +110,7 @@ export class ChangeUserPlanUseCase implements IChangeUserPlanUseCase {
     }
 
     await this.usersRepository.update(user)
+    this.publisher.publish(new UserChangedPlanCommand({ when: new Date(), user }))
     for (const accountName of trimSteamAccountsInfo.trimmingAccountsName) {
       await this.steamAccountClientStateCacheRepository.deleteAllEntriesFromAccount(accountName)
     }

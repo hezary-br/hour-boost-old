@@ -1,18 +1,12 @@
 import {
   AccountSteamGamesList,
   CacheState,
-  type 
-  CacheStateDTO,
-  type 
-  GameSession,
-  type 
-  IRefreshToken,
-  type 
-  InitProps,
-  type 
-  SteamAccountClientStateCacheRepository,
-  type 
-  SteamAccountPersonaState,
+  type CacheStateDTO,
+  type GameSession,
+  type IRefreshToken,
+  type InitProps,
+  type SteamAccountClientStateCacheRepository,
+  type SteamAccountPersonaState,
 } from "core"
 import type { Redis } from "ioredis"
 import { Logger } from "~/utils/Logger"
@@ -85,15 +79,27 @@ export class SteamAccountClientStateCacheRedis implements SteamAccountClientStat
 
   async setRefreshToken(accountName: string, refreshToken: IRefreshToken): Promise<void> {
     this.logger.log(`set refresh token for ${accountName}`)
-    await this.redis.set(this.KEY_REFRESH_TOKEN(accountName), JSON.stringify(refreshToken))
+    const key = this.KEY_REFRESH_TOKEN(accountName)
+    const value = JSON.stringify(refreshToken)
+    await this.redis.call("JSON.SET", key, "$", value)
+  }
+
+  async setRefreshTokenPlanId(accountName: string, planId: string): Promise<void> {
+    this.logger.log(`set refresh token's planId for ${accountName}`)
+    const key = this.KEY_REFRESH_TOKEN(accountName)
+    const value = JSON.stringify(planId)
+    await this.redis.call("JSON.SET", key, "$.planId", value)
   }
 
   async getRefreshToken(accountName: string): Promise<IRefreshToken | null> {
-    this.logger.log(`getting refresh token for ${accountName}`)
-    const foundRefreshToken = await this.redis.get(this.KEY_REFRESH_TOKEN(accountName))
-    if (!foundRefreshToken) return null
-    const refreshToken = JSON.parse(foundRefreshToken) as IRefreshToken
-    return refreshToken ?? null
+    const key = this.KEY_REFRESH_TOKEN(accountName)
+    const foundState = (await this.redis.call("JSON.GET", key, "$")) as string | null
+    if (!foundState) {
+      this.logger.log(`refresh token NOT found for accountName ${accountName}`)
+      return null
+    }
+    const [refreshToken] = JSON.parse(foundState) as [refreshToken: IRefreshToken]
+    return refreshToken
   }
 
   async getUsersRefreshToken(): Promise<string[]> {
