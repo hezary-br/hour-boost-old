@@ -34,6 +34,7 @@ import {
   StartFarmPlanHandler,
 } from "~/domain/handler"
 import { UpdateAccountCacheStateHandler } from "~/domain/handler/UpdateAccountCacheStateHandler"
+import { UpdateRefreshTokenPlanIdHandler } from "~/domain/handler/UpdateRefreshTokenPlanIdHandler"
 import { StagingGamesListService } from "~/domain/services"
 import { PlanService } from "~/domain/services/PlanService"
 import { UserService } from "~/domain/services/UserService"
@@ -172,7 +173,8 @@ export const changeUserPlanUseCase = new ChangeUserPlanUseCase(
   restoreAccountSessionUseCase,
   userService,
   trimSteamAccounts,
-  planRepository
+  planRepository,
+  publisher
 )
 export const steamAccountsDAO = new SteamAccountsDAODatabase(prisma)
 
@@ -243,6 +245,7 @@ publisher.register(new LogSteamStopFarmHandler())
 publisher.register(new LogSteamStartFarmHandler())
 publisher.register(new UpdateAccountCacheStateHandler(steamAccountClientStateCacheRepository))
 publisher.register(new ScheduleAutoRestartHandler(scheduleAutoRestartUseCase))
+publisher.register(new UpdateRefreshTokenPlanIdHandler(steamAccountClientStateCacheRepository))
 // publisher.register(new LogUserCompleteFarmSessionHandler())
 
 /**

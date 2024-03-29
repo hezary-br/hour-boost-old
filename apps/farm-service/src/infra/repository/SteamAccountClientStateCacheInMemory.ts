@@ -1,6 +1,6 @@
 import {
-  type AccountSteamGamesList,
   CacheState,
+  type AccountSteamGamesList,
   type IRefreshToken,
   type InitProps,
   type SteamAccountClientStateCacheRepository,
@@ -16,6 +16,12 @@ export class SteamAccountClientStateCacheInMemory implements SteamAccountClientS
 
   constructor(database: SACCacheInMemory) {
     this.data = database
+  }
+
+  async setRefreshTokenPlanId(accountName: string, planId: string): Promise<void> {
+    const refreshToken = this.data.refreshTokens.get(accountName)
+    if(!refreshToken) throw new Error("Refresh token not found.")
+    refreshToken.planId = planId
   }
 
   async init(props: InitProps): Promise<void> {

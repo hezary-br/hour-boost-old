@@ -2,10 +2,10 @@ import {
   AddSteamAccount,
   ApplicationError,
   IDGeneratorUUID,
-  type PlanInfinity,
   PlanUsage,
   SteamAccount,
   SteamAccountCredentials,
+  type PlanInfinity,
   type SteamAccountsRepository,
   type Usage,
   type User,
@@ -48,10 +48,10 @@ import {
 import { SACCacheInMemory } from "~/infra/repository/SACCacheInMemory"
 import { SteamAccountsInMemory } from "~/infra/repository/SteamAccountsInMemory"
 import {
-  type TestUserProperties,
-  type TestUsers,
   UserAuthenticationInMemory,
   testUsers,
+  type TestUserProperties,
+  type TestUsers,
 } from "~/infra/services/UserAuthenticationInMemory"
 import { FarmGamesController } from "~/presentation/controllers"
 import { EventEmitterBuilder, SteamAccountClientBuilder } from "~/utils/builders"
@@ -204,7 +204,8 @@ export function makeTestInstances(props?: MakeTestInstancesProps, ci?: CustomIns
     restoreAccountSessionUseCase,
     userService,
     trimSteamAccounts,
-    planRepository
+    planRepository,
+    publisher
   )
 
   /**
