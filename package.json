@@ -8,13 +8,16 @@
     "dev:api": "turbo dev --filter=farm-service",
     "build:web": "turbo build --filter=hour-boost-web",
     "build:api": "turbo build --filter=farm-service",
+    "build:api:debug": "turbo build_debug --filter=farm-service",
     "start:web": "turbo start --filter=hour-boost-web",
     "start:api": "turbo start --filter=farm-service",
+    "start:api:debug": "turbo start_debug --filter=farm-service",
     "lint": "turbo run lint",
     "start": "turbo run start",
     "format": "prettier --write .",
     "ci": "turbo run ci",
     "api": "bun run build:api && bun run start:api",
+    "api:debug": "bun run build:api:debug && bun run start:api:debug",
     "spinup": "bun run build && bun run start"
   },
   "dependencies": {

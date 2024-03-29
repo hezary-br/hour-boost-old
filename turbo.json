@@ -9,6 +9,8 @@
     },
     "start": {},
     "lint": {},
+    "build_debug": {},
+    "start_debug": {},
     "dev": {
       "cache": false,
       "persistent": true
