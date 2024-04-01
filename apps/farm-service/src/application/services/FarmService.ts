@@ -1,7 +1,7 @@
 const log = console.log
 
 import type { DataOrError, DataOrFail, Fail, PlanType, Usage } from "core"
-import type { FarmServiceStatus, } from "~/application/services"
+import type { FarmServiceStatus } from "~/application/services"
 import type { Publisher } from "~/infra/queue"
 
 export type FarmServiceProps = {
@@ -90,15 +90,18 @@ export type PauseFarmOnAccountUsage =
 
 export namespace NSFarmSessionCategory {
   export type StopSilently = {
+    planId: string
     type: "STOP-SILENTLY"
     accountName: string
   }
   export type StopAll = {
+    planId: string
     type: "STOP-ALL"
     usages: Usage[]
     accountNameList: string[]
   }
   export type StopOne = {
+    planId: string
     type: "STOP-ONE"
     usage: Usage
     accountName: string

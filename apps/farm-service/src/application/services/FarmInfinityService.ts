@@ -1,13 +1,10 @@
 import { type DataOrError, Fail, type PlanInfinity, type PlanType, type Usage } from "core"
 import { UserCompleteFarmSessionCommand } from "~/application/commands"
 import {
-  type 
-  AccountStatusList,
+  type AccountStatusList,
   FarmService,
-  type 
-  NSFarmService,
-  type 
-  PauseFarmOnAccountUsage,
+  type NSFarmService,
+  type PauseFarmOnAccountUsage,
 } from "~/application/services/FarmService"
 import { EAppResults } from "~/application/use-cases"
 import { getUsageAmountTimeFromDateRange } from "~/domain/utils/getUsageAmountTimeFromDateRange"
@@ -115,14 +112,17 @@ export class FarmInfinityService extends FarmService {
   pauseFarmOnAccount(accountName: string, isFinalizingSession: boolean) {
     const [errorPausingFarmOnAccount, usage] = this.pauseFarmOnAccountImpl(accountName)
     if (errorPausingFarmOnAccount) return bad(errorPausingFarmOnAccount)
-    this.publishCompleteFarmSession({ type: "STOP-ONE", usage, accountName }, isFinalizingSession)
+    this.publishCompleteFarmSession(
+      { planId: this.planId, type: "STOP-ONE", usage, accountName },
+      isFinalizingSession
+    )
     return nice(null)
   }
 
   pauseFarmOnAccountSync(accountName: string) {
     const [errorPausingFarmOnAccount, usage] = this.pauseFarmOnAccountImpl(accountName)
     if (errorPausingFarmOnAccount) return bad(errorPausingFarmOnAccount)
-    return nice({ type: "STOP-ONE", usage, accountName })
+    return nice({ planId: this.planId, type: "STOP-ONE", usage, accountName })
   }
 
   // pauseFarmOnAccount(accountName: string): DataOrError<PauseFarmOnAccountUsage> {
@@ -169,6 +169,7 @@ export class FarmInfinityService extends FarmService {
     const { usages } = this.stopFarmImpl()
     this.publishCompleteFarmSession(
       {
+        planId: this.planId,
         type: "STOP-ALL",
         usages,
         accountNameList: this.getFarmingAccountsNameList(),

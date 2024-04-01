@@ -3,18 +3,15 @@ import { type DataOrError, Fail, type PlanType, type PlanUsage, type Usage } fro
 import { UserCompleteFarmSessionCommand, UserHasStartFarmingCommand } from "~/application/commands"
 import type { EventEmitter, UserClusterEvents } from "~/application/services"
 import {
-  type 
-  AccountStatusList,
+  type AccountStatusList,
   FarmService,
-  type 
-  NSFarmService,
-  type 
-  PauseFarmOnAccountUsage,
+  type NSFarmService,
+  type PauseFarmOnAccountUsage,
 } from "~/application/services/FarmService"
 import { EAppResults } from "~/application/use-cases"
 import type { Publisher } from "~/infra/queue"
 import { UsageBuilder } from "~/utils/builders/UsageBuilder"
-import { bad, nice, } from "~/utils/helpers"
+import { bad, nice } from "~/utils/helpers"
 
 export const FARMING_INTERVAL_IN_SECONDS = 1
 
@@ -156,6 +153,7 @@ export class FarmUsageService extends FarmService {
     const { usages } = this.stopFarmImpl()
     this.publishCompleteFarmSession(
       {
+        planId: this.planId,
         type: "STOP-ALL",
         usages,
         accountNameList: this.getFarmingAccountsNameList(),
@@ -178,10 +176,15 @@ export class FarmUsageService extends FarmService {
   pauseFarmOnAccountSync(accountName: string, isFinalizingSession?: boolean) {
     if (this.getActiveFarmingAccountsAmount() === 1) {
       const usages = this.stopFarmSync()
-      return nice({ type: "STOP-ALL", usages, accountNameList: this.getFarmingAccountsNameList() })
+      return nice({
+        planId: this.planId,
+        type: "STOP-ALL",
+        usages,
+        accountNameList: this.getFarmingAccountsNameList(),
+      })
     }
     this.setAccountStatus(accountName, "IDDLE")
-    return nice({ type: "STOP-SILENTLY", accountName })
+    return nice({ planId: this.planId, type: "STOP-SILENTLY", accountName })
   }
 
   private getFarmingAccountDetails(): FarmingAccountDetailsWithAccountName[] {
