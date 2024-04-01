@@ -149,6 +149,7 @@ const EAppResultsRaw = {
   "PLAN-MAX-USAGE-EXCEEDED": "PLAN-MAX-USAGE-EXCEEDED",
   "USER-STORAGE-NOT-FOUND": "USER-STORAGE-NOT-FOUND",
   "SAC-NOT-LOGGED": "SAC-NOT-LOGGED",
+  "LIST::COULD-NOT-RESET-FARM": "LIST::COULD-NOT-RESET-FARM"
 } as const
 
 export const EAppResults = EAppResultsRaw as Pretify<Mutable<typeof EAppResultsRaw>>

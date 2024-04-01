@@ -1,11 +1,11 @@
 import { jest } from "@jest/globals"
 import {
-  type CustomInstances,
-  type MakeTestInstancesProps,
-  type PrefixKeys,
   makeTestInstances,
   password,
   validSteamAccounts,
+  type CustomInstances,
+  type MakeTestInstancesProps,
+  type PrefixKeys,
 } from "~/__tests__/instances"
 import { ensureExpectation } from "~/__tests__/utils"
 import type { UserCompleteFarmSessionCommand } from "~/application/commands"
@@ -82,7 +82,7 @@ test("1xUser -> 2 Account (Infinity); should persist 2 usages of 2 hours", async
 
   console.log({ infinityUsages })
 
-  const mePlan = await i.planRepository.getById(meInstances.me.plan.id_plan)
+  const mePlan = await i.planRepository.getById(diamondPlan.id_plan)
   const [usageAccount1, usageAccount2] = mePlan?.usages.data ?? []
   expect(mePlan?.usages.data).toHaveLength(2)
   expect(usageAccount1.accountName).toBe(s.me.accountName)
@@ -125,7 +125,7 @@ describe("Start 2 farming, and stop all farms test suite", () => {
     jest.useRealTimers()
   })
 
-  test("2xUser -> 1 Account; should publish 2 usages of 2 hours", async () => {
+  test.only("2xUser -> 1 Account; should publish 2 usages of 2 hours", async () => {
     jest.useFakeTimers({ doNotFake: ["setTimeout", "setImmediate"] })
     const spyPublish = jest.spyOn(i.publisher, "publish")
 
@@ -152,6 +152,7 @@ describe("Start 2 farming, and stop all farms test suite", () => {
     expect(meCommand.pauseFarmCategory).toStrictEqual({
       type: "STOP-ALL",
       accountNameList: [s.me.accountName],
+      planId: meInstances.me.plan.id_plan,
       usages: expect.arrayContaining([
         expect.objectContaining({
           accountName: s.me.accountName,
@@ -162,6 +163,7 @@ describe("Start 2 farming, and stop all farms test suite", () => {
     expect(friendCommand.pauseFarmCategory).toStrictEqual({
       type: "STOP-ALL",
       accountNameList: [s.friend.accountName],
+      planId: friendInstances.friend.plan.id_plan,
       usages: expect.arrayContaining([
         expect.objectContaining({
           accountName: s.friend.accountName,

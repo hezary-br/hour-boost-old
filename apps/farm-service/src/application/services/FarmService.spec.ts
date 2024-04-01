@@ -2,22 +2,17 @@ let farmService: FarmService
 
 import { type DataOrError, Fail, type PlanType, type Usage } from "core"
 import {
-  type 
-  CustomInstances,
-  type 
-  MakeTestInstancesProps,
-  type 
-  PrefixKeys,
+  type CustomInstances,
+  type MakeTestInstancesProps,
+  type PrefixKeys,
   makeTestInstances,
   validSteamAccounts,
 } from "~/__tests__/instances"
 import type { FarmingAccountDetails } from "~/application/services"
 import {
-  type 
-  AccountStatusList,
+  type AccountStatusList,
   FarmService,
-  type 
-  NSFarmService,
+  type NSFarmService,
 } from "~/application/services/FarmService"
 import { testUsers as s } from "~/infra/services/UserAuthenticationInMemory"
 import { bad, nice } from "~/utils/helpers"
@@ -165,7 +160,7 @@ class FarmServiceImpl extends FarmService {
         acc.status = "IDDLE"
       }
     }
-    return nice({ type: "STOP-ALL", usages: [] as Usage[], accountNameList: [] as string[] })
+    return nice({ planId: this.planId, type: "STOP-ALL", usages: [] as Usage[], accountNameList: [] as string[] })
   }
   getAccountsStatus(): AccountStatusList {
     const accountStatusList = {} as AccountStatusList

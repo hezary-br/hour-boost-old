@@ -2,10 +2,10 @@ import {
   AddSteamAccount,
   ApplicationError,
   IDGeneratorUUID,
+  type PlanInfinity,
   PlanUsage,
   SteamAccount,
   SteamAccountCredentials,
-  type PlanInfinity,
   type SteamAccountsRepository,
   type Usage,
   type User,
@@ -25,16 +25,17 @@ import {
 import { ChangeUserPlanUseCase } from "~/application/use-cases/ChangeUserPlanUseCase"
 import { CreateUserUseCase } from "~/application/use-cases/CreateUserUseCase"
 import { FarmGamesUseCase } from "~/application/use-cases/FarmGamesUseCase"
-import { FlushUpdateSteamAccountUseCase } from "~/application/use-cases/FlushUpdateSteamAccountUseCase"
 import { SetMaxSteamAccountsUseCase } from "~/application/use-cases/SetMaxSteamAccountsUseCase"
 import { StopFarmUseCase } from "~/application/use-cases/StopFarmUseCase"
-import { TrimSteamAccountsUseCase } from "~/application/use-cases/TrimSteamAccountsUseCase"
 import { makeFarmGames } from "~/application/use-cases/__tests_helpers"
 import { AutoRestarterScheduler } from "~/domain/cron"
 import { PlanService } from "~/domain/services/PlanService"
 import { UserService } from "~/domain/services/UserService"
 import { TrimSteamAccounts } from "~/domain/utils/trim-steam-accounts"
+import { FlushUpdateSteamAccountDomain } from "~/features/flush-update-steam-account/domain"
+import { FlushUpdateSteamAccountUseCase } from "~/features/flush-update-steam-account/use-case"
 import { RemoveSteamAccount } from "~/features/remove-steam-account/domain"
+import { StopFarmDomain } from "~/features/stop-farm/domain"
 import { UsersDAOInMemory } from "~/infra/dao"
 import { SteamAccountsDAOMemory } from "~/infra/dao/SteamAccountsDAOMemory"
 import { Publisher } from "~/infra/queue"
@@ -48,17 +49,17 @@ import {
 import { SACCacheInMemory } from "~/infra/repository/SACCacheInMemory"
 import { SteamAccountsInMemory } from "~/infra/repository/SteamAccountsInMemory"
 import {
-  UserAuthenticationInMemory,
-  testUsers,
   type TestUserProperties,
   type TestUsers,
+  UserAuthenticationInMemory,
+  testUsers,
 } from "~/infra/services/UserAuthenticationInMemory"
 import { FarmGamesController } from "~/presentation/controllers"
 import { EventEmitterBuilder, SteamAccountClientBuilder } from "~/utils/builders"
 import { SteamUserMockBuilder } from "~/utils/builders/SteamMockBuilder"
 import { UsageBuilder } from "~/utils/builders/UsageBuilder"
 import { UserClusterBuilder } from "~/utils/builders/UserClusterBuilder"
-import { makeResetFarm } from "~/utils/resetFarm"
+import { makeResetFarm, makeResetFarmEntities } from "~/utils/resetFarm"
 
 export const password = "pass"
 export const validSteamAccounts: SteamAccountCredentials[] = [
@@ -124,7 +125,8 @@ export function makeTestInstances(props?: MakeTestInstancesProps, ci?: CustomIns
   const steamAccountsDAO = new SteamAccountsDAOMemory(steamAccountsMemory)
   const steamUserBuilder = ci?.steamUserBuilder ?? new SteamUserMockBuilder(validSteamAccounts)
   const sacBuilder = new SteamAccountClientBuilder(emitterBuilder, publisher, steamUserBuilder)
-  const stopFarmUseCase = new StopFarmUseCase(usersClusterStorage, planRepository)
+  const stopFarmDomain = new StopFarmDomain(usersClusterStorage)
+  const stopFarmUseCase = new StopFarmUseCase(planRepository, stopFarmDomain)
   const farmGamesUseCase = new FarmGamesUseCase(usersClusterStorage)
   const checkSteamAccountOwnerStatusUseCase = new CheckSteamAccountOwnerStatusUseCase(steamAccountsRepository)
   const hashService = new HashService()
@@ -152,7 +154,6 @@ export function makeTestInstances(props?: MakeTestInstancesProps, ci?: CustomIns
     removeSteamAccount
   )
   const trimSteamAccounts = new TrimSteamAccounts(removeSteamAccount)
-  const trimSteamAccountsUseCase = new TrimSteamAccountsUseCase(usersRepository, trimSteamAccounts)
   const addSteamAccount = new AddSteamAccount(usersRepository, idGenerator)
   const addSteamAccountUseCase = new AddSteamAccountUseCase(
     addSteamAccount,
@@ -173,22 +174,28 @@ export function makeTestInstances(props?: MakeTestInstancesProps, ci?: CustomIns
 
   const resetFarm = makeResetFarm({
     allUsersClientsStorage,
-    planRepository,
     steamAccountClientStateCacheRepository: sacStateCacheRepository,
     usersSACsFarmingClusterStorage: usersClusterStorage,
   })
 
   const farmGames = makeFarmGames(farmGamesController)
-  const flushUpdateSteamAccountUseCase = new FlushUpdateSteamAccountUseCase(
-    resetFarm,
+  const resetFarmEntities = makeResetFarmEntities({
     allUsersClientsStorage,
-    usersRepository,
-    sacStateCacheRepository
+    usersSACsFarmingClusterStorage: usersClusterStorage,
+  })
+  const flushUpdateSteamAccountDomain = new FlushUpdateSteamAccountDomain(
+    allUsersClientsStorage,
+    resetFarmEntities
+  )
+  const flushUpdateSteamAccountUseCase = new FlushUpdateSteamAccountUseCase(
+    sacStateCacheRepository,
+    planRepository,
+    flushUpdateSteamAccountDomain
   )
 
   const setMaxSteamAccountsUseCase = new SetMaxSteamAccountsUseCase(
     usersRepository,
-    flushUpdateSteamAccountUseCase,
+    flushUpdateSteamAccountDomain,
     trimSteamAccounts,
     sacStateCacheRepository,
     planRepository
@@ -316,7 +323,6 @@ export function makeTestInstances(props?: MakeTestInstancesProps, ci?: CustomIns
     addSteamAccountUseCase,
     removeSteamAccount,
     removeSteamAccountUseCase,
-    trimSteamAccountsUseCase,
     setMaxSteamAccountsUseCase,
     checkSteamAccountOwnerStatusUseCase,
     restoreAccountSessionUseCase,
@@ -328,6 +334,7 @@ export function makeTestInstances(props?: MakeTestInstancesProps, ci?: CustomIns
     idGenerator,
     userAuthentication,
     resetFarm,
+    flushUpdateSteamAccountDomain,
     flushUpdateSteamAccountUseCase,
     async makeUserInstances<P extends TestUsers>(prefix: P, props: TestUserProperties) {
       const user = await createUserUseCase.execute(props.userId)

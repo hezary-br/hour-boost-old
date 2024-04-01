@@ -1,6 +1,6 @@
 import type { ApplicationError, DataOrFail, Fail, PlanRepository } from "core"
+import { StopFarmDomain } from "~/features/stop-farm/domain"
 import { bad, nice } from "~/utils/helpers"
-import type { UsersSACsFarmingClusterStorage } from "../services"
 import { persistUsagesOnDatabase } from "../utils/persistUsagesOnDatabase"
 
 type Options = {
@@ -9,25 +9,25 @@ type Options = {
 
 export class StopFarmUseCase implements IStopFarmUseCase {
   constructor(
-    private readonly usersClusterStorage: UsersSACsFarmingClusterStorage,
-    private readonly planRepository: PlanRepository
+    private readonly planRepository: PlanRepository,
+    private readonly stopFarmDomain: StopFarmDomain
   ) {}
 
   async execute(
     { planId, accountName, username, isFinalizingSession }: StopFarmUseCasePayload,
     options = { persistUsages: true } as Options
   ) {
-    const [errorFindingUserCluster, userCluster] = this.usersClusterStorage.get(username)
-    if (errorFindingUserCluster) return bad(errorFindingUserCluster)
-
-    const [errorPausingFarmOnAccount, usages] = userCluster.pauseFarmOnAccountSync({
+    const [errorStoppingFarmDomain, data] = this.stopFarmDomain.execute({
       accountName,
       isFinalizingSession,
+      username,
     })
-    if (errorPausingFarmOnAccount) return bad(errorPausingFarmOnAccount)
+
+    if (errorStoppingFarmDomain) return bad(errorStoppingFarmDomain)
+    const { usages } = data
 
     if (options.persistUsages) {
-      const [errorPersisting] = await persistUsagesOnDatabase(planId, usages, this.planRepository)
+      const [errorPersisting] = await persistUsagesOnDatabase(usages, this.planRepository)
       if (errorPersisting) return bad(errorPersisting)
     }
 

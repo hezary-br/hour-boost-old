@@ -5,7 +5,6 @@ import {
   makeTestInstances,
   password,
 } from "~/__tests__/instances"
-import { StopFarmUseCase } from "~/application/use-cases/StopFarmUseCase"
 import { testUsers as s } from "~/infra/services/UserAuthenticationInMemory"
 import { StopFarmController } from "~/presentation/controllers"
 import { promiseHandler } from "~/presentation/controllers/promiseHandler"
@@ -25,8 +24,7 @@ let meInstances = {} as PrefixKeys<"me">
 async function setupInstances(props?: MakeTestInstancesProps, customInstances?: CustomInstances) {
   i = makeTestInstances(props, customInstances)
   meInstances = await i.createUser("me")
-  const stopFarmUseCase = new StopFarmUseCase(i.usersClusterStorage, i.planRepository)
-  stopFarmController = new StopFarmController(stopFarmUseCase, i.usersRepository)
+  stopFarmController = new StopFarmController(i.stopFarmUseCase, i.usersRepository)
 }
 
 beforeEach(async () => {
@@ -42,8 +40,7 @@ afterEach(() => {
 describe("StopFarmController.spec test suite", () => {
   describe("Account Name IS NOT farming", () => {
     test("should reject is not registered user is provided", async () => {
-      const stopFarmUseCase = new StopFarmUseCase(i.usersClusterStorage, i.planRepository)
-      const stopFarmController = new StopFarmController(stopFarmUseCase, i.usersRepository)
+      const stopFarmController = new StopFarmController(i.stopFarmUseCase, i.usersRepository)
       const { status, json } = await stopFarmController.handle({
         payload: {
           userId: "RANDOM_ID",
@@ -59,8 +56,7 @@ describe("StopFarmController.spec test suite", () => {
     })
 
     test("should reject if user is not farming", async () => {
-      const stopFarmUseCase = new StopFarmUseCase(i.usersClusterStorage, i.planRepository)
-      const stopFarmController = new StopFarmController(stopFarmUseCase, i.usersRepository)
+      const stopFarmController = new StopFarmController(i.stopFarmUseCase, i.usersRepository)
       const { status, json } = await promiseHandler(
         stopFarmController.handle({
           payload: {

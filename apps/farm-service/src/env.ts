@@ -1,15 +1,15 @@
 import { createEnv } from "@t3-oss/env-core"
 import { z } from "zod"
 
-export const env = {
-  ...createEnv({
+const makeRuntimeEnvs = () =>
+  createEnv({
     server: {
       DATABASE_URL: z.string().url(),
       CLERK_SECRET_KEY: z.string().min(1),
       REDIS_UPSTASH_TLS: z.string().min(1),
       EXAMPLE_ACCOUNT_NAME: z.string().nullable().default(null),
       EXAMPLE_ACCOUNT_PASSWORD: z.string().nullable().default(null),
-      NODE_ENV: z.enum(["DEV", "PRODUCTION"]),
+      NODE_ENV: z.enum(["DEV", "PRODUCTION", "DEBUG"]),
       TOKEN_IDENTIFICATION_HASH: z.string().min(1),
       CLIENT_URL: z.string().url(),
       COOKIE_DOMAIN: z.string().includes("."),
@@ -36,7 +36,29 @@ export const env = {
     //   TOKEN_IDENTIFICATION_HASH: process.env.TOKEN_IDENTIFICATION_HASH,
     // },
     emptyStringAsUndefined: true,
-  }),
+  })
+
+type RuntimeEnvs = ReturnType<typeof makeRuntimeEnvs>
+export const envTest: RuntimeEnvs = {
+  NODE_ENV: "DEBUG",
+  CLERK_SECRET_KEY: "test",
+  DATABASE_URL: "test",
+  REDIS_UPSTASH_TLS: "test",
+  TOKEN_IDENTIFICATION_HASH: "test",
+  CLIENT_URL: "http://localhost:3000",
+  COOKIE_DOMAIN: ".hourboost.com.br",
+  ACTIONS_SECRET: "test",
+  EXAMPLE_ACCOUNT_NAME: "test",
+  EXAMPLE_ACCOUNT_PASSWORD: "test",
+  PORT: 4000,
+  HASH_SECRET: "test",
+  STOP_ENDPOINT: "http://localhost:4000/farm/stop/all",
+  SECRET: "test",
+}
+
+export const selectedEnv = process.env.NODE_ENV === "DEBUG" ? envTest : makeRuntimeEnvs()
+export const env = {
+  ...selectedEnv,
   isDevMode() {
     return this.NODE_ENV === "DEV"
   },
@@ -44,19 +66,3 @@ export const env = {
     return this.NODE_ENV === "PRODUCTION"
   },
 }
-
-// export const env = {
-//   NODE_ENV: "DEV",
-//   CLERK_SECRET_KEY: "test",
-//   DATABASE_URL: "test",
-//   REDIS_UPSTASH_TLS: "test",
-//   TOKEN_IDENTIFICATION_HASH: "test",
-//   CLIENT_URL: "http://localhost:3000",
-//   COOKIE_DOMAIN: ".hourboost.com.br",
-//   ACTIONS_SECRET: "test",
-//   EXAMPLE_ACCOUNT_NAME: "test",
-//   EXAMPLE_ACCOUNT_PASSWORD: "test",
-//   PORT: 4000,
-//   HASH_SECRET: "test",
-//   STOP_ENDPOINT: "http://localhost:4000/farm/stop/all",
-//   SECRET: "test",

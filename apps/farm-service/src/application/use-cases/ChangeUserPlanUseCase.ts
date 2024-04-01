@@ -1,9 +1,9 @@
 import {
-  Fail,
-  PlanRepository,
   type DataOrFail,
+  Fail,
   type GetError,
   type PlanAllNames,
+  PlanRepository,
   type SteamAccountClientStateCacheRepository,
   type User,
   type UsersRepository,
@@ -12,10 +12,11 @@ import { UserChangedPlanCommand } from "~/application/commands/steam-client/User
 import { persistUsagesOnDatabase } from "~/application/utils/persistUsagesOnDatabase"
 import type { PlanService } from "~/domain/services/PlanService"
 import type { UserService } from "~/domain/services/UserService"
-import { TrimSteamAccounts } from "~/domain/utils/trim-steam-accounts"
+import { TrimSteamAccounts, batchOperations } from "~/domain/utils/trim-steam-accounts"
 import { Publisher } from "~/infra/queue"
 import { getUserSACs_OnStorage_ByUser } from "~/utils/getUser"
 import { bad, nice } from "~/utils/helpers"
+import { nonNullable } from "~/utils/nonNullable"
 import type { RestoreAccountSessionUseCase } from "."
 import type { AllUsersClientsStorage } from "../services"
 
@@ -42,37 +43,31 @@ export class ChangeUserPlanUseCase implements IChangeUserPlanUseCase {
     )
     if (errorGettingUserSACList) return bad(Fail.create(errorGettingUserSACList.code, 400))
 
-    const currentSACStates = userSacList.map(sac => sac.getCache())
-    const { updatedCacheStates } = this.userService.changePlan(user, newPlan, currentSACStates)
-
     const [errorTrimmingSteamAccounts, trimSteamAccountsInfo] = this.trimSteamAccounts.execute({
       user,
+      plan: newPlan,
     })
     if (errorTrimmingSteamAccounts) return bad(errorTrimmingSteamAccounts)
 
-    const persistUsagesList = await Promise.all(
-      trimSteamAccountsInfo.removeSteamAccountsResults.map(([error, value]) => {
-        if (error) return bad(error)
-        if (value.stopFarmUsages) {
-          persistUsagesOnDatabase(user.plan.id_plan, value.stopFarmUsages, this.planRepository)
-        }
-        return nice()
-      })
-    )
+    const usagesToPersist = [
+      ...trimSteamAccountsInfo.trimmingAccountsResults.map(data => data.stopFarmUsages).filter(nonNullable),
+    ]
 
-    const persistUsagesListErrorsOnly = persistUsagesList.filter(
-      ([persistUsageResultError]) => !!persistUsageResultError
-    )
-    if (persistUsagesListErrorsOnly.length) {
-      const persistUsagesListErrorsOnlyExtracted = persistUsagesListErrorsOnly.map(([error]) => bad(error))
-      return bad(
-        Fail.create("COULD-NOT-PERSIST-ACCOUNT-USAGE", 400, {
-          persistUsagesListErrors: persistUsagesListErrorsOnlyExtracted,
+    const [errorPersistingUsages] = batchOperations(
+      await Promise.all(
+        usagesToPersist.map(async usages => {
+          return await persistUsagesOnDatabase(usages, this.planRepository)
         })
       )
-    }
+    )
+    if (errorPersistingUsages)
+      return bad(Fail.create("COULD-NOT-PERSIST-ACCOUNT-USAGE", 400, errorPersistingUsages))
 
     const fails: Fail[] = []
+
+    const currentSACStates = userSacList.map(sac => sac.getCache())
+    const { updatedCacheStates } = this.userService.changePlan(user, newPlan, currentSACStates)
+
     const updatedCacheStatesFiltered = updatedCacheStates.filter(c =>
       user.steamAccounts.data.map(sa => sa.credentials.accountName).includes(c.accountName)
     )

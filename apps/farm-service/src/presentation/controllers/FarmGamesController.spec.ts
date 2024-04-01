@@ -10,7 +10,6 @@ import {
 import { ensureExpectation } from "~/__tests__/utils"
 import type { UserCompleteFarmSessionCommand } from "~/application/commands"
 import { PlanBuilder } from "~/application/factories/PlanFactory"
-import { StopFarmUseCase } from "~/application/use-cases/StopFarmUseCase"
 import { PersistFarmSessionHandler } from "~/domain/handler/PersistFarmSessionHandler"
 import type { Observer } from "~/infra/queue"
 import { testUsers as s } from "~/infra/services/UserAuthenticationInMemory"
@@ -30,8 +29,7 @@ let stopFarmController: StopFarmController
 async function setupInstances(props?: MakeTestInstancesProps, customInstances?: CustomInstances) {
   i = makeTestInstances(props, customInstances)
   meInstances = await i.createUser("me")
-  const stopFarmUseCase = new StopFarmUseCase(i.usersClusterStorage, i.planRepository)
-  stopFarmController = new StopFarmController(stopFarmUseCase, i.usersRepository)
+  stopFarmController = new StopFarmController(i.stopFarmUseCase, i.usersRepository)
 }
 
 describe("mobile", () => {
@@ -387,8 +385,10 @@ describe("not mobile", () => {
       user_id: s.me.userId,
     })
     await i.usePlan(s.me.userId, maxGuestPlanUsage)
-    expect((meInstances.me.plan as PlanUsage).getUsageLeft()).toBe(0)
-    expect((meInstances.me.plan as PlanUsage).getUsageTotal()).toBe(21600)
+    const me = await i.usersRepository.getByID(s.me.userId)
+    if (!me) throw "user not found"
+    expect((me.plan as PlanUsage).getUsageLeft()).toBe(0)
+    expect((me.plan as PlanUsage).getUsageTotal()).toBe(21600)
 
     const res = await promiseHandler(
       i.farmGamesController.handle({
@@ -597,7 +597,7 @@ test("should log the amount time when persist INFINITY farm session", async () =
   )
   ensureExpectation(200, responseStop1)
 
-  const mePlan = (await i.planRepository.getById(meInstances.me.plan.id_plan)) as PlanUsage
+  const mePlan = (await i.planRepository.getById(diamondPlan.id_plan)) as PlanUsage
   const usages = mePlan?.usages.data
   expect(usages).toHaveLength(1)
   expect(usages[0].accountName).toBe(s.me.accountName)

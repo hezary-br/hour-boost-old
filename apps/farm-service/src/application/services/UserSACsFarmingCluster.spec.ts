@@ -188,7 +188,7 @@ test("should check if account is farming properly", async () => {
   const [error] = await meCluster.farmWithAccount({
     accountName: s.me.accountName,
     gamesId: [100],
-    planId: meInstances.me.plan.id_plan,
+    planId: plan.id_plan,
     session: {
       type: "NEW",
     },
@@ -221,7 +221,7 @@ test("should check if account is farming properly", async () => {
   const [error2] = await meCluster.farmWithAccount({
     accountName: s.me.accountName,
     gamesId: [100],
-    planId: meInstances.me.plan.id_plan,
+    planId: plan.id_plan,
     session: {
       type: "NEW",
     },

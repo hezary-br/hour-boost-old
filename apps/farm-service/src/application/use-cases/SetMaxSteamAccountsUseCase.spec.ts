@@ -9,7 +9,6 @@ import {
 } from "~/__tests__/instances"
 import { RestoreUsersSessionsUseCase } from "~/application/use-cases/RestoreUsersSessionsUseCase"
 import { testUsers as s } from "~/infra/services/UserAuthenticationInMemory"
-import { filterUserAccounts } from "~/utils/filterUserAccounts"
 const log = console.log
 // console.log = () => {}
 
@@ -20,6 +19,8 @@ let meInstances = {} as PrefixKeys<"me">
 
 async function setupInstances(props?: MakeTestInstancesProps, customInstances?: CustomInstances) {
   i = makeTestInstances(props, customInstances)
+  // @ts-ignore
+  globalThis["usersMemory"] = i.usersMemory
   meInstances = await i.makeUserInstances("me", s.me)
 
   const restoreUsersSessionsUseCase = new RestoreUsersSessionsUseCase(i.usersClusterStorage)
@@ -35,7 +36,7 @@ beforeEach(async () => {
   // console.log = log
 })
 
-test("should change usage plan to CUSTOM usage plan and increase max steamAccounts allowed to 2", async () => {
+test("should change usage plan to CUSTOM usage plan and increase max steamAccounts allowed to 2x", async () => {
   const userPlan = await i.planRepository.getById(meInstances.me.plan.id_plan)
   expect(userPlan).toBeInstanceOf(PlanUsage)
   expect(userPlan?.custom).toBe(false)
@@ -52,7 +53,7 @@ test("should change usage plan to CUSTOM usage plan and increase max steamAccoun
   expect(userPlan2?.maxSteamAccounts).toBe(2)
 })
 
-test("should change usage plan to CUSTOM usage plan and increase max steamAccounts allowed to 2", async () => {
+test("should persist usages when trimming extra account after decreasing max steam accounts", async () => {
   const [_error] = await i.setMaxSteamAccountsUseCase.execute({
     mutatingUserId: s.me.userId,
     newMaxSteamAccountsAllowed: 2,
@@ -69,7 +70,6 @@ test("should change usage plan to CUSTOM usage plan and increase max steamAccoun
   expect(farmGamesResponse2.status).toBe(200)
   const user = await i.usersRepository.getByID(s.me.userId)
   expect(user?.steamAccounts.data).toHaveLength(2)
-  console.log("88: xx", { userSteamAccounts: filterUserAccounts(user!) })
 
   const accountsStatus = i.usersClusterStorage.getAccountsStatus()
   expect(user?.plan.usages.data).toHaveLength(0)
@@ -86,8 +86,8 @@ test("should change usage plan to CUSTOM usage plan and increase max steamAccoun
   expect(user2?.steamAccounts.data).toHaveLength(1)
   expect(error).toBeNull()
   const accountsStatus2 = i.usersClusterStorage.getAccountsStatus()
-  // 1 comes from remove account, and other one comes
-  // from restarting the farm
+  // 1 comes from removed account, and other one comes
+  // from restarting the farm of the remaining
   expect(user2?.plan.usages.data).toHaveLength(2)
   expect(accountsStatus2).toStrictEqual({
     [s.me.username]: { [s.me.accountName]: "FARMING" },

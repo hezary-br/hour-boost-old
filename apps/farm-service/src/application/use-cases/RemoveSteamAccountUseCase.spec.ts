@@ -54,7 +54,6 @@ test("should remove steam account", async () => {
     userId: s.me.userId,
     password,
   })
-  const accountId = meInstances.me.steamAccounts.data[0].id_steamAccount
   const account1 = await i.steamAccountsRepository.getByAccountName(s.me.accountName)
   expect(account1?.ownerId).toBe(s.me.userId)
 
@@ -76,7 +75,6 @@ test("should remove steam account and set auto restarter as false", async () => 
     userId: s.me.userId,
     password,
   })
-  const accountId = meInstances.me.steamAccounts.data[0].id_steamAccount
   const account1 = await i.steamAccountsRepository.getByAccountName(s.me.accountName)
   expect(account1?.ownerId).toBe(s.me.userId)
 
@@ -113,7 +111,6 @@ test("should remove steam account and logoff client", async () => {
   })
   const sac = i.allUsersClientsStorage.getAccountClient(s.me.userId, s.me.accountName)!
   const spy = import.meta.jest.spyOn(sac.client, "logOff")
-  const accountId = meInstances.me.steamAccounts.data[0].id_steamAccount
   const account1 = await i.steamAccountsRepository.getByAccountName(s.me.accountName)
   expect(account1?.ownerId).toBe(s.me.userId)
   expect(spy).toHaveBeenCalledTimes(0)

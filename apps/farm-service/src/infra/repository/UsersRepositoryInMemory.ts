@@ -1,4 +1,5 @@
 import { ApplicationError, type User, type UsersRepository } from "core"
+import _ from "lodash"
 import type { SteamAccountsInMemory } from "~/infra/repository/SteamAccountsInMemory"
 import type { UsersInMemory } from "./UsersInMemory"
 
@@ -30,7 +31,7 @@ export class UsersRepositoryInMemory implements UsersRepository {
         user.steamAccounts.add(foundSteamAccount)
       } catch (error) {}
     }
-    return user
+    return _.cloneDeep(user)
   }
 
   private registerSteamAccounts(user: User) {
@@ -44,6 +45,7 @@ export class UsersRepositoryInMemory implements UsersRepository {
   async update(user: User): Promise<void> {
     this.registerSteamAccounts(user)
     this.steamAccountsMemory.disownSteamAccounts(user.steamAccounts.getTrashIDs())
+    this.steamAccountsMemory.updateAccounts([...user.steamAccounts.data, ...user.steamAccounts.trash])
     user.steamAccounts.eraseTrash()
 
     const foundUserIndex = this.usersMemory.users.findIndex(u => u.id_user === user.id_user)

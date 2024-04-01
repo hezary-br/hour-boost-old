@@ -19,11 +19,9 @@ import {
   ScheduleAutoRestartUseCase,
 } from "~/application/use-cases"
 import { ChangeUserPlanUseCase } from "~/application/use-cases/ChangeUserPlanUseCase"
-import { FlushUpdateSteamAccountUseCase } from "~/application/use-cases/FlushUpdateSteamAccountUseCase"
 import { RetrieveSessionListUseCase } from "~/application/use-cases/RetrieveSessionListUseCase"
 import { SetMaxSteamAccountsUseCase } from "~/application/use-cases/SetMaxSteamAccountsUseCase"
 import { StopFarmUseCase } from "~/application/use-cases/StopFarmUseCase"
-import { TrimSteamAccountsUseCase } from "~/application/use-cases/TrimSteamAccountsUseCase"
 import type { SteamBuilder } from "~/contracts/SteamBuilder"
 import { AutoRestarterScheduler } from "~/domain/cron"
 import {
@@ -39,7 +37,10 @@ import { StagingGamesListService } from "~/domain/services"
 import { PlanService } from "~/domain/services/PlanService"
 import { UserService } from "~/domain/services/UserService"
 import { TrimSteamAccounts } from "~/domain/utils/trim-steam-accounts"
+import { FlushUpdateSteamAccountDomain } from "~/features/flush-update-steam-account/domain"
+import { FlushUpdateSteamAccountUseCase } from "~/features/flush-update-steam-account/use-case"
 import { RemoveSteamAccount } from "~/features/remove-steam-account/domain"
+import { StopFarmDomain } from "~/features/stop-farm/domain"
 import { UsersDAODatabase } from "~/infra/dao"
 import { SteamAccountsDAODatabase } from "~/infra/dao/SteamAccountsDAODatabase"
 import { prisma } from "~/infra/libs"
@@ -55,7 +56,7 @@ import { ClerkAuthentication } from "~/infra/services"
 import { RefreshGamesUseCase } from "~/presentation/presenters"
 import { EventEmitterBuilder, SteamAccountClientBuilder, UserClusterBuilder } from "~/utils/builders"
 import { UsageBuilder } from "~/utils/builders/UsageBuilder"
-import { makeResetFarm } from "~/utils/resetFarm"
+import { makeResetFarm, makeResetFarmEntities } from "~/utils/resetFarm"
 
 const httpProxy = process.env.PROXY_URL
 
@@ -164,7 +165,6 @@ export const userService = new UserService()
 export const planService = new PlanService()
 export const restoreAccountSessionUseCase = new RestoreAccountSessionUseCase(usersClusterStorage, publisher)
 export const trimSteamAccounts = new TrimSteamAccounts(removeSteamAccount)
-export const trimSteamAccountsUseCase = new TrimSteamAccountsUseCase(usersRepository, trimSteamAccounts)
 export const changeUserPlanUseCase = new ChangeUserPlanUseCase(
   allUsersClientsStorage,
   usersRepository,
@@ -197,15 +197,22 @@ export const autoRestartCron = new AutoRestartCron(
 
 export const resetFarm = makeResetFarm({
   allUsersClientsStorage,
-  planRepository,
   steamAccountClientStateCacheRepository,
   usersSACsFarmingClusterStorage: usersClusterStorage,
 })
-export const flushUpdateSteamAccountUseCase = new FlushUpdateSteamAccountUseCase(
-  resetFarm,
+
+const resetFarmEntities = makeResetFarmEntities({
   allUsersClientsStorage,
-  usersRepository,
-  steamAccountClientStateCacheRepository
+  usersSACsFarmingClusterStorage: usersClusterStorage,
+})
+export const flushUpdateSteamAccountDomain = new FlushUpdateSteamAccountDomain(
+  allUsersClientsStorage,
+  resetFarmEntities
+)
+export const flushUpdateSteamAccountUseCase = new FlushUpdateSteamAccountUseCase(
+  steamAccountClientStateCacheRepository,
+  planRepository,
+  flushUpdateSteamAccountDomain
 )
 
 export const scheduleAutoRestartUseCase = new ScheduleAutoRestartUseCase(
@@ -216,7 +223,8 @@ export const scheduleAutoRestartUseCase = new ScheduleAutoRestartUseCase(
 export const retrieveSessionAccountsUseCase = new RetrieveSessionListUseCase(
   steamAccountClientStateCacheRepository
 )
-export const stopFarmUseCase = new StopFarmUseCase(usersClusterStorage, planRepository)
+export const stopFarmDomain = new StopFarmDomain(usersClusterStorage)
+export const stopFarmUseCase = new StopFarmUseCase(planRepository, stopFarmDomain)
 
 export const stagingGamesListService = new StagingGamesListService()
 
@@ -253,7 +261,7 @@ publisher.register(new UpdateRefreshTokenPlanIdHandler(steamAccountClientStateCa
  */
 export const setMaxSteamAccountsUseCase = new SetMaxSteamAccountsUseCase(
   usersRepository,
-  flushUpdateSteamAccountUseCase,
+  flushUpdateSteamAccountDomain,
   trimSteamAccounts,
   steamAccountClientStateCacheRepository,
   planRepository

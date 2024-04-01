@@ -9,9 +9,11 @@ import {
 } from "~/__tests__/instances"
 import { ensureExpectation } from "~/__tests__/utils"
 import { RestoreUsersSessionsUseCase } from "~/application/use-cases/RestoreUsersSessionsUseCase"
+import { uc } from "~/application/use-cases/helpers"
 import { testUsers as s } from "~/infra/services/UserAuthenticationInMemory"
 import { getSACOn_AllUsersClientsStorage_ByUserId } from "~/utils/getSAC"
 import { AddMoreGamesToPlanUseCase } from "./AddMoreGamesToPlanUseCase"
+
 const log = console.log
 // console.log = () => {}
 
@@ -43,7 +45,8 @@ async function setupInstances(props?: MakeTestInstancesProps, customInstances?: 
   // })
   addMoreGamesToPlanUseCase = new AddMoreGamesToPlanUseCase(
     i.usersRepository,
-    i.flushUpdateSteamAccountUseCase
+    i.flushUpdateSteamAccountDomain,
+    i.sacStateCacheRepository
   )
 }
 
@@ -71,36 +74,48 @@ test("should change usage plan to CUSTOM usage plan and increase max games allow
   expect(userPlan2?.maxGamesAllowed).toBe(30)
 })
 
-test("should change from farming 30 games, to 2 games, and client should update so", async () => {
-  const userKeys = i.allUsersClientsStorage.listUsersKeys()
-  expect(userKeys).toStrictEqual(["id_123"])
-  const [error] = await addMoreGamesToPlanUseCase.execute({
-    mutatingUserId: s.me.userId,
-    newMaxGamesAllowed: 30,
-  })
-  if (error && error.code === "LIST:ERROR-RESETING-FARM")
-    console.log(error.payload.errorsList.flat(Number.POSITIVE_INFINITY))
-  expect(error).toBeNull()
+test(
+  "should change from farming 30 games, to 2 games, and client should update so",
+  async () => {
+    process.env["NODE_ENV"]
+    const userKeys = i.allUsersClientsStorage.listUsersKeys()
+    const [, user0] = await uc.getUser(i.usersRepository, s.me.userId)
+    const [, user1] = await uc.getUser(i.usersRepository, s.me.userId)
 
-  const spy_clientGamesPlayed = import.meta.jest.spyOn(meInstances.meSAC.client, "gamesPlayed")
-  expect(spy_clientGamesPlayed).not.toHaveBeenCalledWith(
-    expect.arrayContaining([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
-  )
-  const response = await i.farmGames(s.me.accountName, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], s.me.userId)
-  ensureExpectation(200, response)
-  expect(spy_clientGamesPlayed).toHaveBeenCalledWith(expect.arrayContaining([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]))
+    expect(userKeys).toStrictEqual(["id_123"])
+    const [error] = await addMoreGamesToPlanUseCase.execute({
+      mutatingUserId: s.me.userId,
+      newMaxGamesAllowed: 30,
+    })
+    expect(error).toBeNull()
 
-  const [error2] = await addMoreGamesToPlanUseCase.execute({
-    mutatingUserId: s.me.userId,
-    newMaxGamesAllowed: 2,
-  })
-  const [, sac] = getSACOn_AllUsersClientsStorage_ByUserId(
-    s.me.userId,
-    i.allUsersClientsStorage
-  )(s.me.accountName)
-  const state = await i.sacStateCacheRepository.get(s.me.accountName)
-  expect(sac?.getGamesPlaying()).toStrictEqual([1, 2])
-  expect(state?.gamesPlaying).toStrictEqual([1, 2])
-  expect(error2).toBeNull()
-  expect(spy_clientGamesPlayed).toHaveBeenCalledWith([1, 2])
-})
+    const spy_clientGamesPlayed = import.meta.jest.spyOn(meInstances.meSAC.client, "gamesPlayed")
+    expect(spy_clientGamesPlayed).not.toHaveBeenCalledWith(
+      expect.arrayContaining([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    )
+    const response = await i.farmGames(s.me.accountName, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], s.me.userId)
+    ensureExpectation(200, response)
+    expect(spy_clientGamesPlayed).toHaveBeenCalledWith(
+      expect.arrayContaining([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    )
+
+    const [error2] = await addMoreGamesToPlanUseCase.execute({
+      mutatingUserId: s.me.userId,
+      newMaxGamesAllowed: 2,
+    })
+    const [, sac] = getSACOn_AllUsersClientsStorage_ByUserId(
+      s.me.userId,
+      i.allUsersClientsStorage
+    )(s.me.accountName)
+    const state = await i.sacStateCacheRepository.get(s.me.accountName)
+    const [errorGettingUser, user] = await uc.getUser(i.usersRepository, s.me.userId)
+    expect(errorGettingUser).toBeNull()
+
+    expect(user?.plan.maxGamesAllowed).toBe(2)
+    expect(sac?.getGamesPlaying()).toStrictEqual([1, 2])
+    expect(state?.gamesPlaying).toStrictEqual([1, 2])
+    expect(error2).toBeNull()
+    expect(spy_clientGamesPlayed).toHaveBeenCalledWith([1, 2])
+  },
+  1000 * 60 * 10
+)

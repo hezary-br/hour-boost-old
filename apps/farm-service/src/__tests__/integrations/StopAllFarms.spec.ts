@@ -7,9 +7,9 @@ import { testUsers as s } from "~/infra/services/UserAuthenticationInMemory"
 import {
   CustomInstances,
   MakeTestInstancesProps,
+  type PrefixKeys,
   makeTestInstances,
   password,
-  type PrefixKeys,
 } from "~/__tests__/instances"
 
 const validSteamAccounts = [
@@ -25,12 +25,13 @@ let i = makeTestInstances({ validSteamAccounts })
 let meInstances = {} as PrefixKeys<"me">
 let friendInstances = {} as PrefixKeys<"friend">
 let stopAllFarms: StopAllFarms
+let diamondPlan: PlanInfinity
 
 async function setupInstances(props?: MakeTestInstancesProps, customInstances?: CustomInstances) {
   i = makeTestInstances(props, customInstances)
   meInstances = await i.createUser("me")
   friendInstances = await i.createUser("friend")
-  const diamondPlan = new PlanBuilder(s.me.userId).infinity().diamond()
+  diamondPlan = new PlanBuilder(s.me.userId).infinity().diamond()
   await i.changeUserPlan(diamondPlan)
   await i.addSteamAccountInternally(s.me.userId, s.me.accountName2, password)
   stopAllFarms = new StopAllFarms(i.usersClusterStorage)
@@ -179,7 +180,7 @@ describe("2 infinity plan and 1 usage plan farming ", () => {
 
     test("should persist usages on plan", async () => {
       // console.log = log
-      const mePlan = (await i.planRepository.getById(meInstances.me.plan.id_plan)) as PlanInfinity
+      const mePlan = (await i.planRepository.getById(diamondPlan.id_plan)) as PlanInfinity
       const friendPlan = (await i.planRepository.getById(friendInstances.friend.plan.id_plan)) as PlanUsage
       expect(mePlan.usages.data).toHaveLength(2)
       expect(friendPlan.usages.data).toHaveLength(1)

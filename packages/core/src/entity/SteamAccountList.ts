@@ -18,7 +18,9 @@ export class SteamAccountList {
   remove(steamAccountID: string) {
     const steamAccountIndex = this.data.findIndex(u => u.id_steamAccount === steamAccountID)
     if (steamAccountIndex === -1) return bad(Fail.create("STEAM_ACCOUNT_NOT_FOUND", 404))
-    this.trash.push(this.data[steamAccountIndex])
+    const steamAccount = this.data[steamAccountIndex]
+    steamAccount.ownerId = null
+    this.trash.push(steamAccount)
     this.data.splice(steamAccountIndex, 1)
     return nice()
   }

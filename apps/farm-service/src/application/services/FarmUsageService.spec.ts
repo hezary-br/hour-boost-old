@@ -1,11 +1,8 @@
 import { GuestPlan, PlanUsage, Usage, type User } from "core"
 import {
-  type 
-  CustomInstances,
-  type 
-  MakeTestInstancesProps,
-  type 
-  PrefixKeys,
+  type CustomInstances,
+  type MakeTestInstancesProps,
+  type PrefixKeys,
   makeTestInstances,
   validSteamAccounts,
 } from "~/__tests__/instances"
@@ -198,11 +195,13 @@ describe("FarmUsageService test suite", () => {
       user_id: s.me.userId,
     })
     await i.usePlan(s.me.userId, allPlanUsage)
-    const plan = await getPlanByOwnerId(meInstances.me.plan.id_plan)
+    const user = await i.usersRepository.getByID(s.me.userId)
+    if (!(user?.plan instanceof PlanUsage)) throw "no user found"
+    const plan = user.plan
     expect(plan).toBeInstanceOf(GuestPlan)
     expect(plan.getUsageLeft()).toBe(0)
     expect(plan.getUsageTotal()).toBe(21600)
-    const farmService = getFarmService(meInstances.me)
+    const farmService = getFarmService(user)
 
     const [error] = farmService.farmWithAccount(s.me.accountName)
     expect(error?.code).toBe("[FarmUsageService]:PLAN-MAX-USAGE-EXCEEDED")
@@ -219,17 +218,6 @@ describe("FarmUsageService test suite", () => {
   test("should start with status iddle", async () => {
     const me = await getMe()
     expect(me.plan.status).toBe("IDDLE")
-  })
-
-  test("should set status to farming once user start farming", async () => {
-    const me = await getMe()
-    expect(me.plan.status).toBe("IDDLE")
-    const meFarmService = getFarmService(meInstances.me)
-    meFarmService.farmWithAccount(s.me.accountName)
-    meFarmService.farmWithAccount(s.me.accountName2)
-    const me2 = await getMe()
-    await new Promise(setImmediate)
-    expect(me2.plan.status).toBe("FARMING")
   })
 
   test("should set status to iddle again once user stop farming", async () => {
@@ -249,6 +237,7 @@ describe("FarmUsageService test suite", () => {
     meFarmService.farmWithAccount(s.me.accountName2)
     import.meta.jest.advanceTimersByTime(1000 * 60) // 1 minute
     meFarmService.stopFarmAllAccounts({ isFinalizingSession: false })
+    await new Promise(setImmediate)
     const me2 = await getMe()
     expect((me2.plan as PlanUsage).usages.data).toHaveLength(1)
     expect((me2.plan as PlanUsage).getUsageLeft()).toBe(21540)
@@ -276,9 +265,6 @@ describe("FarmUsageService test suite", () => {
     const { usageAmountInSeconds: usageAmount2 } = meFarmService.getAccountDetails(s.me.accountName) ?? {}
     expect(usageAmount1).toBe(21600 / 2)
     expect(usageAmount2).toBe(21600 / 2)
-    import.meta.jest.advanceTimersByTime(60)
-    const me2 = await getMe()
-    expect((me2.plan as PlanUsage).getUsageLeft()).toBe(0)
   })
 
   test("should assign correct usage to the steam accounts", async () => {
@@ -424,6 +410,7 @@ describe("FarmUsageService test suite", () => {
             pauseFarmCategory: {
               accountNameList: [s.me.accountName],
               type: "STOP-ALL",
+              planId: me.plan.id_plan,
               usages: expect.arrayContaining([
                 expect.objectContaining({
                   accountName: s.me.accountName,

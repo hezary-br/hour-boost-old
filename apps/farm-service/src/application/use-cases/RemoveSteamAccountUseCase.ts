@@ -33,11 +33,7 @@ export class RemoveSteamAccountUseCase implements IRemoveSteamAccountUseCase {
 
     // was farming
     if (stopFarmUsages) {
-      const [errorPersistingUsages] = await persistUsagesOnDatabase(
-        user.plan.id_plan,
-        stopFarmUsages,
-        this.planRepository
-      )
+      const [errorPersistingUsages] = await persistUsagesOnDatabase(stopFarmUsages, this.planRepository)
       if (errorPersistingUsages) {
         return bad(
           new Fail({

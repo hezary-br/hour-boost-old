@@ -11,6 +11,12 @@ export class SteamAccountsInMemory {
     return this.steamAccounts.map(sa => sa.credentials.accountName)
   }
 
+  updateAccounts(accounts: SteamAccount[]) {
+    for (const account of accounts) {
+      this.addOrUpdate(account)
+    }
+  }
+
   getByAccountName(accountName: string) {
     const foundSteamAccount = this.steamAccounts.find(sa => sa.credentials.accountName === accountName)
     if (!foundSteamAccount) {

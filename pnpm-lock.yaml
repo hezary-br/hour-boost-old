@@ -240,6 +240,9 @@ importers:
       '@types/cors':
         specifier: ^2.8.15
         version: 2.8.17
+      '@types/deep-freeze':
+        specifier: ^0.1.5
+        version: 0.1.5
       '@types/express':
         specifier: ^4.17.20
         version: 4.17.21
@@ -261,6 +264,9 @@ importers:
       cors:
         specifier: ^2.8.5
         version: 2.8.5
+      deep-freeze:
+        specifier: ^0.0.1
+        version: 0.0.1
       dotenv:
         specifier: ^16.3.1
         version: 16.3.1
@@ -3395,6 +3401,10 @@ packages:
       '@types/ms': 0.7.34
     dev: true
 
+  /@types/deep-freeze@0.1.5:
+    resolution: {integrity: sha512-KZtR+jtmgkCpgE0f+We/QEI2Fi0towBV/tTkvHVhMzx+qhUVGXMx7pWvAtDp6vEWIjdKLTKpqbI/sORRCo8TKg==}
+    dev: false
+
   /@types/estree@1.0.5:
     resolution: {integrity: sha512-/kYRxGDLWzHOB7q+wtSUQlFrtcdUccpfy+X+9iMBpHK8QLLhx2wIPYuS5DYtR9Wa/YlZAbIovy7qVdB1Aq6Lyw==}
     dev: false
@@ -4550,6 +4560,10 @@ packages:
     resolution: {integrity: sha512-LOHxIOaPYdHlJRtCQfDIVZtfw/ufM8+rVj649RIHzcm/vGwQRXFt6OPqIFWsm2XEMrNIEtWR64sY1LEKD2vAOA==}
     engines: {node: '>=4.0.0'}
     dev: true
+
+  /deep-freeze@0.0.1:
+    resolution: {integrity: sha512-Z+z8HiAvsGwmjqlphnHW5oz6yWlOwu6EQfFTjmeTWlDeda3FS2yv3jhq35TX/ewmsnqB+RX2IdsIOyjJCQN5tg==}
+    dev: false
 
   /deep-is@0.1.4:
     resolution: {integrity: sha512-oIPzksmTg4/MriiaYGO+okXDT7ztn/w3Eptv/+gSIdMdKsJo0u4CfYNFJPy+4SKMuCqGw2wxnA+URMg3t8a/bQ==}

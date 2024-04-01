@@ -6,8 +6,9 @@ import { ensureAdmin } from "~/inline-middlewares/ensureAdmin"
 import { validateBody } from "~/inline-middlewares/validate-payload"
 import {
   changeUserPlanUseCase,
-  flushUpdateSteamAccountUseCase,
+  flushUpdateSteamAccountDomain,
   setMaxSteamAccountsUseCase,
+  steamAccountClientStateCacheRepository,
   usersDAO,
   usersRepository,
 } from "~/presentation/instances"
@@ -26,7 +27,8 @@ query_routerAdmin.get("/users-list", async (req, res) => {
 
 const addMoreGamesToPlanUseCase = new AddMoreGamesToPlanUseCase(
   usersRepository,
-  flushUpdateSteamAccountUseCase
+  flushUpdateSteamAccountDomain,
+  steamAccountClientStateCacheRepository
 )
 
 query_routerAdmin.post("/add-more-games", async (req, res) => {
@@ -54,7 +56,7 @@ query_routerAdmin.post("/add-more-games", async (req, res) => {
         case "USER-NOT-FOUND":
         case "USER-STORAGE-NOT-FOUND":
           return console.log({ error })
-        case "LIST:ERROR-RESETING-FARM":
+        case "LIST::COULD-NOT-RESET-FARM":
           return console.log(error.payload)
         default:
           error satisfies never
@@ -92,8 +94,7 @@ query_routerAdmin.post("/set-max-steam-accounts", async (req, res) => {
         case "USER-STORAGE-NOT-FOUND":
           return console.log({ error })
         case "LIST::TRIMMING-ACCOUNTS":
-        case "LIST:ERROR-RESETING-FARM":
-        case "COULD-NOT-PERSIST-ACCOUNT-USAGE":
+        case "LIST::COULD-NOT-RESET-FARM":
           return console.log(error.payload)
         default:
           error satisfies never

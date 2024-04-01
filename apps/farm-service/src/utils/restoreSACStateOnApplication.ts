@@ -25,7 +25,6 @@ export function restoreSACStateOnApplication(userCluster: UserSACsFarmingCluster
     sac.setStatus(state.status === "iddle" ? "online" : state.status)
 
     if (state.isFarming()) {
-      
       const [errorFarmWithAccount] = await userCluster.farmWithAccount({
         accountName: state.accountName,
         gamesId: state.gamesPlaying,
@@ -42,7 +41,7 @@ export function restoreSACStateOnApplication(userCluster: UserSACsFarmingCluster
       if (errorFarmWithAccount) return bad(errorFarmWithAccount)
     }
 
-    const delay = env.NODE_ENV === "PRODUCTION" ? 1000 : 0
+    const delay: number = env.NODE_ENV === "PRODUCTION" ? 1000 : 0
 
     const error = await Promise.race([
       new Promise<SACGenericError>(res => sac.client.once("error", res)),
