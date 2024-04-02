@@ -54,10 +54,7 @@ export abstract class FarmService {
     this.stopFarm(isFinalizingSession)
   }
 
-  protected abstract publishCompleteFarmSession(
-    pauseFarmCategory: PauseFarmOnAccountUsage,
-    isFinalizingSession: boolean
-  ): void
+  protected abstract publishCompleteFarmSession(farmSession: FarmSession, isFinalizingSession: boolean): void
 
   protected abstract getFarmingAccountsNameList(): string[]
   protected abstract startFarm(): DataOrFail<Fail>
@@ -67,7 +64,7 @@ export abstract class FarmService {
   abstract pauseFarmOnAccountSync(
     accountName: string,
     isFinalizingSession: boolean
-  ): DataOrFail<Fail, PauseFarmOnAccountUsage>
+  ): DataOrFail<Fail, FarmSession>
 
   getPlanId() {
     return this.planId
@@ -84,7 +81,7 @@ export abstract class FarmService {
 
 export type AccountStatusList = Record<string, "IDDLE" | "FARMING">
 
-export type PauseFarmOnAccountUsage =
+export type FarmSession =
   | NSFarmSessionCategory.StopSilently
   | NSFarmSessionCategory.StopAll
   | NSFarmSessionCategory.StopOne

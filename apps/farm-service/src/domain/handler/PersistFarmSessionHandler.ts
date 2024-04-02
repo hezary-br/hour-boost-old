@@ -15,20 +15,18 @@ export class PersistFarmSessionHandler implements Observer {
 
   async notify({
     planId,
-    pauseFarmCategory,
+    farmSession,
     when,
     isFinalizingSession,
     userId,
   }: UserCompleteFarmSessionCommand): Promise<void> {
-    const [errorPersistingUsages] = await persistUsagesOnDatabase(pauseFarmCategory, this.planRepository)
+    const [errorPersistingUsages] = await persistUsagesOnDatabase(farmSession, this.planRepository)
     if (errorPersistingUsages) {
-      return console.log(`[${when.toISOString()}]: Error persisting usages: `, pauseFarmCategory)
+      return console.log(`[${when.toISOString()}]: Error persisting usages: `, farmSession)
     }
     if (isFinalizingSession) {
       const accountNameList =
-        pauseFarmCategory.type === "STOP-ALL"
-          ? pauseFarmCategory.accountNameList
-          : [pauseFarmCategory.accountName]
+        farmSession.type === "STOP-ALL" ? farmSession.accountNameList : [farmSession.accountName]
       const stopFarmOnCachePromises = accountNameList.map(async accountName => {
         const sac = this.allUsersClientsStorage.getAccountClient(userId, accountName)
         if (!sac) return Promise.resolve()

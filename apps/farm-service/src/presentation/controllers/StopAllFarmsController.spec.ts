@@ -10,7 +10,7 @@ import {
 import { ensureExpectation } from "~/__tests__/utils"
 import type { UserCompleteFarmSessionCommand } from "~/application/commands"
 import { PlanBuilder } from "~/application/factories/PlanFactory"
-import type { PauseFarmOnAccountUsage } from "~/application/services"
+import type { FarmSession } from "~/application/services"
 import { StopAllFarms } from "~/application/use-cases"
 import { PersistFarmSessionHandler } from "~/domain/handler/PersistFarmSessionHandler"
 import { testUsers as s } from "~/infra/services/UserAuthenticationInMemory"
@@ -149,7 +149,7 @@ describe("Start 2 farming, and stop all farms test suite", () => {
 
     expect(usagesCommands).toHaveLength(2)
     const [meCommand, friendCommand] = usagesCommands as UserCompleteFarmSessionCommand[]
-    expect(meCommand.pauseFarmCategory).toStrictEqual({
+    expect(meCommand.farmSession).toStrictEqual({
       type: "STOP-ALL",
       accountNameList: [s.me.accountName],
       planId: meInstances.me.plan.id_plan,
@@ -160,7 +160,7 @@ describe("Start 2 farming, and stop all farms test suite", () => {
         }),
       ]),
     })
-    expect(friendCommand.pauseFarmCategory).toStrictEqual({
+    expect(friendCommand.farmSession).toStrictEqual({
       type: "STOP-ALL",
       accountNameList: [s.friend.accountName],
       planId: friendInstances.friend.plan.id_plan,
@@ -170,7 +170,7 @@ describe("Start 2 farming, and stop all farms test suite", () => {
           amountTime: 7200,
         }),
       ]),
-    } satisfies PauseFarmOnAccountUsage)
+    } satisfies FarmSession)
     jest.useRealTimers()
   })
 

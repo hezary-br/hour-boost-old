@@ -1,7 +1,7 @@
 import { type DataOrFail, Fail, User } from "core"
 import type {
   AllUsersClientsStorage,
-  PauseFarmOnAccountUsage,
+  FarmSession,
   UsersSACsFarmingClusterStorage,
 } from "~/application/services"
 import { EAppResults } from "~/application/use-cases/RestoreAccountSessionUseCase"
@@ -39,9 +39,9 @@ export class RemoveSteamAccount implements IRemoveSteamAccount {
 
     this.autoRestarterScheduler.stopCron(accountName)
 
-    let stopFarmUsages: PauseFarmOnAccountUsage | null = null
+    let farmSession: FarmSession | null = null
     if (isAccountFarming) {
-      const [errorPausingFarmOnAccount, stopFarmUsagesInfo] = userCluster.pauseFarmOnAccountSync({
+      const [errorPausingFarmOnAccount, farmSessionResult] = userCluster.pauseFarmOnAccountSync({
         accountName,
         isFinalizingSession: true,
       })
@@ -54,7 +54,7 @@ export class RemoveSteamAccount implements IRemoveSteamAccount {
           })
         )
       }
-      stopFarmUsages = stopFarmUsagesInfo
+      farmSession = farmSessionResult
     }
 
     const steamAccount = user.steamAccounts.data[steamAccountIndex]
@@ -65,7 +65,7 @@ export class RemoveSteamAccount implements IRemoveSteamAccount {
     this.allUsersClientsStorage.removeSteamAccount(user.id_user, accountName)
     userCluster.removeSAC(accountName)
     return nice({
-      stopFarmUsages,
+      stopFarmUsages: farmSession,
       user,
     })
   }

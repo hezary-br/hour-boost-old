@@ -1,13 +1,13 @@
 import type { DataOrFail, GetError, User } from "core"
 import { nice } from "~/utils/helpers"
-import type { PauseFarmOnAccountUsage } from "../services"
+import type { FarmSession } from "../services"
 import type { StopFarmUseCase } from "./StopFarmUseCase"
 
 export class StopFarmOnUserAllAccounts implements IStopFarmOnUserAllAccounts {
   constructor(private readonly stopFarmUseCase: StopFarmUseCase) {}
 
   async execute(user: User, onError?: (error: GetError<StopFarmUseCase["execute"]>) => void) {
-    const usagesList: PauseFarmOnAccountUsage[] = []
+    const farmSessionList: FarmSession[] = []
     for (const steamAccount of user.steamAccounts.data) {
       const [errorStoppingFarm, usagesInfo] = await this.stopFarmUseCase.execute(
         {
@@ -26,11 +26,11 @@ export class StopFarmOnUserAllAccounts implements IStopFarmOnUserAllAccounts {
       }
 
       if (usagesInfo?.usages) {
-        usagesList.push(usagesInfo.usages)
+        farmSessionList.push(usagesInfo.usages)
       }
     }
 
-    return nice(usagesList)
+    return nice(farmSessionList)
   }
 }
 

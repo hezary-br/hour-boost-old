@@ -3,8 +3,8 @@ import { UserCompleteFarmSessionCommand } from "~/application/commands"
 import {
   type AccountStatusList,
   FarmService,
+  type FarmSession,
   type NSFarmService,
-  type PauseFarmOnAccountUsage,
 } from "~/application/services/FarmService"
 import { SteamAccountClient } from "~/application/services/steam"
 import { EAppResults } from "~/application/use-cases"
@@ -44,13 +44,10 @@ export class FarmInfinityService extends FarmService {
     return this.getActiveFarmingAccountsAmount() > 0
   }
 
-  protected publishCompleteFarmSession(
-    pauseFarmCategory: PauseFarmOnAccountUsage,
-    isFinalizingSession: boolean
-  ): void {
+  protected publishCompleteFarmSession(farmSession: FarmSession, isFinalizingSession: boolean): void {
     this.publisher.publish(
       new UserCompleteFarmSessionCommand({
-        pauseFarmCategory,
+        farmSession,
         planId: this.planId,
         when: new Date(),
         isFinalizingSession,

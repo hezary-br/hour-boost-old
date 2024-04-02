@@ -1,11 +1,11 @@
 import { jest } from "@jest/globals"
 import { GuestPlan, PlanUsage, Usage } from "core"
 import {
+  makeTestInstances,
+  validSteamAccounts,
   type CustomInstances,
   type MakeTestInstancesProps,
   type PrefixKeys,
-  makeTestInstances,
-  validSteamAccounts,
 } from "~/__tests__/instances"
 import { ensureExpectation } from "~/__tests__/utils"
 import type { UserCompleteFarmSessionCommand } from "~/application/commands"
@@ -635,15 +635,15 @@ describe("no users on steam database", () => {
 function createLogPersistFarmSessionHandler(): Observer {
   return {
     operation: "user-complete-farm-session",
-    async notify({ pauseFarmCategory }: UserCompleteFarmSessionCommand) {
-      if (pauseFarmCategory.type === "STOP-ALL") {
-        pauseFarmCategory.usages.forEach(({ accountName, amountTime }) => {
+    async notify({ farmSession }: UserCompleteFarmSessionCommand) {
+      if (farmSession.type === "STOP-ALL") {
+        farmSession.usages.forEach(({ accountName, amountTime }) => {
           console.log(`[BROKER]: [${accountName}] farmou durante ${amountTime} segundos.`)
         })
-      } else if (pauseFarmCategory.type === "STOP-ONE") {
-        const { accountName, amountTime } = pauseFarmCategory.usage
+      } else if (farmSession.type === "STOP-ONE") {
+        const { accountName, amountTime } = farmSession.usage
         console.log(`[BROKER]: [${accountName}] farmou durante ${amountTime} segundos.`)
-      } else if (pauseFarmCategory.type === "STOP-SILENTLY") {
+      } else if (farmSession.type === "STOP-SILENTLY") {
       }
     },
   } as Observer

@@ -169,7 +169,7 @@ describe("FarmUsageService test suite", () => {
     )
 
     const farmSessionCategory = publishesUserCompleteFarmSession[0]
-      .pauseFarmCategory as NSFarmSessionCategory.StopAll
+      .farmSession as NSFarmSessionCategory.StopAll
     expect(farmSessionCategory.usages).toHaveLength(3)
     expect(farmSessionCategory.usages[0]).toStrictEqual(
       expect.objectContaining({
@@ -328,7 +328,7 @@ describe("FarmUsageService test suite", () => {
     )
 
     const farmSessionCategory = publishesUserCompleteFarmSession[0]
-      .pauseFarmCategory as NSFarmSessionCategory.StopAll
+      .farmSession as NSFarmSessionCategory.StopAll
 
     expect(farmSessionCategory.usages).toHaveLength(2)
 
@@ -379,10 +379,10 @@ describe("FarmUsageService test suite", () => {
     )
 
     const farmSessionCategory = publishesUserCompleteFarmSession[0]
-      .pauseFarmCategory as NSFarmSessionCategory.StopAll
+      .farmSession as NSFarmSessionCategory.StopAll
 
     const farmSessionCategory2 = publishesUserCompleteFarmSession[1]
-      .pauseFarmCategory as NSFarmSessionCategory.StopAll
+      .farmSession as NSFarmSessionCategory.StopAll
 
     expect(publishesUserCompleteFarmSession).toHaveLength(2)
 
@@ -424,7 +424,7 @@ describe("FarmUsageService test suite", () => {
         [
           new UserCompleteFarmSessionCommand({
             userId: s.me.userId,
-            pauseFarmCategory: {
+            farmSession: {
               accountNameList: [s.me.accountName],
               type: "STOP-ALL",
               planId: me.plan.id_plan,

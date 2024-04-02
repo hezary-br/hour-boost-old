@@ -5,8 +5,8 @@ import type { EventEmitter, UserClusterEvents } from "~/application/services"
 import {
   type AccountStatusList,
   FarmService,
+  type FarmSession,
   type NSFarmService,
-  type PauseFarmOnAccountUsage,
 } from "~/application/services/FarmService"
 import { SteamAccountClient } from "~/application/services/steam"
 import { EAppResults } from "~/application/use-cases"
@@ -153,7 +153,7 @@ export class FarmUsageService extends FarmService {
   }
 
   protected stopFarm(isFinalizingSession: boolean): void {
-    for(const [, details] of this.accountsFarming) {
+    for (const [, details] of this.accountsFarming) {
       details.sac.stopFarm()
     }
     const { usages } = this.stopFarmImpl()
@@ -214,10 +214,10 @@ export class FarmUsageService extends FarmService {
     return nice(null)
   }
 
-  publishCompleteFarmSession(pauseFarmCategory: PauseFarmOnAccountUsage, isFinalizingSession: boolean): void {
+  publishCompleteFarmSession(farmSession: FarmSession, isFinalizingSession: boolean): void {
     this.publisher.publish(
       new UserCompleteFarmSessionCommand({
-        pauseFarmCategory,
+        farmSession,
         planId: this.planId,
         when: new Date(),
         isFinalizingSession,
