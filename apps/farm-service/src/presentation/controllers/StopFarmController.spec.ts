@@ -1,9 +1,9 @@
 import {
-  makeTestInstances,
-  password,
   type CustomInstances,
   type MakeTestInstancesProps,
   type PrefixKeys,
+  makeTestInstances,
+  password,
 } from "~/__tests__/instances"
 import { testUsers as s } from "~/infra/services/UserAuthenticationInMemory"
 import { StopFarmController } from "~/presentation/controllers"

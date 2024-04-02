@@ -9,17 +9,17 @@ import {
   UsersRepository,
 } from "core"
 import { uc } from "~/application/use-cases/helpers"
-import { TrimSteamAccounts } from "~/domain/utils/trim-steam-accounts"
-import { FlushUpdateSteamAccountUseCase } from "~/features/flush-update-steam-account/use-case"
+import { persistUsagesOnDatabase } from "~/application/utils/persistUsagesOnDatabase"
+import { FlushUpdateSteamAccountDomain } from "~/features/flush-update-steam-account/domain"
 import { bad, nice } from "~/utils/helpers"
+import { nonNullable } from "~/utils/nonNullable"
 
 export class AddUsageTimeToPlanUseCase implements IAddUsageTimeToPlanUseCase {
   constructor(
     private readonly usersRepository: UsersRepository,
-    private readonly flushUpdateSteamAccountUseCase: FlushUpdateSteamAccountUseCase,
-    private readonly trimSteamAccounts: TrimSteamAccounts,
+    private readonly flushUpdateSteamAccountDomain: FlushUpdateSteamAccountDomain,
     private readonly steamAccountClientStateCacheRepository: SteamAccountClientStateCacheRepository,
-    private readonly planRepository: PlanRepository
+    private readonly planRepository: PlanRepository,
   ) {}
 
   async execute({ mutatingUserId, usageTimeInSeconds }: AddUsageTimeToPlanUseCasePayload) {
@@ -32,10 +32,21 @@ export class AddUsageTimeToPlanUseCase implements IAddUsageTimeToPlanUseCase {
 
     const editablePlan = new EditablePlanUsage(user.plan, new EditablePlan(user.plan))
     editablePlan.addMoreUsageTime(usageTimeInSeconds)
-    const [error] = await this.flushUpdateSteamAccountUseCase.execute({
+    const [errorFlushUpdating, data] = await this.flushUpdateSteamAccountDomain.execute({
+      plan: user.plan,
       user,
     })
-    if (error) return bad(error)
+    if (errorFlushUpdating) return bad(errorFlushUpdating)
+
+    const { resetFarmResultList, updatedCacheStates } = data
+
+    for (const state of updatedCacheStates) {
+      await this.steamAccountClientStateCacheRepository.save(state)
+    }
+
+    for (const { usages } of resetFarmResultList.filter(nonNullable)) {
+      await persistUsagesOnDatabase(usages, this.planRepository)
+    }
 
     await this.usersRepository.update(user)
 

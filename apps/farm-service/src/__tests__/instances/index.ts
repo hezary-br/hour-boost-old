@@ -97,7 +97,7 @@ export function makeTestInstances(props?: MakeTestInstancesProps, ci?: CustomIns
   const steamAccountsMemory = new SteamAccountsInMemory()
   const usersMemory = new UsersInMemory()
   const sacCacheInMemory = new SACCacheInMemory()
-  const sacStateCacheRepository = new SteamAccountClientStateCacheInMemory(sacCacheInMemory)
+  const steamAccountClientStateCacheRepository = new SteamAccountClientStateCacheInMemory(sacCacheInMemory)
   const usageBuilder = new UsageBuilder()
   // const sacStateCacheRepository = new SteamAccountClientStateCacheRedis(redis)
   const emitterBuilder = new EventEmitterBuilder()
@@ -112,7 +112,7 @@ export function makeTestInstances(props?: MakeTestInstancesProps, ci?: CustomIns
     ci?.steamAccountsRepository ?? new SteamAccountsRepositoryInMemory(usersMemory, steamAccountsMemory)
   const userClusterBuilder = new UserClusterBuilder(
     farmServiceBuilder,
-    sacStateCacheRepository,
+    steamAccountClientStateCacheRepository,
     planRepository,
     emitterBuilder,
     publisher,
@@ -133,7 +133,7 @@ export function makeTestInstances(props?: MakeTestInstancesProps, ci?: CustomIns
   const hashService = new HashService()
   const allUsersClientsStorage = new AllUsersClientsStorage(
     sacBuilder,
-    sacStateCacheRepository,
+    steamAccountClientStateCacheRepository,
     farmGamesUseCase,
     planRepository,
     publisher
@@ -149,7 +149,7 @@ export function makeTestInstances(props?: MakeTestInstancesProps, ci?: CustomIns
 
   const removeSteamAccountUseCase = new RemoveSteamAccountUseCase(
     usersRepository,
-    sacStateCacheRepository,
+    steamAccountClientStateCacheRepository,
     planRepository,
     removeSteamAccount
   )
@@ -174,7 +174,7 @@ export function makeTestInstances(props?: MakeTestInstancesProps, ci?: CustomIns
 
   const resetFarm = makeResetFarm({
     allUsersClientsStorage,
-    steamAccountClientStateCacheRepository: sacStateCacheRepository,
+    steamAccountClientStateCacheRepository: steamAccountClientStateCacheRepository,
     usersSACsFarmingClusterStorage: usersClusterStorage,
   })
 
@@ -189,7 +189,7 @@ export function makeTestInstances(props?: MakeTestInstancesProps, ci?: CustomIns
     resetFarmEntities
   )
   const flushUpdateSteamAccountUseCase = new FlushUpdateSteamAccountUseCase(
-    sacStateCacheRepository,
+    steamAccountClientStateCacheRepository,
     planRepository,
     flushUpdateSteamAccountDomain
   )
@@ -198,15 +198,14 @@ export function makeTestInstances(props?: MakeTestInstancesProps, ci?: CustomIns
     usersRepository,
     flushUpdateSteamAccountDomain,
     trimSteamAccounts,
-    sacStateCacheRepository,
+    steamAccountClientStateCacheRepository,
     planRepository
   )
 
   const addUsageTimeToPlanUseCase = new AddUsageTimeToPlanUseCase(
     usersRepository,
-    flushUpdateSteamAccountUseCase,
-    trimSteamAccounts,
-    sacStateCacheRepository,
+    flushUpdateSteamAccountDomain,
+    steamAccountClientStateCacheRepository,
     planRepository
   )
 
@@ -216,7 +215,7 @@ export function makeTestInstances(props?: MakeTestInstancesProps, ci?: CustomIns
     allUsersClientsStorage,
     usersRepository,
     planService,
-    sacStateCacheRepository,
+    steamAccountClientStateCacheRepository,
     restoreAccountSessionUseCase,
     userService,
     trimSteamAccounts,
@@ -322,7 +321,7 @@ export function makeTestInstances(props?: MakeTestInstancesProps, ci?: CustomIns
     usersDAO,
     steamAccountsDAO,
     usersRepository,
-    sacStateCacheRepository,
+    sacStateCacheRepository: steamAccountClientStateCacheRepository,
     steamAccountsRepository,
     planRepository,
     stopFarmUseCase,
