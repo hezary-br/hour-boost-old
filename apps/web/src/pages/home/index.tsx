@@ -1,37 +1,15 @@
-import { WhatWeOfferSection } from "@/components/layouts/WhatWeOffer"
 import { FAQSection } from "@/components/layouts/FAQSection"
 import { Footer } from "@/components/layouts/Footer"
 import { GamesAvailableSection } from "@/components/layouts/GamesAvailable"
 import { Header } from "@/components/layouts/Header"
 import { HeroSection } from "@/components/layouts/Hero"
 import { HowItWorksSection } from "@/components/layouts/HowItWorks"
-import { GetServerSideProps } from "next"
 import { PlanSection } from "@/components/layouts/PlansSection"
-import { ServerHeaders } from "@/server-fetch/server-headers"
-import { getUserSession } from "@/server-fetch/getUserSession"
-import { generateNextCommand } from "@/util/generateNextCommand"
+import { WhatWeOfferSection } from "@/components/layouts/WhatWeOffer"
 import { UserSessionParams } from "@/server-fetch/types"
-import { getAuth } from "@clerk/nextjs/server"
+import { userProcedure } from "@/server-fetch/userProcedure"
 
-export const getServerSideProps: GetServerSideProps = async ctx => {
-  const serverHeaders = new ServerHeaders(ctx)
-  serverHeaders.appendAuthorization()
-
-  const { getToken } = getAuth(ctx.req)
-  const [error, userSessionResponse] = await getUserSession({ getToken })
-  if (error) throw error
-  const { data, headers } = userSessionResponse
-
-  if (headers["set-cookie"]) ctx.res.setHeader("set-cookie", headers["set-cookie"])
-
-  const command = await generateNextCommand({
-    subject: {
-      user: data?.userSession,
-      serverHeaders: serverHeaders.toJSON(),
-    },
-  })
-  return command
-}
+export const getServerSideProps = userProcedure({})
 
 export default function Home({ user }: UserSessionParams) {
   return (
