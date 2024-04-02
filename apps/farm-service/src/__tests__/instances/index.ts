@@ -22,6 +22,7 @@ import {
   RemoveSteamAccountUseCase,
   RestoreAccountSessionUseCase,
 } from "~/application/use-cases"
+import { AddUsageTimeToPlanUseCase } from "~/application/use-cases/AddUsageTimeToPlanUseCase"
 import { ChangeUserPlanUseCase } from "~/application/use-cases/ChangeUserPlanUseCase"
 import { CreateUserUseCase } from "~/application/use-cases/CreateUserUseCase"
 import { FarmGamesUseCase } from "~/application/use-cases/FarmGamesUseCase"
@@ -140,7 +141,6 @@ export function makeTestInstances(props?: MakeTestInstancesProps, ci?: CustomIns
   const userAuthentication = new UserAuthenticationInMemory()
   const sacFactory = makeSACFactory(validSteamAccounts, publisher)
   const createUserUseCase = new CreateUserUseCase(usersRepository, userAuthentication, usersClusterStorage)
-
   const removeSteamAccount = new RemoveSteamAccount(
     allUsersClientsStorage,
     usersClusterStorage,
@@ -183,6 +183,7 @@ export function makeTestInstances(props?: MakeTestInstancesProps, ci?: CustomIns
     allUsersClientsStorage,
     usersSACsFarmingClusterStorage: usersClusterStorage,
   })
+
   const flushUpdateSteamAccountDomain = new FlushUpdateSteamAccountDomain(
     allUsersClientsStorage,
     resetFarmEntities
@@ -196,6 +197,14 @@ export function makeTestInstances(props?: MakeTestInstancesProps, ci?: CustomIns
   const setMaxSteamAccountsUseCase = new SetMaxSteamAccountsUseCase(
     usersRepository,
     flushUpdateSteamAccountDomain,
+    trimSteamAccounts,
+    sacStateCacheRepository,
+    planRepository
+  )
+
+  const addUsageTimeToPlanUseCase = new AddUsageTimeToPlanUseCase(
+    usersRepository,
+    flushUpdateSteamAccountUseCase,
     trimSteamAccounts,
     sacStateCacheRepository,
     planRepository
@@ -326,6 +335,7 @@ export function makeTestInstances(props?: MakeTestInstancesProps, ci?: CustomIns
     setMaxSteamAccountsUseCase,
     checkSteamAccountOwnerStatusUseCase,
     restoreAccountSessionUseCase,
+    addUsageTimeToPlanUseCase,
     changeUserPlanUseCase,
     redis,
     planService,
@@ -358,6 +368,7 @@ export type UserRelatedInstances = {
   SteamAccount: SteamAccount
   SAC: SteamAccountClient
   SAC2: SteamAccountClient
+  SAC3: SteamAccountClient
 }
 
 interface IUserInstancesBuilder {
@@ -369,7 +380,7 @@ class UserInstancesBuilder implements IUserInstancesBuilder {
 
   create<P extends TestUsers>(
     prefix: P,
-    { accountName, userId, username, accountName2 }: TestUserProperties,
+    { accountName, userId, username, accountName2, accountName3 }: TestUserProperties,
     user: User
   ): PrefixKeys<P> {
     const steamAccount = makeSteamAccount(user.id_user, accountName)
@@ -387,12 +398,20 @@ class UserInstancesBuilder implements IUserInstancesBuilder {
       planId: user.plan.id_plan,
       autoRestart: false,
     })
+    const sac3 = this.allUsersClientsStorage.addSteamAccountFrom0({
+      accountName: accountName3,
+      userId,
+      username,
+      planId: user.plan.id_plan,
+      autoRestart: false,
+    })
     user.addSteamAccount(steamAccount)
     return {
       [`${prefix}`]: user,
       [`${prefix}SteamAccount`]: steamAccount,
       [`${prefix}SAC`]: sac,
       [`${prefix}SAC2`]: sac2,
+      [`${prefix}SAC3`]: sac3,
     } as PrefixKeys<P>
   }
 }

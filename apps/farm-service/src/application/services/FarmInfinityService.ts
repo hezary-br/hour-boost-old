@@ -6,6 +6,7 @@ import {
   type NSFarmService,
   type PauseFarmOnAccountUsage,
 } from "~/application/services/FarmService"
+import { SteamAccountClient } from "~/application/services/steam"
 import { EAppResults } from "~/application/use-cases"
 import { getUsageAmountTimeFromDateRange } from "~/domain/utils/getUsageAmountTimeFromDateRange"
 import type { Publisher } from "~/infra/queue"
@@ -190,7 +191,7 @@ export class FarmInfinityService extends FarmService {
     console.log(`${this.username} starting farming`)
   }
 
-  farmWithAccount(accountName: string) {
+  farmWithAccount(accountName: string, sac: SteamAccountClient) {
     const [cantFarm] = this.checkIfCanFarm()
     if (cantFarm) return bad(cantFarm)
 

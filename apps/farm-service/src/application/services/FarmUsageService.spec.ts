@@ -8,9 +8,11 @@ import {
 } from "~/__tests__/instances"
 import { UserCompleteFarmSessionCommand } from "~/application/commands"
 import { FarmUsageService, type NSFarmSessionCategory } from "~/application/services"
+import { SteamAccountClient } from "~/application/services/steam"
 import { ChangePlanStatusHandler } from "~/domain/handler"
 import { PersistFarmSessionHandler } from "~/domain/handler/PersistFarmSessionHandler"
 import { testUsers as s } from "~/infra/services/UserAuthenticationInMemory"
+import { getSACOn_AllUsersClientsStorage_ByUserId } from "~/utils/getSAC"
 
 const log = console.log
 console.log = () => {}
@@ -20,10 +22,24 @@ let i = makeTestInstances({
   validSteamAccounts,
 })
 let meInstances = {} as PrefixKeys<"me">
+let meSACGetter: ReturnType<typeof getSACOn_AllUsersClientsStorage_ByUserId>
+let sac: () => SteamAccountClient
+let sac2: () => SteamAccountClient
+let sac3: () => SteamAccountClient
+
+function throwOnNullish<T>(value: T | undefined) {
+  if (!value) throw new Error("Valor é nullish.")
+  return value
+}
 
 async function setupInstances(props?: MakeTestInstancesProps, customInstances?: CustomInstances) {
   i = makeTestInstances(props, customInstances)
   meInstances = await i.createUser("me")
+
+  meSACGetter = getSACOn_AllUsersClientsStorage_ByUserId(s.me.userId, i.allUsersClientsStorage)
+  sac = () => throwOnNullish(meSACGetter(s.me.accountName)[1])
+  sac2 = () => throwOnNullish(meSACGetter(s.me.accountName2)[1])
+  sac3 = () => throwOnNullish(meSACGetter(s.me.accountName3)[1])
 }
 
 beforeEach(async () => {
@@ -76,9 +92,9 @@ describe("FarmUsageService test suite", () => {
       spyFarmServiceEmit = import.meta.jest.spyOn(farmService.emitter, "emit")
       spyPublishCompleteFarmSession = import.meta.jest.spyOn(farmService, "publishCompleteFarmSession")
       spyPublish = import.meta.jest.spyOn(i.publisher, "publish")
-      farmService.farmWithAccount(s.me.accountName)
+      farmService.farmWithAccount(s.me.accountName, sac())
       import.meta.jest.advanceTimersByTime(1000 * 3600 * 4) // 4 horas
-      farmService.farmWithAccount(s.me.accountName2)
+      farmService.farmWithAccount(s.me.accountName2, sac())
       // depois de 4 horas de 1 conta farmando, e 1 hora de 2 farmando, deveria bater as 6 horas máximas do plano
       import.meta.jest.advanceTimersByTime(1000 * 3600 * 4) // 4 hora
       await new Promise(setImmediate)
@@ -133,11 +149,11 @@ describe("FarmUsageService test suite", () => {
 
     const me = await getMe()
     const meFarmService = getFarmService(me)
-    meFarmService.farmWithAccount(s.me.accountName)
-    meFarmService.farmWithAccount(s.me.accountName2)
+    meFarmService.farmWithAccount(s.me.accountName, sac())
+    meFarmService.farmWithAccount(s.me.accountName2, sac2())
     import.meta.jest.advanceTimersByTime(1000 * 60 * 60 * 1.2)
     // paco: 4320; bane: 4320; left: 12.960
-    meFarmService.farmWithAccount(s.me.accountName3)
+    meFarmService.farmWithAccount(s.me.accountName3, sac3())
     import.meta.jest.advanceTimersByTime(1000 * 60 * 60 * 3.2)
     // pacco: 8640; bane: 8640; plan: 4320; left: 0
     expect(meFarmService.getUsageLeft()).toBe(0)
@@ -177,9 +193,9 @@ describe("FarmUsageService test suite", () => {
 
   test("should farm with 2 accounts", async () => {
     const farmService = getFarmService(meInstances.me)
-    farmService.farmWithAccount(s.me.accountName)
+    farmService.farmWithAccount(s.me.accountName, sac())
     import.meta.jest.advanceTimersByTime(1000 * 3600 * 4) // 4 horas
-    farmService.farmWithAccount(s.me.accountName2)
+    farmService.farmWithAccount(s.me.accountName2, sac2())
     expect(farmService.getAccountsStatus()).toStrictEqual({
       [s.me.accountName]: "FARMING",
       [s.me.accountName2]: "FARMING",
@@ -203,7 +219,7 @@ describe("FarmUsageService test suite", () => {
     expect(plan.getUsageTotal()).toBe(21600)
     const farmService = getFarmService(user)
 
-    const [error] = farmService.farmWithAccount(s.me.accountName)
+    const [error] = farmService.farmWithAccount(s.me.accountName, sac())
     expect(error?.code).toBe("[FarmUsageService]:PLAN-MAX-USAGE-EXCEEDED")
   })
 
@@ -223,8 +239,8 @@ describe("FarmUsageService test suite", () => {
   test("should set status to iddle again once user stop farming", async () => {
     const me = await getMe()
     const meFarmService = getFarmService(me)
-    meFarmService.farmWithAccount(s.me.accountName2)
-    meFarmService.farmWithAccount(s.me.accountName)
+    meFarmService.farmWithAccount(s.me.accountName2, sac2())
+    meFarmService.farmWithAccount(s.me.accountName, sac())
     expect(meFarmService.hasAccountsFarming()).toBeTruthy()
     meFarmService.pauseFarmOnAccount(s.me.accountName2, false)
     meFarmService.pauseFarmOnAccount(s.me.accountName, false)
@@ -234,7 +250,7 @@ describe("FarmUsageService test suite", () => {
   test("should decrement user plan as user farms", async () => {
     const me = await getMe()
     const meFarmService = getFarmService(me)
-    meFarmService.farmWithAccount(s.me.accountName2)
+    meFarmService.farmWithAccount(s.me.accountName2, sac2())
     import.meta.jest.advanceTimersByTime(1000 * 60) // 1 minute
     meFarmService.stopFarmAllAccounts({ isFinalizingSession: false })
     await new Promise(setImmediate)
@@ -246,8 +262,8 @@ describe("FarmUsageService test suite", () => {
   test("should empty the user plan usage left when uses all plan usage", async () => {
     const me = await getMe()
     const meFarmService = getFarmService(me)
-    meFarmService.farmWithAccount(s.me.accountName)
-    meFarmService.farmWithAccount(s.me.accountName2)
+    meFarmService.farmWithAccount(s.me.accountName, sac())
+    meFarmService.farmWithAccount(s.me.accountName2, sac2())
     import.meta.jest.advanceTimersByTime(1000 * 60 * 60 * 6) // 6 horas
     await new Promise(setImmediate)
     const me2 = await getMe()
@@ -257,8 +273,8 @@ describe("FarmUsageService test suite", () => {
   test("should track the usage of the account", async () => {
     const me = await getMe()
     const meFarmService = getFarmService(me)
-    meFarmService.farmWithAccount(s.me.accountName2)
-    meFarmService.farmWithAccount(s.me.accountName)
+    meFarmService.farmWithAccount(s.me.accountName2, sac2())
+    meFarmService.farmWithAccount(s.me.accountName, sac())
     import.meta.jest.advanceTimersByTime(1000 * 60 * 60 * 6) // 6 horas
     meFarmService.stopFarmAllAccounts({ isFinalizingSession: false })
     const { usageAmountInSeconds: usageAmount1 } = meFarmService.getAccountDetails(s.me.accountName2) ?? {}
@@ -270,9 +286,9 @@ describe("FarmUsageService test suite", () => {
   test("should assign correct usage to the steam accounts", async () => {
     const me = await getMe()
     const meFarmService = getFarmService(me)
-    meFarmService.farmWithAccount(s.me.accountName2)
-    meFarmService.farmWithAccount(s.me.accountName)
-    meFarmService.farmWithAccount(s.me.accountName3)
+    meFarmService.farmWithAccount(s.me.accountName2, sac2())
+    meFarmService.farmWithAccount(s.me.accountName, sac())
+    meFarmService.farmWithAccount(s.me.accountName3, sac3())
     import.meta.jest.advanceTimersByTime(1000 * 60 * 60 * 3) // 6 horas
     meFarmService.stopFarmAllAccounts({ isFinalizingSession: false })
     const acc1Details = meFarmService.getAccountDetails(s.me.accountName2)
@@ -287,8 +303,8 @@ describe("FarmUsageService test suite", () => {
     const spyPublish = import.meta.jest.spyOn(i.publisher, "publish")
 
     const meFarmService = getFarmService(meInstances.me)
-    meFarmService.farmWithAccount(s.me.accountName)
-    meFarmService.farmWithAccount(s.me.accountName2)
+    meFarmService.farmWithAccount(s.me.accountName, sac())
+    meFarmService.farmWithAccount(s.me.accountName2, sac2())
     import.meta.jest.advanceTimersByTime(1000 * 60 * 60 * 0.5) // 1 hora e meia
     // 1800 * 2
     meFarmService.pauseFarmOnAccount(s.me.accountName2, false)
@@ -335,15 +351,15 @@ describe("FarmUsageService test suite", () => {
     const spyPublish = import.meta.jest.spyOn(i.publisher, "publish")
 
     const meFarmService = getFarmService(meInstances.me)
-    meFarmService.farmWithAccount(s.me.accountName)
+    meFarmService.farmWithAccount(s.me.accountName, sac())
     import.meta.jest.advanceTimersByTime(1000 * 60 * 60 * 1) // 1 hora
     // acc2: 3600; left: 18000
     meFarmService.pauseFarmOnAccount(s.me.accountName, false) // persistiu
     await new Promise(setImmediate)
 
     const meFarmService2 = getFarmService(meInstances.me)
-    meFarmService2.farmWithAccount(s.me.accountName)
-    meFarmService2.farmWithAccount(s.me.accountName3)
+    meFarmService2.farmWithAccount(s.me.accountName, sac())
+    meFarmService2.farmWithAccount(s.me.accountName3, sac3())
     import.meta.jest.advanceTimersByTime(1000 * 60 * 60 * 1.5) // 1 hora e meia
     // acc2total: 9000; acc2: 5400; acc3: 5400; left: 7200
     meFarmService2.pauseFarmOnAccount(s.me.accountName3, false)
@@ -398,7 +414,8 @@ describe("FarmUsageService test suite", () => {
     import.meta.jest.setSystemTime(new Date("2023-06-10T10:00:00Z"))
     const me = await getMe()
     const meFarmService = getFarmService(me)
-    meFarmService.farmWithAccount(s.me.accountName)
+    const sacx = sac()
+    meFarmService.farmWithAccount(s.me.accountName, sacx)
     import.meta.jest.advanceTimersByTime(1000 * 60 * 60 * 4)
     meFarmService.pauseFarmOnAccount(s.me.accountName, false)
     await new Promise(setImmediate)

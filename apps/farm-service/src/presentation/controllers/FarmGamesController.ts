@@ -38,19 +38,13 @@ export class FarmGamesController implements IFarmGamesController {
   }
 
   async handle({ payload }: APayload) {
-    this.debugger.init()
     const { accountName, gamesID, userId } = payload
-    this.debugger.log({ payload })
     const user = await this.usersRepository.getByID(userId)
-    this.debugger.log({ user })
     if (!user) {
-      this.debugger.commit()
       throw new ApplicationError("Usuário não encontrado.", 404)
     }
     const steamAccountDomain = user.steamAccounts.data.find(sa => sa.credentials.accountName === accountName)
-    this.debugger.log({ steamAccountDomain })
     if (!steamAccountDomain) {
-      this.debugger.commit()
       throw new ApplicationError("Steam Account nunca foi registrada ou ela não pertence à você.", 400)
     }
 
@@ -61,7 +55,6 @@ export class FarmGamesController implements IFarmGamesController {
       planId: user.plan.id_plan,
       autoRestart: steamAccountDomain.autoRelogin,
     })
-    this.debugger.log({ sacLogged: sac.logged, sac })
     const sacWasNotFarming = sac.isFarming()
 
     const [errorDecrypting, decryptedPassword] = this.hashService.decrypt(
@@ -83,23 +76,15 @@ export class FarmGamesController implements IFarmGamesController {
         },
       })
       const [errorLoggin] = this.errorWrapperLogingInSAC(loginSteamClientResult, sac)
-      this.debugger.log({ errorLoggin })
       if (errorLoggin) {
-        this.debugger.commit()
         return errorLoggin
       }
     }
-    this.debugger.log({ gamesIDLength: gamesID.length })
     if (gamesID.length === 0) {
-      this.debugger.commit()
       throw new ApplicationError("Você não pode farmar 0 jogos, começe o farm a partir de 1.", 403)
     }
-    this.debugger.log({
-      "gamesID.length > user.plan.maxGamesAllowed": gamesID.length > user.plan.maxGamesAllowed,
-    })
     if (gamesID.length > user.plan.maxGamesAllowed) {
       const hasS = user.plan.maxGamesAllowed > 1 ? "s" : ""
-      this.debugger.commit()
       throw new ApplicationError(
         `Seu plano não permite o farm de mais do que ${user.plan.maxGamesAllowed} jogo${hasS} por vez.`,
         403
@@ -107,9 +92,7 @@ export class FarmGamesController implements IFarmGamesController {
     }
     const noNewGameAddToFarm = areTwoArraysEqual(gamesID, sac.getGamesPlaying())
 
-    this.debugger.log({ noNewGameAddToFarm })
     if (noNewGameAddToFarm) {
-      this.debugger.commit()
       return makeRes(200, "Nenhum novo game adicionado ao farm.")
     }
 
@@ -124,18 +107,14 @@ export class FarmGamesController implements IFarmGamesController {
         type: "NEW",
       },
     })
-    this.debugger.log({ error })
 
     if (error) {
       if (error.code === "[FarmUsageService]:PLAN-MAX-USAGE-EXCEEDED") {
-        this.debugger.commit()
         return makeRes(403, "Seu plano não possui mais uso disponível.")
       }
       if (error.code === "[FarmInfinityService]:ACCOUNT-ALREADY-FARMING") {
-        this.debugger.commit()
         return makeRes(403, "Essa conta já está farmando.")
       }
-      this.debugger.commit()
       return {
         json: {
           message: "Aconteceu um erro ao inicar o farm.",
@@ -146,7 +125,6 @@ export class FarmGamesController implements IFarmGamesController {
       }
     }
 
-    this.debugger.commit()
     return makeRes(200, sacWasNotFarming ? "Farm atualizado." : "Iniciando farm.")
   }
 

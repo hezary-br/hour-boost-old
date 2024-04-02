@@ -8,6 +8,7 @@ import {
   type NSFarmService,
   type PauseFarmOnAccountUsage,
 } from "~/application/services/FarmService"
+import { SteamAccountClient } from "~/application/services/steam"
 import { EAppResults } from "~/application/use-cases"
 import type { Publisher } from "~/infra/queue"
 import { UsageBuilder } from "~/utils/builders/UsageBuilder"
@@ -18,6 +19,7 @@ export const FARMING_INTERVAL_IN_SECONDS = 1
 export type FarmingAccountDetails = {
   usageAmountInSeconds: number
   status: AccountFarmingStatus
+  sac: SteamAccountClient
 }
 type AccountFarmingStatus = "FARMING" | "IDDLE"
 
@@ -90,7 +92,7 @@ export class FarmUsageService extends FarmService {
     return res
   }
 
-  farmWithAccount(accountName: string) {
+  farmWithAccount(accountName: string, sac: SteamAccountClient) {
     const [error] = this.farmWithAccountImpl(accountName)
     if (error) return bad(error)
 
@@ -101,14 +103,15 @@ export class FarmUsageService extends FarmService {
       )
     }
     if (this.isAccountAdded(accountName)) this.resumeFarming(accountName)
-    else this.appendAccount(accountName)
+    else this.appendAccount(accountName, sac)
     return nice(null)
   }
 
-  protected appendAccount(accountName: string) {
+  protected appendAccount(accountName: string, sac: SteamAccountClient) {
     this.accountsFarming.set(accountName, {
       usageAmountInSeconds: 0,
       status: "FARMING",
+      sac,
     })
   }
 
@@ -150,6 +153,9 @@ export class FarmUsageService extends FarmService {
   }
 
   protected stopFarm(isFinalizingSession: boolean): void {
+    for(const [, details] of this.accountsFarming) {
+      details.sac.stopFarm()
+    }
     const { usages } = this.stopFarmImpl()
     this.publishCompleteFarmSession(
       {
@@ -194,6 +200,7 @@ export class FarmUsageService extends FarmService {
         accountName,
         usageAmountInSeconds: details.usageAmountInSeconds,
         status: details.status,
+        sac: details.sac,
       })
     }
     return farmingAccountDetails

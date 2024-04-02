@@ -202,7 +202,7 @@ export class UserSACsFarmingCluster implements IUserSACsFarmingCluster {
     }
 
     if (!this.isAccountFarmingOnService(accountName)) {
-      const [error] = this.farmService.farmWithAccount(accountName)
+      const [error] = this.farmService.farmWithAccount(accountName, sac)
       if (error) return bad(error)
     }
     return nice(null)

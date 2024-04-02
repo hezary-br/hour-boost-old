@@ -1,9 +1,9 @@
 import {
+  makeTestInstances,
+  password,
   type CustomInstances,
   type MakeTestInstancesProps,
   type PrefixKeys,
-  makeTestInstances,
-  password,
 } from "~/__tests__/instances"
 import { testUsers as s } from "~/infra/services/UserAuthenticationInMemory"
 import { StopFarmController } from "~/presentation/controllers"
@@ -94,7 +94,6 @@ describe("StopFarmController.spec test suite", () => {
     })
 
     test("should delete farming user from storage after stop farm", async () => {
-      console.log = log
       const { status, json } = await promiseHandler(
         stopFarmController.handle({
           payload: {

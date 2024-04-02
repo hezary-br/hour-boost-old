@@ -66,45 +66,55 @@ describe("2 infinity plan and 1 usage plan farming ", () => {
   })
 
   test("should list all users SACs but friend account 2, as farming", async () => {
-    expect(i.allUsersClientsStorage.listUsers()).toStrictEqual({
-      [s.me.userId]: {
-        [s.me.accountName]: {
-          farming: true,
-          gamesPlaying: [109230],
-          gamesStaging: [],
-          logged: true,
-          farmStartedAt: "2024-02-20T00:00:00.000Z",
-          status: "online",
-        },
-        [s.me.accountName2]: {
-          farming: true,
-          gamesPlaying: [109230],
-          gamesStaging: [],
-          logged: true,
-          farmStartedAt: "2024-02-20T00:00:00.000Z",
-          status: "online",
-        },
-      },
-      [s.friend.userId]: {
-        [s.friend.accountName]: {
-          farming: true,
-          gamesPlaying: [109230],
-          gamesStaging: [],
-          logged: true,
-          farmStartedAt: "2024-02-20T00:00:00.000Z",
-          status: "online",
-        },
-        [s.friend.accountName2]: {
-          farming: false,
-          gamesPlaying: [],
-          gamesStaging: [],
-          logged: false,
-          farmStartedAt: null,
-          status: "online",
-        },
-      },
+    const users = i.allUsersClientsStorage.listUsers()
+    expect(users[s.me.userId][s.me.accountName]).toStrictEqual({
+      farming: true,
+      gamesPlaying: [109230],
+      gamesStaging: [],
+      logged: true,
+      farmStartedAt: "2024-02-20T00:00:00.000Z",
+      status: "online",
     })
-
+    expect(users[s.me.userId][s.me.accountName2]).toStrictEqual({
+      farming: true,
+      gamesPlaying: [109230],
+      gamesStaging: [],
+      logged: true,
+      farmStartedAt: "2024-02-20T00:00:00.000Z",
+      status: "online",
+    })
+    expect(users[s.me.userId][s.me.accountName3]).toStrictEqual({
+      farming: false,
+      gamesPlaying: [],
+      gamesStaging: [],
+      logged: false,
+      farmStartedAt: null,
+      status: "online",
+    })
+    expect(users[s.friend.userId][s.friend.accountName]).toStrictEqual({
+      farming: true,
+      gamesPlaying: [109230],
+      gamesStaging: [],
+      logged: true,
+      farmStartedAt: "2024-02-20T00:00:00.000Z",
+      status: "online",
+    })
+    expect(users[s.friend.userId][s.friend.accountName2]).toStrictEqual({
+      farming: false,
+      gamesPlaying: [],
+      gamesStaging: [],
+      logged: false,
+      farmStartedAt: null,
+      status: "online",
+    })
+    expect(users[s.friend.userId][s.friend.accountName3]).toStrictEqual({
+      farming: false,
+      gamesPlaying: [],
+      gamesStaging: [],
+      logged: false,
+      farmStartedAt: null,
+      status: "online",
+    })
     import.meta.jest.useRealTimers()
   })
 
@@ -129,43 +139,54 @@ describe("2 infinity plan and 1 usage plan farming ", () => {
     })
 
     test("should list all users SACs as not farming", async () => {
-      expect(i.allUsersClientsStorage.listUsers()).toStrictEqual({
-        [s.me.userId]: {
-          [s.me.accountName]: {
-            farming: false,
-            gamesPlaying: [],
-            gamesStaging: [],
-            logged: true,
-            farmStartedAt: null,
-            status: "online",
-          },
-          [s.me.accountName2]: {
-            farming: false,
-            gamesPlaying: [],
-            gamesStaging: [],
-            logged: true,
-            farmStartedAt: null,
-            status: "online",
-          },
-        },
-        [s.friend.userId]: {
-          [s.friend.accountName]: {
-            farming: false,
-            gamesPlaying: [],
-            gamesStaging: [],
-            logged: true,
-            farmStartedAt: null,
-            status: "online",
-          },
-          [s.friend.accountName2]: {
-            farming: false,
-            gamesPlaying: [],
-            gamesStaging: [],
-            logged: false,
-            farmStartedAt: null,
-            status: "online",
-          },
-        },
+      const users = i.allUsersClientsStorage.listUsers()
+      expect(users[s.me.userId][s.me.accountName]).toStrictEqual({
+        farming: false,
+        gamesPlaying: [],
+        gamesStaging: [],
+        logged: true,
+        farmStartedAt: null,
+        status: "online",
+      })
+      expect(users[s.me.userId][s.me.accountName2]).toStrictEqual({
+        farming: false,
+        gamesPlaying: [],
+        gamesStaging: [],
+        logged: true,
+        farmStartedAt: null,
+        status: "online",
+      })
+      expect(users[s.me.userId][s.me.accountName3]).toStrictEqual({
+        farming: false,
+        gamesPlaying: [],
+        gamesStaging: [],
+        logged: false,
+        farmStartedAt: null,
+        status: "online",
+      })
+      expect(users[s.friend.userId][s.friend.accountName]).toStrictEqual({
+        farming: false,
+        gamesPlaying: [],
+        gamesStaging: [],
+        logged: true,
+        farmStartedAt: null,
+        status: "online",
+      })
+      expect(users[s.friend.userId][s.friend.accountName2]).toStrictEqual({
+        farming: false,
+        gamesPlaying: [],
+        gamesStaging: [],
+        logged: false,
+        farmStartedAt: null,
+        status: "online",
+      })
+      expect(users[s.friend.userId][s.friend.accountName3]).toStrictEqual({
+        farming: false,
+        gamesPlaying: [],
+        gamesStaging: [],
+        logged: false,
+        farmStartedAt: null,
+        status: "online",
       })
     })
 

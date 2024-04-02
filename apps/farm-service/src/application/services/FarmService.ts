@@ -2,6 +2,7 @@ const log = console.log
 
 import type { DataOrError, DataOrFail, Fail, PlanType, Usage } from "core"
 import type { FarmServiceStatus } from "~/application/services"
+import { SteamAccountClient } from "~/application/services/steam"
 import type { Publisher } from "~/infra/queue"
 
 export type FarmServiceProps = {
@@ -42,8 +43,8 @@ export abstract class FarmService {
   abstract isAccountFarming(accountName: string): boolean
   abstract isAccountAdded(accountName: string): boolean
   abstract hasAccountsFarming(): boolean
-  abstract farmWithAccount(accountName: string): DataOrFail<Fail>
-  abstract farmWithAccountImpl(accountName: string): DataOrFail<Fail>
+  abstract farmWithAccount(accountName: string, sac: SteamAccountClient): DataOrFail<Fail>
+  abstract farmWithAccountImpl(accountName: string, sac: SteamAccountClient): DataOrFail<Fail>
 
   getServiceStatus() {
     return this.status
