@@ -1,21 +1,19 @@
-import { MenuDropdownUserHeader } from "@/components/molecules/menu-dropdown-user-header"
+import { HeaderUser } from "@/components/layouts/Header/header-user"
 import { SheetHeaderNavbar } from "@/components/molecules/sheet-header-navbar"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
+import { ErrorBoundary } from "@/contexts/ERROR-BOUNDARY"
 import { cn } from "@/lib/utils"
 import { getUserInitials } from "@/util/getUserInitials"
-import { UserSession } from "core"
 import Link from "next/link"
 import React from "react"
 
-export type HeaderProps = React.ComponentPropsWithoutRef<"header"> & {
-  user: UserSession | null
-}
+export type HeaderProps = React.ComponentPropsWithoutRef<"header"> & {}
 
 export const Header = React.forwardRef<React.ElementRef<"header">, HeaderProps>(function HeaderComponent(
-  { user, className, ...props },
+  { className, ...props },
   ref
 ) {
+  const user = { username: "vm", profilePic: "" }
   const userInitials = getUserInitials(user?.username)
 
   return (
@@ -89,12 +87,9 @@ export const Header = React.forwardRef<React.ElementRef<"header">, HeaderProps>(
               >
                 <Link href="/dashboard">Ir para Dashboard</Link>
               </Button>
-              <MenuDropdownUserHeader>
-                <Avatar className="h-7 w-7">
-                  <AvatarImage src={user.profilePic} />
-                  <AvatarFallback>{userInitials}</AvatarFallback>
-                </Avatar>
-              </MenuDropdownUserHeader>
+              <ErrorBoundary>
+                <HeaderUser />
+              </ErrorBoundary>
             </div>
           )}
           {!user && (

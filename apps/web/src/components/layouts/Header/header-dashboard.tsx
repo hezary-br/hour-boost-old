@@ -1,26 +1,16 @@
-import { IconChevron } from "@/components/icons/IconChevron"
 import { HeaderStructure } from "@/components/layouts/Header/header-structure"
-import { MenuDropdownUserHeader } from "@/components/molecules/menu-dropdown-user-header"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { HeaderUser } from "@/components/layouts/Header/header-user"
+import { useUser } from "@/contexts/UserContext"
 import { cn } from "@/lib/utils"
-import { getUserInitials } from "@/util/getUserInitials"
 import { RoleName } from "core"
 import React from "react"
 
-export type HeaderDashboardProps = Omit<
-  React.ComponentPropsWithoutRef<typeof HeaderStructure>,
-  "children"
-> & {
-  username: string
-  profilePic: string
-}
+export type HeaderDashboardProps = Omit<React.ComponentPropsWithoutRef<typeof HeaderStructure>, "children">
 
 export const HeaderDashboard = React.forwardRef<
   React.ElementRef<typeof HeaderStructure>,
   HeaderDashboardProps
->(function HeaderDashboardComponent({ username, profilePic, className, ...props }, ref) {
-  const userInitials = getUserInitials(username)
-
+>(function HeaderDashboardComponent({ className, ...props }, ref) {
   return (
     <HeaderStructure
       {...props}
@@ -38,19 +28,9 @@ export const HeaderDashboard = React.forwardRef<
       </div>
       <div className="flex h-full flex-1 items-center justify-end gap-4">
         <div className="hidden sm:flex">
-          <span className="text-sm font-medium text-white">{username}</span>
+          <Username />
         </div>
-        <MenuDropdownUserHeader>
-          <div className="flex h-9 cursor-pointer items-center rounded-sm px-1 hover:bg-slate-800">
-            <Avatar className="h-7 w-7 rounded-sm">
-              <AvatarImage src={profilePic} />
-              <AvatarFallback>{userInitials}</AvatarFallback>
-            </Avatar>
-            <div className="ml-0.5 flex items-center justify-center">
-              <IconChevron className="size-3.5 text-slate-400" />
-            </div>
-          </div>
-        </MenuDropdownUserHeader>
+        <HeaderUser />
       </div>
     </HeaderStructure>
   )
@@ -84,3 +64,24 @@ export const RoleBadge = React.forwardRef<React.ElementRef<"div">, RoleBadgeProp
 RoleBadge.displayName = "RoleBadge"
 
 HeaderDashboard.displayName = "HeaderDashboard"
+
+export type UsernameProps = React.ComponentPropsWithoutRef<"span">
+
+export const Username = React.forwardRef<React.ElementRef<"span">, UsernameProps>(function UsernameComponent(
+  { className, ...props },
+  ref
+) {
+  const username = useUser(user => user.username)
+  if (username.status !== "success")
+    return <div className="h-5 w-[6rem] animate-pulse rounded bg-slate-800" />
+
+  return (
+    <span
+      ref={ref}
+      className={cn("text-sm font-medium text-white", className)}
+      {...props}
+    >
+      {username.data}
+    </span>
+  )
+})
