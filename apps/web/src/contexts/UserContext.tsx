@@ -1,8 +1,6 @@
-import { useQueryClient } from "@tanstack/react-query"
 import { GameSession, Persona, UserSession } from "core"
-import React, { PropsWithChildren, createContext, useContext } from "react"
-import { createContext as createContextSelector } from "use-context-selector"
-import { createUserActions } from "./controls"
+import React, { createContext } from "react"
+import { create } from "zustand"
 import { useUserQuery } from "./query/useUserSession"
 
 export interface IUserContext extends UserSession, UserMethods {}
@@ -29,46 +27,38 @@ export interface IUserProviderProps {
 }
 
 export const UserContext = createContext<IUserContext>({} as IUserContext)
-export const UserControlContext = createContextSelector<UserControl | null>(null)
 export const UserIdContext = createContext("")
 
-export function UserProvider({ serverUser, children }: IUserProviderProps) {
-  return (
-    <UserIdContext.Provider value={serverUser.id}>
-      <ControlProvider serverUser={serverUser}>{children}</ControlProvider>
-    </UserIdContext.Provider>
-  )
+type UserIdStore = {
+  id: string
+  setUserId(id: string): void
 }
-
-type ControlProviderProps = PropsWithChildren & {
-  serverUser: UserSession
-}
-
-export function ControlProvider({ serverUser, children }: ControlProviderProps) {
-  const queryClient = useQueryClient()
-
-  useUserQuery({
-    initialData: serverUser,
-  })
-
-  return (
-    <UserControlContext.Provider value={createUserActions(queryClient, serverUser.id)}>
-      {children}
-    </UserControlContext.Provider>
-  )
-}
+export const useUserStore = create<UserIdStore>(set => ({
+  id: "NO_USER",
+  setUserId: (id: string) => set({ id }),
+}))
 
 export function useUser<Select>(select: (user: UserSession) => Select) {
   return useUserQuery<Select>({
-    select,
-  }).data
+    select: userSession => {
+      if (!userSession) throw new Error("Attempt to use user bofore it was loaded.")
+      return select(userSession)
+    },
+  })
+}
+
+export function useUser$<Select>(select: (user: UserSession) => Select) {
+  const user = useUser(select)
+  if (user.status !== "success") {
+    throw new Error("Attempt to use user bofore it was loaded.")
+  }
+  return user.data
 }
 
 export function useUserId() {
-  return useContext(UserIdContext)
+  return useUserStore(user => user.id)
+  // return useContext(UserIdContext)
 }
-
-export type UserControl = ReturnType<typeof createUserActions>
 
 export namespace NSUserContext {
   export interface StageFarmingGames {

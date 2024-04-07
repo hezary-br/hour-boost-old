@@ -1,5 +1,7 @@
-import { useUser, useUserId } from "@/contexts/UserContext"
+import { useUser$, useUserId } from "@/contexts/UserContext"
+import { useUserSetterRemoveSteamAccount } from "@/contexts/user-actions"
 import { api } from "@/lib/axios"
+import { ECacheKeys } from "@/mutations/queryKeys"
 import { DataOrMessage } from "@/util/DataOrMessage"
 import { useAuth } from "@clerk/clerk-react"
 import { DefaultError, useMutation, useQueryClient } from "@tanstack/react-query"
@@ -9,7 +11,6 @@ import { toast } from "sonner"
 import { RemoveSteamAccountPayload } from "../controller"
 import { httpRemoveSteamAccount } from "../httpRequest"
 import { AlertDialogRemoveSteamAccountView, AlertDialogRemoveSteamAccountViewProps } from "./alert-dialog"
-import { ECacheKeys } from "@/mutations/queryKeys"
 
 export type ControllerProps = {
   steamAccount: SteamAccountSession
@@ -22,16 +23,20 @@ export const AlertDialogRemoveSteamAccount = React.forwardRef<
   AlertDialogRemoveSteamAccountProps
 >(function AlertDialogRemoveSteamAccountComponent({ ...props }, ref) {
   const queryClient = useQueryClient()
-  const username = useUser(user => user.username)
+  const username = useUser$(user => user.username)
   const userId = useUserId()
   const { getToken } = useAuth()
   const getAPI = async () => {
     api.defaults.headers["Authorization"] = `Bearer ${await getToken()}`
     return api
   }
+  const removeSteamAccountHook = useUserSetterRemoveSteamAccount(queryClient)
 
   const removeSteamAccount = useMutation<DataOrMessage<string>, DefaultError, RemoveSteamAccountPayload>({
     mutationFn: async (...args) => httpRemoveSteamAccount(...args, getAPI),
+    onMutate({ accountName }) {
+      removeSteamAccountHook(accountName)
+    },
   })
 
   async function removeSteamAccountSubmit() {

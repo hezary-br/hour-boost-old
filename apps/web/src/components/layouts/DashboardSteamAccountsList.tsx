@@ -4,21 +4,48 @@ import { SteamAccountList as SteamAccountListComp } from "@/components/molecules
 import { ZustandSteamAccountStoreProvider } from "@/components/molecules/SteamAccountListItem/store/useSteamAccountStore"
 import { Button } from "@/components/ui/button"
 import { useUser } from "@/contexts/UserContext"
-import { useUserControl } from "@/contexts/hook"
 import { cn } from "@/lib/utils"
+import { PlanInfinitySession, PlanUsageSession, SteamAccountSession } from "core"
 import React, { useMemo } from "react"
 
 const SteamAccountList = React.memo(SteamAccountListComp)
 
 export type DashboardSteamAccountsListProps = React.ComponentPropsWithoutRef<"section"> & {}
-export const DashboardSteamAccountsList = React.forwardRef<
-  React.ElementRef<"section">,
-  DashboardSteamAccountsListProps
->(function DashboardSteamAccountsListComponent({ className, ...props }, ref) {
-  const hasAccounts = useUserControl(user => user.hasAccounts)
+
+export const DashboardSteamAccountsList = (props: DashboardSteamAccountsListProps) => {
+  const hasAccounts = useUser(user => user.steamAccounts.length > 0)
   const plan = useUser(user => user.plan)
   const steamAccounts = useUser(user => user.steamAccounts)
+  if (hasAccounts.status !== "success" || plan.status !== "success" || steamAccounts.status !== "success") {
+    return (
+      <div className="relative">
+        <div className="absolute bottom-full left-4 h-10 w-[10.3rem] animate-pulse border-x border-t border-slate-900 bg-slate-950/70"></div>
+        <div className="mt-[4.5rem] h-[4.5rem] w-full animate-pulse border border-slate-900 bg-slate-950/70"></div>
+      </div>
+    )
+  }
 
+  return (
+    <DashboardSteamAccountsListView
+      hasAccounts={hasAccounts.data}
+      plan={plan.data}
+      steamAccounts={steamAccounts.data}
+      {...props}
+    />
+  )
+}
+
+export const DashboardSteamAccountsListView = React.forwardRef<
+  React.ElementRef<"section">,
+  DashboardSteamAccountsListProps & {
+    hasAccounts: boolean
+    plan: PlanUsageSession | PlanInfinitySession
+    steamAccounts: SteamAccountSession[]
+  }
+>(function DashboardSteamAccountsListComponent(
+  { hasAccounts, plan, steamAccounts, className, ...props },
+  ref
+) {
   const firstAccountBeingRestored = useMemo(() => {
     return steamAccounts.filter(sa => sa.isRestoringConnection).at(0)?.id_steamAccount
   }, [steamAccounts])

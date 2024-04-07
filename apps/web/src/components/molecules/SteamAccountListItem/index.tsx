@@ -5,7 +5,7 @@ import { IntentionCodes, useFarmGamesMutation } from "@/components/molecules/Far
 import { useSteamAccountStore } from "@/components/molecules/SteamAccountListItem/store/useSteamAccountStore"
 import { useToggleAutoReloginMutation } from "@/components/molecules/ToggleAutoRelogin/mutation"
 import { useUpdateStagingGames } from "@/components/molecules/UpdateStagingGames"
-import { useUser, useUserId } from "@/contexts/UserContext"
+import { useUser$, useUserId } from "@/contexts/UserContext"
 import { api } from "@/lib/axios"
 import { useRefreshGamesMutation, useStopFarmMutation } from "@/mutations"
 import { DataOrMessage, Message } from "@/util/DataOrMessage"
@@ -29,13 +29,12 @@ export function SteamAccountList({
   displayUpdateInServerMessage: boolean
 }) {
   const [status, setStatusState] = useState<AppAccountStatus>(app.status)
-  const [autoRelogin, setAutoRelogin] = useState(app.autoRelogin)
   const { getToken } = useAuth()
   const getAPI = async () => {
     api.defaults.headers["Authorization"] = `Bearer ${await getToken()}`
     return api
   }
-  const hasUsagePlanLeft = useUser(user =>
+  const hasUsagePlanLeft = useUser$(user =>
     planIsUsage(user.plan) ? user.plan.farmUsedTime < user.plan.maxUsageTime : true
   )
 

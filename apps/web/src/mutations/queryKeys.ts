@@ -1,5 +1,5 @@
 export const ECacheKeys = {
-  user_session: (userId: string) => ["me", userId],
+  user_session: (userId: string | null | undefined) => ["me", userId],
   "USER-ADMIN-ITEM-LIST": ["USER-ADMIN-ITEM-LIST"],
   setGames: ["SET-GAMES"],
   setAccounts: ["SET-ACCOUNTS"],

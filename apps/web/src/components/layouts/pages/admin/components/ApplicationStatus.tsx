@@ -1,38 +1,35 @@
-import React from "react"
 import { cn } from "@/lib/utils"
+import React from "react"
 import { useUserAdminList } from "../hooks/useUserAdminList"
-import { ClientOnly } from "@/components/client-only"
 
 export type ApplicationStatusProps = React.ComponentPropsWithoutRef<"div"> & {}
 
 export const ApplicationStatus = React.forwardRef<React.ElementRef<"div">, ApplicationStatusProps>(
   function ApplicationStatusComponent({ className, ...props }, ref) {
     return (
-      <ClientOnly>
-        <div
-          {...props}
-          className={cn(
-            "mb-4 flex h-9 w-fit items-center rounded-md border border-blue-900/40 bg-blue-950/30 px-4 text-sm",
-            className
-          )}
-          ref={ref}
-        >
-          <div className="flex items-center gap-2">
-            <span>Usuários registrados:</span>
-            <UserRegistered />
-          </div>
-          <div className="mx-4 h-full w-[1px] bg-blue-900/40" />
-          <div className="flex items-center gap-2">
-            <span>Contas registradas:</span>
-            <SteamAccountsRegistered />
-          </div>
-          <div className="mx-4 h-full w-[1px] bg-blue-900/40" />
-          <div className="flex items-center gap-2">
-            <span>Contas farmando no momento:</span>
-            <FarmingAccountsAmount />
-          </div>
+      <div
+        {...props}
+        className={cn(
+          "mb-4 flex h-9 w-fit items-center rounded-md border border-blue-900/40 bg-blue-950/30 px-4 text-sm",
+          className
+        )}
+        ref={ref}
+      >
+        <div className="flex items-center gap-2">
+          <span>Usuários registrados:</span>
+          <UserRegistered />
         </div>
-      </ClientOnly>
+        <div className="mx-4 h-full w-[1px] bg-blue-900/40" />
+        <div className="flex items-center gap-2">
+          <span>Contas registradas:</span>
+          <SteamAccountsRegistered />
+        </div>
+        <div className="mx-4 h-full w-[1px] bg-blue-900/40" />
+        <div className="flex items-center gap-2">
+          <span>Contas farmando no momento:</span>
+          <FarmingAccountsAmount />
+        </div>
+      </div>
     )
   }
 )

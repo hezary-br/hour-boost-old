@@ -1,6 +1,6 @@
 import { api } from "@/lib/axios"
 import { ECacheKeys } from "@/mutations/queryKeys"
-import { UseSuspenseQueryOptions, useSuspenseQuery } from "@tanstack/react-query"
+import { UseSuspenseQueryOptions, useQuery } from "@tanstack/react-query"
 import { UserAdminPanelSession } from "core"
 
 type Options<TData = UserAdminPanelSession[]> = Omit<
@@ -11,8 +11,7 @@ type Options<TData = UserAdminPanelSession[]> = Omit<
 type GetAdminUsersListResponse = { usersAdminList: UserAdminPanelSession[]; code: "SUCCESS" }
 
 export function useUserAdminList<TData = UserAdminPanelSession[]>(options = {} as Options<TData>) {
-  return useSuspenseQuery<UserAdminPanelSession[], Error, TData>({
-    // queryFn: () => getUsersAdminList(Math.random() > 0.5),
+  return useQuery<UserAdminPanelSession[], Error, TData>({
     queryFn: async () => {
       const response = await api.get<GetAdminUsersListResponse>("/admin/users-list")
 
@@ -24,4 +23,13 @@ export function useUserAdminList<TData = UserAdminPanelSession[]>(options = {} a
     refetchOnWindowFocus: true,
     ...options,
   })
+}
+
+export function useUserAdminList$<TData = UserAdminPanelSession[]>(options = {} as Options<TData>) {
+  const query = useUserAdminList(options)
+  if (query.status !== "success") {
+    throw new Error("Attempt to use user admin item bofore it was loaded.")
+  }
+
+  return query.data
 }

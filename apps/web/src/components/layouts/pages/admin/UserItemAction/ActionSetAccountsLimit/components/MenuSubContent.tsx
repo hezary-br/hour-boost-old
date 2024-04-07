@@ -19,18 +19,27 @@ export type ActionSetAccountsLimitMenuSubContentProps = React.ComponentPropsWith
   render: React.FC<{ isSure: boolean; setIsSure: React.Dispatch<React.SetStateAction<boolean>> }>
 }
 
-export const ActionSetAccountsLimitMenuSubContent = React.forwardRef<
-  React.ElementRef<typeof DropdownMenuSubContent>,
-  ActionSetAccountsLimitMenuSubContentProps
->(function ActionSetAccountsLimitMenuSubContentComponent({ render, ...props }, ref) {
+export function ActionSetAccountsLimitMenuSubContent(props: ActionSetAccountsLimitMenuSubContentProps) {
   const userId = useUserAdminItemId()
   const maxSteamAccounts = useUserAdminListItem(userId, user => user.plan.maxSteamAccounts)
-  const valueIsDirty = useCallback(
-    function check(value: number) {
-      return value !== maxSteamAccounts
-    },
-    [maxSteamAccounts]
+
+  return (
+    <ActionSetAccountsLimitMenuSubContentView
+      {...props}
+      maxSteamAccounts={maxSteamAccounts}
+    />
   )
+}
+
+export const ActionSetAccountsLimitMenuSubContentView = React.forwardRef<
+  React.ElementRef<typeof DropdownMenuSubContent>,
+  ActionSetAccountsLimitMenuSubContentProps & {
+    maxSteamAccounts: number
+  }
+>(function ActionSetAccountsLimitMenuSubContentComponent({ maxSteamAccounts, render, ...props }, ref) {
+  const { getToken } = useAuth()
+  const valueIsDirty = useCallback((value: number) => value !== maxSteamAccounts, [maxSteamAccounts])
+  const userId = useUserAdminItemId()
   const [isSure, setIsSure] = useState(false)
   const [inputValueMaxAccounts, setInputValueMaxAccounts] = useReducer((_: string, value: string) => {
     let finalValue = value
@@ -39,11 +48,12 @@ export const ActionSetAccountsLimitMenuSubContent = React.forwardRef<
     if (!valueIsDirty(newMaxAccountsNumber)) setIsSure(false)
     return finalValue
   }, maxSteamAccounts.toString())
+  // }, maxSteamAccounts.toString())
+
   const inputValueMaxAccountsFinal = inputValueMaxAccounts === "" ? 1 : parseInt(inputValueMaxAccounts)
   const isDirty = valueIsDirty(inputValueMaxAccountsFinal)
   const isPending = isMutationPending(ECacheKeys.setAccounts)
 
-  const { getToken } = useAuth()
   const getAPI = async () => {
     api.defaults.headers["Authorization"] = `Bearer ${await getToken()}`
     return api

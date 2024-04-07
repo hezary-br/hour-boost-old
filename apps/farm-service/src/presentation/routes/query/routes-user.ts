@@ -3,7 +3,7 @@ import "dotenv/config"
 import { ClerkExpressWithAuth, type WithAuthProp } from "@clerk/clerk-sdk-node"
 import { GetUser } from "core"
 
-import { type Request, type Response, Router } from "express"
+import { Router, type Request, type Response } from "express"
 import { CreateUserUseCase } from "~/application/use-cases"
 import { GetMeController } from "~/presentation/controllers"
 import {
@@ -24,7 +24,6 @@ query_routerUser.get(
     onError: error => console.log("/me clerk error: ", error),
   }),
   async (req: WithAuthProp<Request>, res: Response) => {
-    if (!req.auth.userId) return res.status(400).json({ message: "Unauthorized!" })
     const userId = req.auth.userId
     const getMeController = new GetMeController(usersRepository, createUser, usersDAO, tokenService)
     const [error, me] = await getMeController.handle({
