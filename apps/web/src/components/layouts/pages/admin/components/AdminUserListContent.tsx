@@ -1,9 +1,9 @@
+import { UserAdminItemList } from "@/components/layouts/pages/admin/components/AdminUserItemList"
+import { ApplicationStatus } from "@/components/layouts/pages/admin/components/ApplicationStatus"
+import { FilterAdminPanelInput } from "@/components/layouts/pages/admin/components/FilterAdminPanelInput"
 import { cn } from "@/lib/utils"
 import { atom } from "jotai"
 import React, { useTransition } from "react"
-import { UserAdminItemList } from "./AdminUserItemList"
-import { ApplicationStatus } from "./ApplicationStatus"
-import { FilterAdminPanelInput } from "./FilterAdminPanelInput"
 
 export type AdminUserListContentProps = React.ComponentPropsWithoutRef<"div"> & {}
 

@@ -1,11 +1,10 @@
-import * as React from "react"
-import * as AccordionPrimitive from "@radix-ui/react-accordion"
-import { ChevronDown } from "lucide-react"
 import { cssVariables } from "@/util/units/cssVariables"
+import * as AccordionPrimitive from "@radix-ui/react-accordion"
+import * as React from "react"
 
+import { buttonPrimaryHueThemes } from "@/components/theme/button-primary"
 import { cn } from "@/lib/utils"
 import st from "./accordion.module.css"
-import { buttonPrimaryHueThemes } from "@/components/theme/button-primary"
 
 const Accordion = AccordionPrimitive.Root
 
@@ -30,6 +29,8 @@ const AccordionItem = React.forwardRef<
     return cssVariables(hues, style)
   }
 
+  const { huedBorder, ...props1 } = props
+
   return (
     <AccordionPrimitive.Item
       ref={ref}
@@ -39,7 +40,7 @@ const AccordionItem = React.forwardRef<
         st.shadowEffect,
         removeBorderOnClosed && "[&[data-state='closed']_i]:hidden"
       )}
-      {...props}
+      {...props1}
     >
       {children}
       <i
@@ -87,4 +88,4 @@ const AccordionContent = React.forwardRef<
 ))
 AccordionContent.displayName = AccordionPrimitive.Content.displayName
 
-export { Accordion, AccordionItem, AccordionTrigger, AccordionContent }
+export { Accordion, AccordionContent, AccordionItem, AccordionTrigger }

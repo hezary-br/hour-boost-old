@@ -28,9 +28,10 @@ export const SteamAccountListItemViewMobile = React.memo(
       ref
     ) {
       const { header, steamGuard, mutations, app, status } = useSteamAccountListItem()
-      const { accountName, profilePictureUrl, farmStartedAt, isRestoringConnection } = app
+      const { accountName, profilePictureUrl, isRestoringConnection } = app
       const autoRestarter = useUser(user => user.plan.autoRestarter)
       const isFarming = useSteamAccount(sa => sa.farmingGames.length > 0)
+      const farmStartedAt = useSteamAccount(sa => sa.farmStartedAt)
 
       const handleClickFarmButtonImpl = async () => {
         const [undesired, payload] = await handleClickFarmButton()

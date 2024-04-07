@@ -12,11 +12,13 @@ function SteamAccountAdminList({}: SteamAccountAdminListProps) {
   const steamAccountsIdList = useUserAdminListItem(userId, user =>
     user.steamAccounts.map(sa => sa.id_steamAccount)
   )
+  const userStatus = useUserAdminListItem(userId, user => user.status)
+
+  const isUserBanned = userStatus === "BANNED"
 
   if (steamAccountsIdList.length === 0) {
     return <SteamAccountAdminNoSteamAccounts />
   }
-  const isUserBanned = useUserAdminListItem(userId, user => user.status) === "BANNED"
 
   return (
     <>

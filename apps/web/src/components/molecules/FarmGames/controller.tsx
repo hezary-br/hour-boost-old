@@ -2,7 +2,8 @@ import { useMediaQuery } from "@/components/hooks"
 import { FarmGamesContext } from "@/components/molecules/FarmGames/context"
 import { useSteamAccountListItem } from "@/components/molecules/SteamAccountListItem/context"
 import { useSteamAccountStore } from "@/components/molecules/SteamAccountListItem/store/useSteamAccountStore"
-import { useUser, useUserId } from "@/contexts/UserContext"
+import { useUser$, useUserId } from "@/contexts/UserContext"
+import { useUserSetterSetGames } from "@/contexts/user-actions"
 import { DataOrMessage } from "@/util/DataOrMessage"
 import { showToastFarmGamesResult, showToastFarmingGame } from "@/util/toaster"
 import { GameSession } from "core"
@@ -11,7 +12,6 @@ import { toast } from "sonner"
 import { ChooseFarmingGamesDesktop } from "./desktop"
 import { DrawerChooseFarmingGamesView } from "./mobile"
 import { ChooseFarmingGamesHelpers, IntentionCodes } from "./types"
-import { useUserControl } from "@/contexts/hook"
 
 export interface FarmGamesPayload {
   accountName: string
@@ -86,7 +86,7 @@ export const ChooseFarmingGames = React.memo(
         // stagingFarmGames.clear()
       }
 
-      const setGames = useUserControl(c => c.setGames)
+      const setGames = useUserSetterSetGames()
       async function handleRefreshGames() {
         const { games } = await refreshGames.mutateAsync({ accountName: accountName })
         setGames(accountName, games)
@@ -122,7 +122,7 @@ export const ChooseFarmingGames = React.memo(
       const filterInputLocalStaging_set = useSteamAccountStore(state => state.filterInputLocalStaging_set)
       const setUrgent = useSteamAccountStore(state => state.setUrgent)
 
-      const maxGamesAllowed = useUser(u => u.plan.maxGamesAllowed)
+      const maxGamesAllowed = useUser$(u => u.plan.maxGamesAllowed)
       const stageFarmingGames_list = useSteamAccountStore(state => state.stageFarmingGames_list)
 
       const gamesStaging = React.useMemo(() => {

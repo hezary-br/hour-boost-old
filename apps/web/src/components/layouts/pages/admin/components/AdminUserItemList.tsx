@@ -1,5 +1,4 @@
 import { Accordion } from "@/components/ui/accordion"
-import { useEffect, useState } from "react"
 import { useUserAdminList } from "../hooks/useUserAdminList"
 import { UserAdminItemListItem } from "./AdminUserItemListItem"
 
@@ -7,14 +6,28 @@ type PendingProps = {
   isPending: boolean
 }
 
-function UserAdminItemListComponent({ isPending }: PendingProps) {
-  const { data: usersInfo } = useUserAdminList({
+export function UserAdminItemList({ isPending }: PendingProps) {
+  const usersInfo = useUserAdminList({
     select: userList => userList.map(user => `${user.id_user}::${user.steamAccounts.length}`),
   })
-  const { data: userIdListHasAccounts } = useUserAdminList({
+  const userIdListHasAccounts = useUserAdminList({
     select: userList => userList.filter(user => user.steamAccounts.length).map(user => user.id_user),
   })
-  const usersInfoTuples = usersInfo.map(user => {
+
+  if (usersInfo.status !== "success" || userIdListHasAccounts.status !== "success") {
+    return (
+      <div className="flex flex-col gap-4">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div
+            key={i}
+            className="h-[10.75rem] animate-pulse bg-slate-900/50"
+          />
+        ))}
+      </div>
+    )
+  }
+
+  const usersInfoTuples = usersInfo.data.map(user => {
     const [userId, accountsAmount] = user.split("::")
     return { userId, accountsAmount: parseInt(accountsAmount) }
   })
@@ -26,7 +39,7 @@ function UserAdminItemListComponent({ isPending }: PendingProps) {
   return (
     <Accordion
       type="multiple"
-      defaultValue={userIdListHasAccounts}
+      defaultValue={userIdListHasAccounts.data}
       className={isPending ? "opacity-50" : "opacity-100"}
     >
       {shownUserIdList.map(userId => (
@@ -39,18 +52,4 @@ function UserAdminItemListComponent({ isPending }: PendingProps) {
   )
 }
 
-UserAdminItemListComponent.displayName = "UserAdminItemListComponent"
-
-export function UserAdminItemList({ isPending }: PendingProps) {
-  const [hasDocument, setHasDocument] = useState(false)
-
-  useEffect(() => {
-    setHasDocument(true)
-  }, [])
-
-  if (!hasDocument) {
-    return <h3>Loading...</h3>
-  }
-
-  return <UserAdminItemListComponent isPending={isPending} />
-}
+UserAdminItemList.displayName = "UserAdminItemList"

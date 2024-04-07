@@ -23,11 +23,16 @@ type SteamAccountListItemViewDesktopProps = SteamAccountListItemViewProps
 
 export const SteamAccountListItemViewDesktop = React.memo(
   React.forwardRef<React.ElementRef<"div">, SteamAccountListItemViewDesktopProps>(
-    function SteamAccountListItemViewDesktopComponent({ displayUpdateInServerMessage, handleClickFarmButton, actionText }, ref) {
+    function SteamAccountListItemViewDesktopComponent(
+      { displayUpdateInServerMessage, handleClickFarmButton, actionText },
+      ref
+    ) {
       const { header, steamGuard, app, mutations, hasUsagePlanLeft, status } = useSteamAccountListItem()
-      const { accountName, profilePictureUrl, farmStartedAt, isRestoringConnection } = app
+      const { accountName, profilePictureUrl, isRestoringConnection } = app
       const plan = useUser(u => u.plan)
       const isFarming = useSteamAccount(sa => sa.farmingGames.length > 0)
+      const farmStartedAt = useSteamAccount(sa => sa.farmStartedAt)
+      if (plan.status !== "success") return "loading plan"
 
       const handleClickFarmButtonImpl = async () => {
         const [undesired, payload] = await handleClickFarmButton()
@@ -49,8 +54,8 @@ export const SteamAccountListItemViewDesktop = React.memo(
               <div className="flex flex-col items-center">
                 {displayUpdateInServerMessage && (
                   <span className="text-sm text-slate-300">
-                  Houve updates no servidor e ele precisou ser reiniciado 😁
-                </span>
+                    Houve updates no servidor e ele precisou ser reiniciado 😁
+                  </span>
                 )}
                 <span className="font-semibold">A conta está reconectando...</span>
               </div>
@@ -195,7 +200,7 @@ export const SteamAccountListItemViewDesktop = React.memo(
             <ChooseFarmingGames />
           </div>
           <div className="ml-auto flex items-center">
-            {plan.autoRestarter ? (
+            {plan.data.autoRestarter ? (
               <div className="relative flex h-full items-center px-4">
                 {header && (
                   <div className="absolute bottom-full left-0 right-0 px-6 py-2">

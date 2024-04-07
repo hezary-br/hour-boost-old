@@ -1,30 +1,32 @@
+import { useUserStore } from "@/contexts/UserContext"
 import { api } from "@/lib/axios"
-import { ECacheKeys } from "@/mutations/queryKeys"
-import { UseSuspenseQueryOptions, useQuery, useSuspenseQuery } from "@tanstack/react-query"
-import { UserSession } from "core"
-import { useContext } from "react"
-import { UserIdContext } from "../UserContext"
-import { useAuth } from "@clerk/clerk-react"
 import { GetMeResponse } from "@/pages/dashboard"
+import { useAuth } from "@clerk/clerk-react"
+import { UseSuspenseQueryOptions, useQuery } from "@tanstack/react-query"
+import { UserSession } from "core"
 
-type UserQueryOptions<TData = UserSession> = Omit<
-  UseSuspenseQueryOptions<UserSession, Error, TData>,
+type UserQueryOptions<TData = UserSession | null> = Omit<
+  UseSuspenseQueryOptions<UserSession | null, Error, TData>,
   "queryKey"
 >
 
-export function useUserQuery<TData = UserSession>(options = {} as UserQueryOptions<TData>) {
+export function useUserQuery<TData = UserSession | null>(options = {} as UserQueryOptions<TData>) {
   const { getToken } = useAuth()
-  const userId = useContext(UserIdContext)
-  return useSuspenseQuery<UserSession, Error, TData>({
-    queryKey: ECacheKeys.user_session(userId),
+  const setUserId = useUserStore(user => user.setUserId)
+  return useQuery<UserSession | null, Error, TData>({
+    queryKey: ["me"],
     queryFn: async () => {
+      const token = await getToken()
       const { data: meResponse } = await api.get<GetMeResponse>("/me", {
         headers: {
-          Authorization: `Bearer ${await getToken()}`,
+          Authorization: `Bearer ${token}`,
         },
       })
+      if (meResponse.userSession) setUserId(meResponse.userSession.id)
       return meResponse.userSession
     },
+    refetchInterval: 6000 * 3,
+    staleTime: 6000 * 3,
     ...options,
   })
 }

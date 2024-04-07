@@ -1,3 +1,4 @@
+import { useUserAdminListItem } from "@/components/layouts/pages/admin/hooks/useUserAdminListItem"
 import {
   Dialog,
   DialogContent,
@@ -9,7 +10,6 @@ import {
 import { cn } from "@/lib/utils"
 import React, { CSSProperties } from "react"
 import { useUserAdminItemId } from "../../UserItemAction/context"
-import { useUserAdminListItem } from "../../hooks/useUserAdminListItem"
 import { NoPurchasesYet } from "./no-purchases-yet"
 import { PurchaseItem } from "./purchase-item"
 import { PurchaseListHeader } from "./purchase-list-header"

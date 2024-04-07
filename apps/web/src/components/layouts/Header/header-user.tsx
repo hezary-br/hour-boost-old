@@ -1,8 +1,10 @@
 import { IconChevron } from "@/components/icons/IconChevron"
-import { ProfilePic } from "@/components/layouts/Header/header-dashboard"
 import { MenuDropdownUserHeader } from "@/components/molecules/menu-dropdown-user-header"
-import { Avatar } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { useUser } from "@/contexts/UserContext"
 import { cn } from "@/lib/utils"
+import { getUserInitials } from "@/util/getUserInitials"
+import Image from "next/image"
 import React from "react"
 
 export type HeaderUserProps = Omit<React.ComponentPropsWithoutRef<typeof MenuDropdownUserHeader>, "children">
@@ -51,7 +53,12 @@ export const ProfilePic = React.forwardRef<React.ElementRef<typeof Avatar>, Prof
     const userInitials = getUserInitials(username.data)
     return (
       <>
-      <Image priority src={profilePic.data}  alt="user profile picture" fill />
+        <Image
+          priority
+          src={profilePic.data}
+          alt="user profile picture"
+          fill
+        />
         {/* <AvatarImage src={profilePic.data} /> */}
         <AvatarFallback>{userInitials}</AvatarFallback>
       </>

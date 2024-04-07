@@ -1,6 +1,5 @@
-import { useSteamAccountStore } from "@/components/molecules/SteamAccountListItem/store/useSteamAccountStore"
 import { Switch } from "@/components/ui/switch"
-import { useUser, useUserId } from "@/contexts/UserContext"
+import { useUser$, useUserId } from "@/contexts/UserContext"
 import { api } from "@/lib/axios"
 import { useAuth } from "@clerk/clerk-react"
 import { SteamAccountSession } from "core"
@@ -38,7 +37,7 @@ export const ToggleAutoRelogin = () => {
 
 export function useSteamAccount<Select>(select: (steamAccount: SteamAccountSession) => Select) {
   const steamAccountId = useSteamAccountId()
-  const selection = useUser(user => {
+  const selection = useUser$(user => {
     const steamAccount = user.steamAccounts.find(sa => sa.id_steamAccount === steamAccountId)!
     return select(steamAccount)
   })

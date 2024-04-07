@@ -5,7 +5,7 @@ const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ["core"],
   images: {
-    domains: ["cdn.akamai.steamstatic.com"],
+    domains: ["cdn.akamai.steamstatic.com", "img.clerk.com"],
   },
   // experimental: {
   //   swcPlugins: [["next-superjson-plugin", {}]],

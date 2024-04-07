@@ -1,12 +1,12 @@
 import { IconJoystick } from "@/components/icons/IconJoystick"
 import { IconClock, IconUser } from "@/components/layouts/UserPlanStatus/component"
+import { useUserAdminListItem } from "@/components/layouts/pages/admin/hooks/useUserAdminListItem"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
 import React from "react"
 import { ActionAddHoursMenuSubTrigger } from "../ActionAddHours/components/MenuSubTrigger"
 import { ActionSetAccountsLimitMenuSubTrigger } from "../ActionSetAccountsLimit/components/MenuSubTrigger"
 import { ActionSetGamesLimitMenuSubTrigger } from "../ActionSetGamesLimit/components/MenuSubTrigger"
-import { useUserAdminListItem } from "../../hooks/useUserAdminListItem"
 import { useUserAdminItemId } from "../context"
 
 export type UserItemActionMenuDropdownProps = React.ComponentPropsWithoutRef<"div"> & {
