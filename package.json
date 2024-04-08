@@ -112,15 +112,11 @@
     "react-flip-move": "^3.0.5",
     "tailwindcss": "^3",
     "ts-node": "^10.9.1",
-    "tsconfig": "*",
+    "tsconfig": "workspace:*",
     "turbo": "1.10.16",
     "typescript": "^5.2.2",
     "cookie": "^0.6.0"
   },
-  "packageManager": "yarn@1.22.22",
-  "name": "hour-boost",
-  "workspaces": [
-    "apps/*",
-    "packages/*"  
-  ]
+  "packageManager": "pnpm@8.15.4",
+  "name": "hour-boost"
 }

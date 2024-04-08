@@ -14,8 +14,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@hourboost/utils": "*",
-    "core": "*"
+    "@hourboost/utils": "workspace:*",
+    "core": "workspace:*"
   },
   "devDependencies": {
     "tsup-node": "^0.1.0",

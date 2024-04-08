@@ -29,8 +29,8 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@hourboost/tokens": "*",
-    "core": "*",
+    "@hourboost/tokens": "workspace:*",
+    "core": "workspace:*",
     "jest": "^29.7.0",
     "tsconfig-paths": "^4.2.0",
     "tsup": "^7.2.0"

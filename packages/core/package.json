@@ -19,7 +19,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "tsconfig": "*",
+    "tsconfig": "workspace:*",
     "tsup": "^7.2.0",
     "@swc/jest": "^0.2.29",
     "@types/jest": "^29.5.6",
