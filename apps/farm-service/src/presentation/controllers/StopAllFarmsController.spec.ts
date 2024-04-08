@@ -1,11 +1,11 @@
 import { jest } from "@jest/globals"
 import {
-  makeTestInstances,
-  password,
-  validSteamAccounts,
   type CustomInstances,
   type MakeTestInstancesProps,
   type PrefixKeys,
+  makeTestInstances,
+  password,
+  validSteamAccounts,
 } from "~/__tests__/instances"
 import { ensureExpectation } from "~/__tests__/utils"
 import type { UserCompleteFarmSessionCommand } from "~/application/commands"

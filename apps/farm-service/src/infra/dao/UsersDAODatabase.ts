@@ -42,6 +42,21 @@ export class UsersDAODatabase implements UsersDAO {
       steamAccountClientStateCacheRepository
     )
   }
+
+  async getRoleByUserId(userId: string) {
+    const userRole = await this.prisma.user.findUnique({
+      where: { id_user: userId },
+      select: { role: true }
+    })
+
+    if(!userRole) return null
+    const { role } = userRole
+
+    return {
+      name: role
+    }
+  }
+
   async getByIDShallow(userId: string): Promise<UserSessionShallow | null> {
     const dbUser = await this.prisma.user.findUnique({
       where: { id_user: userId },

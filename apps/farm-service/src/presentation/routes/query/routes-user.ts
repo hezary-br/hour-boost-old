@@ -3,8 +3,10 @@ import "dotenv/config"
 import { ClerkExpressWithAuth, type WithAuthProp } from "@clerk/clerk-sdk-node"
 import { GetUser } from "core"
 
-import { Router, type Request, type Response } from "express"
+import { HBHeaders } from "@hourboost/tokens"
+import { type Request, type Response, Router } from "express"
 import { CreateUserUseCase } from "~/application/use-cases"
+import { token } from "~/infra/singletons/token-factory"
 import { GetMeController } from "~/presentation/controllers"
 import {
   tokenService,
@@ -17,6 +19,24 @@ import {
 export const query_routerUser: Router = Router()
 export const createUser = new CreateUserUseCase(usersRepository, userAuthentication, usersClusterStorage)
 export const getUser = new GetUser(usersDAO)
+
+query_routerUser.head("/me", ClerkExpressWithAuth(), async (req, res) => {
+  const userId = req.auth.userId
+  if (!userId) return res.setHeader(HBHeaders["hb-has-id"], "false").end()
+
+  const userRole = await usersDAO.getRoleByUserId(userId)
+  if (!userRole) return res.setHeader(HBHeaders["hb-has-id"], "false").end()
+
+  const [errorSigningToken, userToken] = token.createHBIdentification({
+    role: userRole.name,
+    userId,
+  })
+  if (errorSigningToken) return res.status(400).end()
+
+  res.setHeader(HBHeaders["hb-has-id"], "true")
+  res.setHeader(HBHeaders["hb-identification"], userToken)
+  return res.end()
+})
 
 query_routerUser.get(
   "/me",
@@ -56,18 +76,9 @@ query_routerUser.get(
       })
     }
 
-    // res.header("Access-Control-Allow-Origin", "http://localhost:3000")
-    // res.header("Access-Control-Allow-Credentials", "true")
-    // res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE")
-    // res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
-    const headers = {
-      "hb-identification": me.tokens["hb-identification"],
-    }
-
     const json = {
       code: me.code,
       userSession: me.userSession,
-      headers,
     }
     return res.status(200).json(json)
   }

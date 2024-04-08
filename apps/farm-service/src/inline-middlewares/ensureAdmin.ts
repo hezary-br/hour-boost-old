@@ -1,9 +1,8 @@
-import type { DataOrFail, } from "core"
+import { HBHeaders } from "@hourboost/tokens"
+import type { DataOrFail } from "core"
 import type { Request, Response } from "express"
-import jwt from "jsonwebtoken"
+import { token } from "~/infra/singletons/token-factory"
 import { bad, nice } from "~/utils/helpers"
-import { safer } from "~/utils/safer"
-import { HBHeaders, type HBHeadersType } from "./hb-headers-enum"
 import { MiddlewareResponse } from "./middleware-reponse"
 
 export async function ensureAdmin(req: Request, res: Response) {
@@ -20,7 +19,7 @@ export async function ensureAdmin(req: Request, res: Response) {
       })
     )
   }
-  const [error, result] = safer(() => jwt.verify(hbIdentification, process.env.TOKEN_IDENTIFICATION_HASH!))
+  const [error, result] = token.parseHBIdentification(hbIdentification)
   if (error) {
     return bad(
       new MiddlewareResponse({
@@ -35,7 +34,7 @@ export async function ensureAdmin(req: Request, res: Response) {
     )
   }
 
-  const { role } = result as HBHeadersType.HBIdentification.JWTPayload
+  const { role } = result
   if (role !== "ADMIN") {
     return bad(
       new MiddlewareResponse({

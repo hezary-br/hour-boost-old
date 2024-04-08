@@ -2,6 +2,7 @@ import {
   DatabaseSteamAccount,
   PlanInfinity,
   PlanUsage,
+  Role,
   UserAdminPanelSession,
   UserSession,
   UserSessionShallow,
@@ -11,6 +12,15 @@ import type { UsersInMemory } from "~/infra/repository"
 
 export class UsersDAOInMemory implements UsersDAO {
   constructor(private readonly users: UsersInMemory) {}
+
+  async getRoleByUserId(userId: string): Promise<Role | null> {
+    const user = await this.getByID(userId)
+    return user
+      ? {
+          name: user.role,
+        }
+      : null
+  }
 
   async getByIDShallow(userId: string): Promise<UserSessionShallow | null> {
     const foundUser = await this.getByID(userId)

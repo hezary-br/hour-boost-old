@@ -1,6 +1,5 @@
 import { type DataOrFail, Fail, type RoleName } from "core"
 import jwt from "jsonwebtoken"
-import type { HBHeadersType } from "~/inline-middlewares/hb-headers-enum"
 import { bad, nice } from "~/utils/helpers"
 import { safer } from "~/utils/safer"
 
@@ -8,7 +7,7 @@ export class TokenService implements ITokenService {
   constructor() {}
 
   async signIdentification({ role, userId }: TokenServicePayload) {
-    const payload: HBHeadersType.HBIdentification.Data = {
+    const payload = {
       role,
     }
     const [errorSigningRoleName, token] = safer(() =>
