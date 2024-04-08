@@ -13,11 +13,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "tsup": "^7.2.0"
-  },
   "devDependencies": {
-    "core": "workspace:*",
-    "typescript": "^5.4.4"
+    "core": "workspace:*"
   }
 }
