@@ -13,6 +13,7 @@ import type { AppProps } from "next/app"
 
 import { useMediaQuery } from "@/components/hooks"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import Head from "next/head"
 import { PropsWithChildren, useState, useSyncExternalStore } from "react"
 import { useIsomorphicLayoutEffect } from "react-use"
 
@@ -26,29 +27,38 @@ export default function App({ Component, pageProps }: AppProps) {
   }, [])
 
   return (
-    <ClerkProvider
-      {...pageProps}
-      localization={ptBR}
-    >
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="dark"
-        enableSystem
+    <>
+      <Head>
+        <title>Hourboost</title>
+        <link
+          rel="shortcut icon"
+          href="/favicon.ico"
+        />
+      </Head>
+      <ClerkProvider
+        {...pageProps}
+        localization={ptBR}
       >
-        <main className={cn(barlow.className, barlow.variable)}>
-          <QueryClientProvider client={queryClient}>
-            <Component {...pageProps} />
-            <ReactQueryDevtools
-              initialIsOpen={true}
-              buttonPosition="bottom-left"
-            />
-          </QueryClientProvider>
-          <Analytics />
-        </main>
-        {isLessDesktop && <Toaster position="top-center" />}
-        {!isLessDesktop && <Toaster position="bottom-left" />}
-      </ThemeProvider>
-    </ClerkProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+        >
+          <main className={cn(barlow.className, barlow.variable)}>
+            <QueryClientProvider client={queryClient}>
+              <Component {...pageProps} />
+              <ReactQueryDevtools
+                initialIsOpen={true}
+                buttonPosition="bottom-left"
+              />
+            </QueryClientProvider>
+            <Analytics />
+          </main>
+          {isLessDesktop && <Toaster position="top-center" />}
+          {!isLessDesktop && <Toaster position="bottom-left" />}
+        </ThemeProvider>
+      </ClerkProvider>
+    </>
   )
 }
 

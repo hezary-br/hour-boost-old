@@ -19,6 +19,7 @@ const AccordionItem = React.forwardRef<
         }
       | {
           huedBorder?: false | undefined
+          colorScheme?: never
         }
     )
 >(({ style, children, className, removeBorderOnClosed = false, ...props }, ref) => {
@@ -29,7 +30,7 @@ const AccordionItem = React.forwardRef<
     return cssVariables(hues, style)
   }
 
-  const { huedBorder, ...props1 } = props
+  const { huedBorder, colorScheme, ...props1 } = props
 
   return (
     <AccordionPrimitive.Item

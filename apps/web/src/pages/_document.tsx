@@ -7,7 +7,6 @@ export default function Document() {
       lang="en"
     >
       <Head>
-        <title>Hourboost</title>
         <link
           rel="shortcut icon"
           href="/favicon.ico"

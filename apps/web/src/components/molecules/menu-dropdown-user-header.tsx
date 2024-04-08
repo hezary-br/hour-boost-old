@@ -66,7 +66,7 @@ export const DropdownMenuItemLogout = React.forwardRef<
       className={cn("focus:bg-red-500", className)}
       onClick={async e => {
         await signOut()
-        router.push("/sign-in")
+        router.reload()
         onClick && onClick(e)
       }}
     >
