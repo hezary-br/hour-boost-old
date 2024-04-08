@@ -3,8 +3,9 @@ const webpack = require("webpack")
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  transpilePackages: ["core"],
+  transpilePackages: ["core", "@hourboost/tokens"],
   images: {
+    // remotePatterns: ["cdn.akamai.steamstatic.com", "img.clerk.com"],
     domains: ["cdn.akamai.steamstatic.com", "img.clerk.com"],
   },
   // experimental: {

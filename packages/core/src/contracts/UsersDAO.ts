@@ -1,6 +1,6 @@
 import { PlanInfinity, PlanUsage } from "core/entity"
+import { Role, UserAdminPanelSession } from ".."
 import { UserSession, UserSessionShallow } from "../presenters/user-presenter"
-import { UserAdminPanelSession } from ".."
 
 export interface UsersDAO {
   getUsersSteamAccounts(userId: string): Promise<DatabaseSteamAccount[]>
@@ -12,6 +12,7 @@ export interface UsersDAO {
     userId: string
   ): Promise<{ username: string; userId: string; plan: PlanUsage | PlanInfinity } | null>
   getUsersAdminList(): Promise<UserAdminPanelSession[]>
+  getRoleByUserId(userId: string): Promise<Role | null>
 }
 
 export namespace NSUsersDAO {

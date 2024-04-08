@@ -1,0 +1,23 @@
+{
+  "name": "@hourboost/utils",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "dev": "npm run build -- --watch",
+    "build": "tsup-node src/index.ts --format esm --dts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "tsup": "^7.2.0"
+  },
+  "devDependencies": {
+    "core": "workspace:*",
+    "typescript": "^5.4.4"
+  }
+}

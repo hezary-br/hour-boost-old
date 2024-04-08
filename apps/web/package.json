@@ -9,9 +9,12 @@
     "ui:add": "pnpm dlx shadcn-ui@latest add"
   },
   "dependencies": {
+    "@hourboost/tokens": "workspace:*",
     "core": "workspace:*"
   },
   "devDependencies": {
+    "@types/cookie": "^0.6.0",
+    "cookie": "^0.6.0",
     "tsconfig": "workspace:*"
   }
 }
