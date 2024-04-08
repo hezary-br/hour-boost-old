@@ -6,13 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "ui:add": "pnpm dlx shadcn-ui@latest add"
+    "ui:add": "yarn dlx shadcn-ui@latest add"
   },
   "dependencies": {
-    "@hourboost/tokens": "workspace:*",
-    "core": "workspace:*"
+    "@hourboost/tokens": "*",
+    "core": "*"
   },
   "devDependencies": {
-    "tsconfig": "workspace:*"
+    "tsconfig": "*"
   }
 }

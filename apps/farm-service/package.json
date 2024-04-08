@@ -8,16 +8,16 @@
     "dev": "tsx src/server.ts",
     "dev:inspect": "node --import tsx/esm --inspect src/server.ts",
     "check": "tsc --noEmit",
-    "build": "tsup src/server.ts --format esm",
-    "build_debug": "tsup src/server.ts --format esm --sourcemap",
-    "build:check": "npm run check && tsup src/server.ts",
+    "build": "tsup src/server.ts --format esm --external ../../package.json",
+    "build_debug": "npm run build --sourcemap",
+    "build:check": "npm run check && tsup npm run build",
     "tx": "tsx",
     "start": "node dist/server.js",
     "start_debug": "node --inspect-brk dist/server.js",
     "start:inspect": "node --inspect dist/src/server.js",
     "build:s": "npm run build && npm start",
     "seed": "tsx seed.ts",
-    "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js -c ./jest.config.ts --silent",
+    "test": "node --experimental-vm-modules ../../node_modules/jest/bin/jest.js -c ./jest.config.ts --silent",
     "lint": "biome check src/ --apply",
     "ci": "npm run lint && npm run check && npm run test",
     "st": "prisma studio",
@@ -29,7 +29,10 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "core": "workspace:*",
-    "@hourboost/tokens": "workspace:*"
+    "@hourboost/tokens": "*",
+    "core": "*",
+    "jest": "^29.7.0",
+    "tsconfig-paths": "^4.2.0",
+    "tsup": "^7.2.0"
   }
 }

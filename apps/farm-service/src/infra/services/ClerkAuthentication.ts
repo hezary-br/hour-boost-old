@@ -1,8 +1,8 @@
+import type { Clerk } from "@clerk/clerk-sdk-node"
 import type { IClerkUser, UserAuthentication } from "core"
-import type { ClerkClient } from "node_modules/@clerk/clerk-sdk-node/dist/types/types"
 
 export class ClerkAuthentication implements UserAuthentication {
-  constructor(private readonly clerkClient: ClerkClient) {}
+  constructor(private readonly clerkClient: ReturnType<typeof Clerk>) {}
 
   async getUserByID(userId: string): Promise<IClerkUser> {
     const clerkUser = await this.clerkClient.users.getUser(userId)
