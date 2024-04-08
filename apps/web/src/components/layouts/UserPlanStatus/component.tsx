@@ -27,7 +27,6 @@ export function UserPlanStatus() {
 
 function getTimePast(time: number) {
   const { highlightTime, secondaryTime } = getFarmedTimeSince(time)
-  console.log({ highlightTime, secondaryTime })
   const SecondaryTime: React.FC = () =>
     secondaryTime.length ? <span className="text-sm text-zinc-400">{secondaryTime}</span> : null
 

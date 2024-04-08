@@ -1,34 +1,26 @@
+import { HeaderStructure } from "@/components/layouts/Header/header-structure"
 import { HeaderUser } from "@/components/layouts/Header/header-user"
 import { SheetHeaderNavbar } from "@/components/molecules/sheet-header-navbar"
 import { Button } from "@/components/ui/button"
 import { ErrorBoundary } from "@/contexts/ERROR-BOUNDARY"
+import { useUser } from "@/contexts/UserContext"
 import { cn } from "@/lib/utils"
-import { getUserInitials } from "@/util/getUserInitials"
 import Link from "next/link"
 import React from "react"
 
-export type HeaderProps = React.ComponentPropsWithoutRef<"header"> & {}
+export type HeaderProps = Omit<React.ComponentPropsWithoutRef<typeof HeaderStructure> & {}, "children">
 
-export const Header = React.forwardRef<React.ElementRef<"header">, HeaderProps>(function HeaderComponent(
-  { className, ...props },
-  ref
-) {
-  const user = { username: "vm", profilePic: "" }
-  const userInitials = getUserInitials(user?.username)
+export const Header = React.forwardRef<React.ElementRef<typeof HeaderStructure>, HeaderProps>(
+  function HeaderComponent({ className, ...props }, ref) {
+    const username = useUser(user => user.username)
+    const hasUser = !!username.data
 
-  return (
-    <header
-      {...props}
-      className={cn(
-        "relative z-40 flex h-14 items-center border-b border-white/10 bg-black/30 backdrop-blur-sm",
-        className
-      )}
-      ref={ref}
-    >
-      {/* <pre className="absolute top-5 left-5 bg-orange-100 text-orange-500 p-2 text-xs">
-        {JSON.stringify({ user: user ?? "user is nullish" }, null, 2)}
-      </pre> */}
-      <div className="mx-auto flex h-full w-full max-w-7xl items-center px-4">
+    return (
+      <HeaderStructure
+        {...props}
+        className={cn(className)}
+        ref={ref}
+      >
         <div className="flex flex-1 md:hidden">
           <SheetHeaderNavbar>
             <SVGList className="aspect-square h-7 w-7 cursor-pointer" />
@@ -78,7 +70,7 @@ export const Header = React.forwardRef<React.ElementRef<"header">, HeaderProps>(
           </ul>
         </div>
         <div className="flex h-full flex-1 justify-end md:flex-initial">
-          {user && (
+          {hasUser && (
             <div className="flex h-full items-center gap-4">
               <Button
                 variant="ghost"
@@ -92,7 +84,7 @@ export const Header = React.forwardRef<React.ElementRef<"header">, HeaderProps>(
               </ErrorBoundary>
             </div>
           )}
-          {!user && (
+          {!hasUser && (
             <>
               <Button
                 variant="ghost"
@@ -113,10 +105,10 @@ export const Header = React.forwardRef<React.ElementRef<"header">, HeaderProps>(
             </>
           )}
         </div>
-      </div>
-    </header>
-  )
-})
+      </HeaderStructure>
+    )
+  }
+)
 
 Header.displayName = "Header"
 

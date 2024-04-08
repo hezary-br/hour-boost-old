@@ -48,7 +48,7 @@ export function UserAdminItemListItem({ userId }: UserAdminItemListItemProps) {
         value={userId}
         className={shouldHide ? "hidden" : "block"}
       >
-        <div className="flex h-[--user-item-height] cursor-pointer items-center bg-black/10 [--user-item-height:4.2rem] hover:bg-slate-900/50">
+        <div className="flex h-[--user-item-height] cursor-pointer items-center [--user-item-height:4.2rem] hover:bg-slate-900/50">
           <AdminUserItemProfilePicture />
           <div className="flex w-[13rem] shrink-0 flex-col pl-4">
             <AdminUserItemUsername />

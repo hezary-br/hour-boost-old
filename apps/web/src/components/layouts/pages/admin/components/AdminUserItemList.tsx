@@ -1,4 +1,6 @@
+import { IconSpinner } from "@/components/icons/IconSpinner"
 import { Accordion } from "@/components/ui/accordion"
+import twc from "tailwindcss/colors"
 import { useUserAdminList } from "../hooks/useUserAdminList"
 import { UserAdminItemListItem } from "./AdminUserItemListItem"
 
@@ -16,13 +18,13 @@ export function UserAdminItemList({ isPending }: PendingProps) {
 
   if (usersInfo.status !== "success" || userIdListHasAccounts.status !== "success") {
     return (
-      <div className="flex flex-col gap-4">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <div
-            key={i}
-            className="h-[10.75rem] animate-pulse bg-slate-900/50"
+      <div className="flex h-[40rem] items-center justify-center gap-4">
+        <div className="-scale-x-100">
+          <IconSpinner
+            color={twc["slate"]["600"]}
+            className="size-24 animate-spin"
           />
-        ))}
+        </div>
       </div>
     )
   }
