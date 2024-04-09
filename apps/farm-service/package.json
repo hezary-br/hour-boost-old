@@ -17,7 +17,7 @@
     "start:inspect": "node --inspect dist/src/server.js",
     "build:s": "npm run build && npm start",
     "seed": "tsx seed.ts",
-    "test": "node --experimental-vm-modules ../../node_modules/jest/bin/jest.js -c ./jest.config.ts --silent",
+    "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js -c ./jest.config.ts --silent",
     "lint": "biome check src/ --apply",
     "ci": "npm run lint && npm run check && npm run test",
     "st": "prisma studio",
@@ -31,8 +31,12 @@
   "devDependencies": {
     "@hourboost/tokens": "workspace:*",
     "core": "workspace:*",
-    "jest": "^29.7.0",
     "tsconfig-paths": "^4.2.0",
+    "@swc/jest": "^0.2.29",
+    "@types/jest": "^29.5.6",
+    "@jest/globals": "^29.7.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.1",
     "tsup": "^7.2.0"
   }
 }
