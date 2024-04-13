@@ -1,9 +1,9 @@
-import React from "react"
-import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { useRouter } from "next/router"
 import { cn } from "@/lib/utils"
+import { motion } from "framer-motion"
 import Link from "next/link"
+import { useRouter } from "next/router"
+import React from "react"
 
 export default function ResourceNotFoundPage() {
   const router = useRouter()
@@ -41,7 +41,7 @@ export default function ResourceNotFoundPage() {
         </div>
       </header>
       <div
-        className="pointer-events-none -z-10"
+        className="pointer-events-none"
         style={{
           position: "absolute",
           top: "50%",
@@ -55,7 +55,7 @@ export default function ResourceNotFoundPage() {
         }}
       >
         <img
-          src="https://images8.alphacoders.com/133/1332612.jpeg"
+          src="/fada.webp"
           style={{
             position: "absolute",
             inset: 0,

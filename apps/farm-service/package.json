@@ -30,13 +30,16 @@
   "license": "ISC",
   "devDependencies": {
     "@hourboost/tokens": "workspace:*",
-    "core": "workspace:*",
-    "tsconfig-paths": "^4.2.0",
+    "@jest/globals": "^29.7.0",
     "@swc/jest": "^0.2.29",
     "@types/jest": "^29.5.6",
-    "@jest/globals": "^29.7.0",
+    "core": "workspace:*",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.1",
+    "tsconfig-paths": "^4.2.0",
     "tsup": "^7.2.0"
+  },
+  "dependencies": {
+    "express-async-errors": "^3.1.1"
   }
 }

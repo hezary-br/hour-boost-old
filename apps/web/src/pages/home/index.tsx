@@ -6,9 +6,11 @@ import { HeroSection } from "@/components/layouts/Hero"
 import { HowItWorksSection } from "@/components/layouts/HowItWorks"
 import { PlanSection } from "@/components/layouts/PlansSection"
 import { WhatWeOfferSection } from "@/components/layouts/WhatWeOffer"
+import { injectServerMeta } from "@/contexts/server-meta"
+import { GetServerSideProps } from "next"
 import Head from "next/head"
 
-// export const getServerSideProps = userProcedure({})
+export const getServerSideProps: GetServerSideProps = injectServerMeta()
 
 export default function Home() {
   return (

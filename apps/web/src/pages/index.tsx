@@ -1,17 +1,20 @@
-import React from "react"
-import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { useRouter } from "next/router"
-import { cn } from "@/lib/utils"
-import Link from "next/link"
-import { ButtonPrimary } from "@/components/theme/button-primary"
 import { SVGDiscord } from "@/components/layouts/Footer"
+import { ButtonPrimary } from "@/components/theme/button-primary"
+import { cn } from "@/lib/utils"
+import { motion } from "framer-motion"
+import Link from "next/link"
+import React from "react"
+
+import { injectServerMeta } from "@/contexts/server-meta"
+import { GetServerSideProps } from "next"
+
+export const getServerSideProps: GetServerSideProps = injectServerMeta()
 
 export default function ResourceNotFoundPage() {
   return (
     <div className="relative flex h-screen items-center justify-center overflow-hidden">
       <div
-        className="pointer-events-none -z-10"
+        className="pointer-events-none"
         style={{
           position: "absolute",
           top: "50%",

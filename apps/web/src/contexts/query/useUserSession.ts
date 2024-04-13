@@ -1,4 +1,5 @@
 import { useUserStore } from "@/contexts/UserContext"
+import { useServerMeta } from "@/contexts/server-meta"
 import { api } from "@/lib/axios"
 import { GetMeResponse } from "@/pages/dashboard"
 import { useAuth } from "@clerk/clerk-react"
@@ -12,6 +13,7 @@ type UserQueryOptions<TData = UserSession | null> = Omit<
 
 export function useUserQuery<TData = UserSession | null>(options = {} as UserQueryOptions<TData>) {
   const { getToken } = useAuth()
+  const hasSession = !!useServerMeta()?.session
   const setUserId = useUserStore(user => user.setUserId)
   return useQuery<UserSession | null, Error, TData>({
     queryKey: ["me"],
@@ -25,8 +27,10 @@ export function useUserQuery<TData = UserSession | null>(options = {} as UserQue
       if (meResponse.userSession) setUserId(meResponse.userSession.id)
       return meResponse.userSession
     },
+    enabled: hasSession,
     refetchInterval: 6000 * 3,
     staleTime: 6000 * 3,
+    retry: 5,
     ...options,
   })
 }

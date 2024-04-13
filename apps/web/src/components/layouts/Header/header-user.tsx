@@ -17,7 +17,7 @@ export const HeaderUser = React.forwardRef<React.ElementRef<typeof MenuDropdownU
         className={cn("", className)}
         {...props}
       >
-        <div className="flex h-9 cursor-pointer items-center rounded-sm px-1 hover:bg-slate-800">
+        <button className="flex h-9 cursor-pointer items-center rounded-sm px-1 hover:bg-slate-800">
           <Avatar
             ref={ref}
             {...props}
@@ -28,7 +28,7 @@ export const HeaderUser = React.forwardRef<React.ElementRef<typeof MenuDropdownU
           <div className="ml-0.5 flex items-center justify-center">
             <IconChevron className="size-3.5 text-slate-400" />
           </div>
-        </div>
+        </button>
       </MenuDropdownUserHeader>
     )
   }

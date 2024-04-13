@@ -5,6 +5,7 @@ import cors from "cors"
 import "dotenv/config"
 import type { Application, NextFunction, Request, Response } from "express"
 import express from "express"
+import "express-async-errors"
 import { RestoreAccountManySessionsUseCase } from "~/application/use-cases/RestoreAccountManySessionsUseCase"
 import { RestoreUsersSessionsUseCase } from "~/application/use-cases/RestoreUsersSessionsUseCase"
 import { __recoveringAccounts } from "~/momentarily"
@@ -25,7 +26,9 @@ import {
 import { query_routerAdmin } from "~/presentation/routes/query/routes-admin"
 import { env } from "./env"
 
-prefix(console, { format: ":date(yyyy/mm/dd HH:MM:ss.l)" })
+prefix(console, {
+  format: ":date(yyyy/mm/dd HH:MM:ss.l)",
+})
 
 declare global {
   namespace Express {
@@ -39,6 +42,7 @@ app.use(
     origin: env.CLIENT_URL,
   })
 )
+
 app.use(express.json())
 app.use(cookieParser())
 
@@ -50,16 +54,20 @@ app.use(query_routerGeneral)
 app.use(command_routerSteam)
 app.use(command_routerPlan)
 
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  console.log(err)
-  return res.status(500).json({
-    message: "Something went wrong.",
-    err,
+app.get("/recovering-accounts", (req, res) => {
+  res.json({
+    __recoveringAccounts: Array.from(__recoveringAccounts),
   })
 })
 
-app.get("/recovering-accounts", (req, res) => {
-  res.json({ __recoveringAccounts: Array.from(__recoveringAccounts) })
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  if (err) {
+    return res.status(504).json({
+      message: "Something went wrong.",
+      err,
+    })
+  }
+  next()
 })
 
 const restoreUsersSessionsUseCase = new RestoreUsersSessionsUseCase(usersClusterStorage)

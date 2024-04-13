@@ -3,7 +3,7 @@ import { HeaderUser } from "@/components/layouts/Header/header-user"
 import { SheetHeaderNavbar } from "@/components/molecules/sheet-header-navbar"
 import { Button } from "@/components/ui/button"
 import { ErrorBoundary } from "@/contexts/ERROR-BOUNDARY"
-import { useUser } from "@/contexts/UserContext"
+import { useServerMeta } from "@/contexts/server-meta"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 import React from "react"
@@ -12,8 +12,9 @@ export type HeaderProps = Omit<React.ComponentPropsWithoutRef<typeof HeaderStruc
 
 export const Header = React.forwardRef<React.ElementRef<typeof HeaderStructure>, HeaderProps>(
   function HeaderComponent({ className, ...props }, ref) {
-    const username = useUser(user => user.username)
-    const hasUser = !!username.data
+    const session = useServerMeta()?.session
+    const maintance = process.env.NEXT_PUBLIC_MAINTANCE === "true"
+    console.log({ session })
 
     return (
       <HeaderStructure
@@ -70,7 +71,7 @@ export const Header = React.forwardRef<React.ElementRef<typeof HeaderStructure>,
           </ul>
         </div>
         <div className="flex h-full flex-1 justify-end md:flex-initial">
-          {hasUser && (
+          {!!session ? (
             <div className="flex h-full items-center gap-4">
               <Button
                 variant="ghost"
@@ -83,12 +84,16 @@ export const Header = React.forwardRef<React.ElementRef<typeof HeaderStructure>,
                 <HeaderUser />
               </ErrorBoundary>
             </div>
-          )}
-          {!hasUser && (
+          ) : (
             <>
               <Button
                 variant="ghost"
-                className="hidden h-full sm:flex"
+                className={cn(
+                  "hidden h-full sm:flex",
+                  maintance && "pointer-events-none cursor-not-allowed opacity-50"
+                )}
+                disabled={maintance}
+                title={maintance ? "Servidor em manutenção." : undefined}
                 asChild
               >
                 <Link href="/sign-in">
