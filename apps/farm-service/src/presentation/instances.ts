@@ -9,6 +9,7 @@ import { TokenService } from "~/application/services/TokenService"
 import {
   AddSteamAccountUseCase,
   CheckSteamAccountOwnerStatusUseCase,
+  CreateUserUseCase,
   FarmGamesUseCase,
   GetPersonaStateUseCase,
   GetUserSteamGamesUseCase,
@@ -53,6 +54,7 @@ import {
   UsersRepositoryDatabase,
 } from "~/infra/repository"
 import { ClerkAuthentication } from "~/infra/services"
+import { CreateMeController } from "~/presentation/controllers/CreateMeController"
 import { RefreshGamesUseCase } from "~/presentation/presenters"
 import { EventEmitterBuilder, SteamAccountClientBuilder, UserClusterBuilder } from "~/utils/builders"
 import { UsageBuilder } from "~/utils/builders/UsageBuilder"
@@ -219,13 +221,17 @@ export const scheduleAutoRestartUseCase = new ScheduleAutoRestartUseCase(
   autoRestarterScheduler,
   autoRestartCron
 )
-
+export const createUserUseCase = new CreateUserUseCase(
+  usersRepository,
+  userAuthentication,
+  usersClusterStorage
+)
 export const retrieveSessionAccountsUseCase = new RetrieveSessionListUseCase(
   steamAccountClientStateCacheRepository
 )
 export const stopFarmDomain = new StopFarmDomain(usersClusterStorage)
 export const stopFarmUseCase = new StopFarmUseCase(planRepository, stopFarmDomain)
-
+export const createMeController = new CreateMeController(createUserUseCase)
 export const stagingGamesListService = new StagingGamesListService()
 
 const addSteamAccount = new AddSteamAccount(usersRepository, idGenerator)

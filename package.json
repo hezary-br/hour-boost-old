@@ -16,9 +16,9 @@
     "start": "turbo run start",
     "format": "prettier --write .",
     "ci": "turbo run ci",
-    "api": "bun run build:api && bun run start:api",
-    "api:debug": "bun run build:api:debug && bun run start:api:debug",
-    "spinup": "bun run build && bun run start",
+    "api": "npm run build:api && npm run start:api",
+    "api:debug": "npm run build:api:debug && npm run start:api:debug",
+    "spinup": "npm run build && npm run start",
     "clean": "rimraf --glob '**/.next' && rimraf --glob '**/.turbo' && rimraf --glob '**/dist' && rimraf --glob '**/node_modules'"
   },
   "dependencies": {

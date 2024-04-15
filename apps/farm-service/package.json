@@ -17,12 +17,12 @@
     "start:inspect": "node --inspect dist/src/server.js",
     "build:s": "npm run build && npm start",
     "seed": "tsx seed.ts",
-    "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js -c ./jest.config.ts --silent",
+    "test": "NODE_ENV=TEST node --experimental-vm-modules ./node_modules/jest/bin/jest.js -c ./jest.config.ts --silent",
     "lint": "biome check src/ --apply",
     "ci": "npm run lint && npm run check && npm run test",
     "st": "prisma studio",
-    "t": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js -c ./jest.config.ts",
-    "t:debug": "NODE_ENV=DEBUG node --inspect --experimental-vm-modules ./node_modules/jest/bin/jest.js -c ./jest.config.ts --detectOpenHandles --testTimeout=600000",
+    "t": "NODE_ENV=TEST node --experimental-vm-modules ./node_modules/jest/bin/jest.js -c ./jest.config.ts",
+    "t:debug": "NODE_ENV=TEST node --inspect --experimental-vm-modules ./node_modules/jest/bin/jest.js -c ./jest.config.ts --detectOpenHandles --testTimeout=600000",
     "generate": "prisma generate"
   },
   "keywords": [],
@@ -40,6 +40,7 @@
     "tsup": "^7.2.0"
   },
   "dependencies": {
-    "express-async-errors": "^3.1.1"
+    "express-async-errors": "^3.1.1",
+    "tsx": "^4.7.2"
   }
 }

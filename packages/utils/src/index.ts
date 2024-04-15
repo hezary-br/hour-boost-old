@@ -11,3 +11,8 @@ export function safer<TResult>(action: () => TResult) {
     return bad(new Error(JSON.stringify(error)))
   }
 }
+
+export function logAndThrow(e: unknown): never {
+  console.log(e)
+  throw e
+}

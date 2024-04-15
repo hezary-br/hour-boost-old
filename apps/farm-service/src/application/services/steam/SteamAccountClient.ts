@@ -1,4 +1,3 @@
-import { appendFile } from "fs"
 import {
   AccountGames,
   AccountSteamGamesList,
@@ -14,6 +13,7 @@ import {
   IRefreshToken,
   SteamAccountPersonaState,
 } from "core"
+import { appendFile } from "fs"
 import SteamUser from "steam-user"
 import { connection } from "~/__tests__/connection"
 import type { EventEmitter } from "~/application/services"
@@ -165,7 +165,7 @@ export class SteamAccountClient extends LastHandler {
       this.setLastArguments("disconnected", args)
     })
 
-    if (env.NODE_ENV === "DEV") {
+    if (env.NODE_ENV === "TEST") {
       connection.on("break", ({ relog = true, replaceRefreshToken = false } = {}) => {
         this.logger.log(`Emitting noConnection error of user ${this.accountName} for the cluster.`)
         this.client.emit("error", { eresult: SteamUser.EResult.NoConnection })

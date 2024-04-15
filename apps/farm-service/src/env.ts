@@ -6,10 +6,10 @@ const makeRuntimeEnvs = () =>
     server: {
       DATABASE_URL: z.string().url(),
       CLERK_SECRET_KEY: z.string().min(1),
-      REDIS_UPSTASH_TLS: z.string().min(1),
+      REDIS_UPSTASH_TLS: z.string().min(1).or(z.literal("local")),
       EXAMPLE_ACCOUNT_NAME: z.string().nullable().default(null),
       EXAMPLE_ACCOUNT_PASSWORD: z.string().nullable().default(null),
-      NODE_ENV: z.enum(["DEV", "PRODUCTION", "DEBUG"]),
+      NODE_ENV: z.enum(["DEV", "PRODUCTION", "DEBUG", "TEST"]),
       TOKEN_IDENTIFICATION_HASH: z.string().min(1),
       CLIENT_URL: z.string().url(),
       COOKIE_DOMAIN: z.string().includes("."),
@@ -40,7 +40,7 @@ const makeRuntimeEnvs = () =>
 
 type RuntimeEnvs = ReturnType<typeof makeRuntimeEnvs>
 export const envTest: RuntimeEnvs = {
-  NODE_ENV: "DEBUG",
+  NODE_ENV: "TEST",
   CLERK_SECRET_KEY: "test",
   DATABASE_URL: "test",
   REDIS_UPSTASH_TLS: "test",
@@ -56,7 +56,7 @@ export const envTest: RuntimeEnvs = {
   SECRET: "test",
 }
 
-export const selectedEnv = process.env.NODE_ENV === "DEBUG" ? envTest : makeRuntimeEnvs()
+export const selectedEnv = process.env.NODE_ENV === "TEST" ? envTest : makeRuntimeEnvs()
 export const env = {
   ...selectedEnv,
   isDevMode() {
