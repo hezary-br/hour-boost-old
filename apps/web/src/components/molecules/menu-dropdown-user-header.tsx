@@ -4,6 +4,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useUser } from "@/contexts/UserContext"
 import { useServerMeta } from "@/contexts/server-meta"
 import { cn } from "@/lib/utils"
 import { useClerk } from "@clerk/clerk-react"
@@ -19,7 +20,9 @@ export const MenuDropdownUserHeader = React.forwardRef<
   React.ElementRef<typeof DropdownMenuContent>,
   MenuDropdownUserHeaderProps
 >(function MenuDropdownUserHeaderComponent({ children, className, ...props }, ref) {
-  const isAdmin = useServerMeta()?.session?.role === "ADMIN"
+  const isAdminServerMeta = useServerMeta()?.session?.role === "ADMIN"
+  const isAdminQuery = useUser(user => user.role === "ADMIN")
+  const isAdmin = isAdminQuery.status === "pending" ? isAdminServerMeta : !!isAdminQuery.data
 
   return (
     <DropdownMenu>
@@ -65,7 +68,8 @@ export const DropdownMenuItemLogout = React.forwardRef<
       className={cn("focus:bg-red-500", className)}
       onClick={async e => {
         await signOut()
-        // document.cookie = "hb-identification=; Max-Age=0"
+        // GAMBIARRA, REDIRECT DO CLERK DEVERIA FAZER ISSO NO MIDDLEWARE
+        document.cookie = "hb-identification=; Max-Age=0"
         router.reload()
         onClick && onClick(e)
       }}

@@ -61,7 +61,7 @@ export const ModalAddSteamAccountView = React.forwardRef<
     formController.resolveSubmit()
     if (typeof steamAccountId === "string") {
       toast.success("Conta adicionada com sucesso.")
-      queryClient.invalidateQueries({ queryKey: ["me", userId] })
+      queryClient.invalidateQueries({ queryKey: ["me"] })
       return s.completeForm()
     }
     if (undesired) {

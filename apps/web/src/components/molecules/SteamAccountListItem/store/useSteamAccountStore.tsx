@@ -104,9 +104,9 @@ export function ZustandSteamAccountStoreProvider(
     contextInfo: StoreSteamAccountApplicationContext
   }
 ) {
-  const store = React.useRef<StoreApi<StoreSteamAccountItem>>(
-    createStoreSteamAccountItem(props.initialState, props.contextInfo) // pode ficar obsoleto ao mudar contexto do usuario, tentar mover user context para store
-  ).current
+  const [store] = React.useState<StoreApi<StoreSteamAccountItem>>(
+    () => createStoreSteamAccountItem(props.initialState, props.contextInfo) // pode ficar obsoleto ao mudar contexto do usuario, tentar mover user context para store
+  )
 
   // React.useEffect(() => {
   //   store.setState(props.initialState)

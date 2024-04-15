@@ -5,6 +5,7 @@ import { motion } from "framer-motion"
 import Link from "next/link"
 import React from "react"
 
+import { MaintanceDisclousure } from "@/components/molecules/maintance-disclousure"
 import { injectServerMeta } from "@/contexts/server-meta"
 import { GetServerSideProps } from "next"
 
@@ -12,48 +13,49 @@ export const getServerSideProps: GetServerSideProps = injectServerMeta()
 
 export default function ResourceNotFoundPage() {
   return (
-    <div className="relative flex h-screen items-center justify-center overflow-hidden">
-      <div
-        className="pointer-events-none"
-        style={{
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: "50rem",
-          height: "32rem",
-          WebkitMaskImage: "radial-gradient(black 46%, transparent 68%)",
-          opacity: "0.3",
-          mixBlendMode: "luminosity",
-        }}
-      >
-        <img
-          src="https://www.10wallpaper.com/wallpaper/medium/1110/call_of_duty_modern_warfare_3_HD_Game_wallpaper_20_medium.jpg"
+    <>
+      <div className="relative flex h-screen items-center justify-center overflow-hidden">
+        <div
+          className="pointer-events-none"
           style={{
             position: "absolute",
-            inset: 0,
-            height: "100%",
-            width: "100%",
-            display: "block",
-            objectFit: "cover",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: "50rem",
+            height: "32rem",
+            WebkitMaskImage: "radial-gradient(black 46%, transparent 68%)",
+            opacity: "0.3",
+            mixBlendMode: "luminosity",
           }}
-        />
-      </div>
-      <div className="xs:scale-100 flex scale-[0.9] flex-col px-8">
-        <div className="relative h-fit font-extrabold leading-none">
-          <div className="flex justify-between">
-            <motion.span
-              initial={{ opacity: 0, y: 5 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ ease: "easeInOut", duration: 0.7 }}
-              className="block text-center text-[2.5rem] sm:text-left sm:text-[4rem]"
-            >
-              Em desenvolvimento...
-            </motion.span>
-          </div>
+        >
+          <img
+            src="https://www.10wallpaper.com/wallpaper/medium/1110/call_of_duty_modern_warfare_3_HD_Game_wallpaper_20_medium.jpg"
+            style={{
+              position: "absolute",
+              inset: 0,
+              height: "100%",
+              width: "100%",
+              display: "block",
+              objectFit: "cover",
+            }}
+          />
         </div>
-        <div className="flex flex-col items-center justify-center gap-4 pt-6 sm:pt-8">
-          {/* <motion.span
+        <div className="xs:scale-100 flex scale-[0.9] flex-col px-8">
+          <div className="relative h-fit font-extrabold leading-none">
+            <div className="flex justify-between">
+              <motion.span
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ ease: "easeInOut", duration: 0.7 }}
+                className="block text-center text-[2.5rem] sm:text-left sm:text-[4rem]"
+              >
+                Em desenvolvimento...
+              </motion.span>
+            </div>
+          </div>
+          <div className="flex flex-col items-center justify-center gap-4 pt-6 sm:pt-8">
+            {/* <motion.span
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4, ease: "easeInOut" }}
@@ -61,22 +63,24 @@ export default function ResourceNotFoundPage() {
           >
             Entre em contato
           </motion.span> */}
-          <ButtonPrimary
-            asChild
-            className="w-fit items-center"
-          >
-            <Link
-              target="_blank"
-              href="https://discord.com/invite/ZMknxzWCBW"
+            <ButtonPrimary
+              asChild
+              className="w-fit items-center"
             >
-              <span className="font-normal text-neutral-300">Entre em contato</span>
-              <SVGDiscord className="shrink-0" />
-              <span>Discord</span>
-            </Link>
-          </ButtonPrimary>
+              <Link
+                target="_blank"
+                href="https://discord.com/invite/ZMknxzWCBW"
+              >
+                <span className="font-normal text-neutral-300">Entre em contato</span>
+                <SVGDiscord className="shrink-0" />
+                <span>Discord</span>
+              </Link>
+            </ButtonPrimary>
+          </div>
         </div>
       </div>
-    </div>
+      <MaintanceDisclousure />
+    </>
   )
 }
 

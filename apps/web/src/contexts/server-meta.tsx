@@ -54,6 +54,8 @@ function createServerMeta(request: GetServerSidePropsContext["req"]): IServerMet
 
 export const injectServerMeta =
   (routeServerSidePropsFn?: GetServerSideProps) => async (ctx: GetServerSidePropsContext) => {
+    // console.log(`gSSP Cookies HB Identification`, ctx.req.cookies[HBHeaders["hb-identification"]])
+    // console.log(`gSSP set-cookie response header; path: ${ctx.req.url}`, ctx.res.getHeader("set-cookie"))
     const serverMeta = { serverMeta: createServerMeta(ctx.req) }
     if (!routeServerSidePropsFn) {
       return new Promise<{ props: typeof serverMeta }>(resolve => resolve({ props: serverMeta }))

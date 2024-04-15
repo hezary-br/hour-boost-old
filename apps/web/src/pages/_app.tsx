@@ -58,7 +58,6 @@ export default function App({ Component, pageProps }: AppProps) {
               <QueryClientProvider client={queryClient}>
                 <Component {...pageProps} />
                 <ReactQueryDevtools
-                  initialIsOpen={true}
                   buttonPosition="bottom-left"
                 />
               </QueryClientProvider>

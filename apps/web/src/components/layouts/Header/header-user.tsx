@@ -17,7 +17,7 @@ export const HeaderUser = React.forwardRef<React.ElementRef<typeof MenuDropdownU
         className={cn("", className)}
         {...props}
       >
-        <button className="flex h-9 cursor-pointer items-center rounded-sm px-1 hover:bg-slate-800">
+        <button className="flex h-9 cursor-pointer items-center rounded-sm px-1 hover:bg-slate-800 focus-visible:outline-none">
           <Avatar
             ref={ref}
             {...props}

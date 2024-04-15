@@ -19,11 +19,16 @@ export function useUserQuery<TData = UserSession | null>(options = {} as UserQue
     queryKey: ["me"],
     queryFn: async () => {
       const token = await getToken()
-      const { data: meResponse } = await api.get<GetMeResponse>("/me", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
+      const { data: meResponse } = await api
+        .get<GetMeResponse>("/me", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        .catch(e => {
+          console.log(e)
+          throw e
+        })
       if (meResponse.userSession) setUserId(meResponse.userSession.id)
       return meResponse.userSession
     },

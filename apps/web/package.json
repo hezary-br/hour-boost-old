@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@hourboost/tokens": "workspace:*",
+    "@hourboost/utils": "workspace:*",
     "core": "workspace:*"
   },
   "devDependencies": {

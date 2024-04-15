@@ -6,6 +6,7 @@ import { HeroSection } from "@/components/layouts/Hero"
 import { HowItWorksSection } from "@/components/layouts/HowItWorks"
 import { PlanSection } from "@/components/layouts/PlansSection"
 import { WhatWeOfferSection } from "@/components/layouts/WhatWeOffer"
+import { MaintanceDisclousure } from "@/components/molecules/maintance-disclousure"
 import { injectServerMeta } from "@/contexts/server-meta"
 import { GetServerSideProps } from "next"
 import Head from "next/head"
@@ -30,6 +31,7 @@ export default function Home() {
       <PlanSection />
       <FAQSection />
       <Footer />
+      <MaintanceDisclousure />
     </>
   )
 }

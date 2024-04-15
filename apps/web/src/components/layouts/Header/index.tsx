@@ -3,6 +3,7 @@ import { HeaderUser } from "@/components/layouts/Header/header-user"
 import { SheetHeaderNavbar } from "@/components/molecules/sheet-header-navbar"
 import { Button } from "@/components/ui/button"
 import { ErrorBoundary } from "@/contexts/ERROR-BOUNDARY"
+import { useUser } from "@/contexts/UserContext"
 import { useServerMeta } from "@/contexts/server-meta"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
@@ -12,9 +13,11 @@ export type HeaderProps = Omit<React.ComponentPropsWithoutRef<typeof HeaderStruc
 
 export const Header = React.forwardRef<React.ElementRef<typeof HeaderStructure>, HeaderProps>(
   function HeaderComponent({ className, ...props }, ref) {
-    const session = useServerMeta()?.session
+    const hasSessionServerMeta = !!useServerMeta()?.session
+    const hasSessionQuery = useUser(user => !!user.username)
+    const session = hasSessionQuery.status === "pending" ? hasSessionServerMeta : !!hasSessionQuery.data
+
     const maintance = process.env.NEXT_PUBLIC_MAINTANCE === "true"
-    console.log({ session })
 
     return (
       <HeaderStructure
