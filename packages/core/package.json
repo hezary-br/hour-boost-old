@@ -19,7 +19,6 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "tsconfig": "workspace:*",
     "@swc/jest": "^0.2.29",
     "@types/jest": "^29.5.6",
     "@jest/globals": "^29.7.0",
@@ -27,6 +26,7 @@
     "ts-jest": "^29.1.1"
   },
   "dependencies": {
+    "tsconfig": "workspace:*",
     "tsup": "^7.2.0"
   }
 }

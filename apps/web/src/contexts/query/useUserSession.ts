@@ -32,7 +32,7 @@ export function useUserQuery<TData = UserSession | null>(options = {} as UserQue
       if (meResponse.userSession) setUserId(meResponse.userSession.id)
       return meResponse.userSession
     },
-    enabled: hasSession,
+    // enabled: hasSession,
     refetchInterval: 6000 * 3,
     staleTime: 6000 * 3,
     retry: 5,

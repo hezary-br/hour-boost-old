@@ -14,10 +14,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "jsonwebtoken": "^9.0.2",
+    "@types/node": "^20",
+    "@types/jsonwebtoken": "^9.0.5",
     "@hourboost/utils": "workspace:*",
-    "core": "workspace:*"
-  },
-  "devDependencies": {
+    "tsconfig": "workspace:*",
+    "core": "workspace:*",
     "tsup-node": "^0.1.0"
   }
 }

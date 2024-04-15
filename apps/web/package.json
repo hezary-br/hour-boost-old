@@ -9,9 +9,13 @@
     "ui:add": "pnpm dlx shadcn-ui@latest add"
   },
   "dependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
     "@hourboost/tokens": "workspace:*",
     "@hourboost/utils": "workspace:*",
-    "core": "workspace:*"
+    "core": "workspace:*",
+    "typescript": "^5.2.2"
   },
   "devDependencies": {
     "tsconfig": "workspace:*"
