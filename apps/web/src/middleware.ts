@@ -95,6 +95,10 @@ export default authMiddleware({
       }
       devlog("[MIDDLEWARE]: Next!")
       applySetCookie(req, response)
+      console.log(
+        "Setting cookies: ",
+        response.cookies.getAll().map(s => [s.name, s.value])
+      )
       return response
     } catch (e) {
       url.pathname = "/error"
