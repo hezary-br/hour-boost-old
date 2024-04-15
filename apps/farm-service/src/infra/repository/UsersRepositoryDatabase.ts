@@ -16,7 +16,7 @@ import {
 import { databasePlanToDomain } from "~/infra/mappers/databasePlanToDomain"
 import { databaseUsageToDomain } from "~/infra/mappers/databaseUsageToDomain"
 import { getPlanCreation, updateUser } from "~/infra/repository/UsersRepositoryUpdateMethod"
-import { toSQL, toSQLDate } from "~/utils/toSQL"
+import { toPostgreSQL, toSQLDate } from "~/utils/toSQL"
 
 export class UsersRepositoryDatabase implements UsersRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -72,23 +72,24 @@ export class UsersRepositoryDatabase implements UsersRepository {
     if (user.steamAccounts.data.length > 0) {
       const VALUES = user.steamAccounts.data
         .map(sa =>
-          toSQL([
+          toPostgreSQL([
             sa.ownerId,
             sa.credentials.accountName,
             toSQLDate(new Date()),
             sa.id_steamAccount,
             sa.credentials.password,
-            sa.autoRelogin ? 1 : 0,
+            sa.autoRelogin,
           ])
         )
         .join(", ")
+      console.log({ VALUES })
       await this.prisma.$queryRawUnsafe(`
-        INSERT INTO steam_accounts (owner_id, accountName, createdAt, id_steamAccount, password, autoRelogin)
+        INSERT INTO steam_accounts ("owner_id", "accountName", "createdAt", "id_steamAccount", "password", "autoRelogin")
         VALUES ${VALUES}
-        ON DUPLICATE KEY UPDATE
-          owner_id = VALUES(owner_id),
-          password = VALUES(password),
-          autoRelogin = VALUES(autoRelogin);
+        ON CONFLICT ("accountName") DO UPDATE
+        SET "owner_id" = EXCLUDED."owner_id",
+            "password" = EXCLUDED."password",
+            "autoRelogin" = EXCLUDED."autoRelogin";
         `)
     }
   }

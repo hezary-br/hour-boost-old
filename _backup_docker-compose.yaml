@@ -1,0 +1,40 @@
+version: "3"
+
+services:
+  cache:
+    image: redis/redis-stack
+    restart: always
+    environment:
+      - UPSTASH_REDIS_REST_TOKEN=dev-mode
+    ports:
+      - 6379:6379
+      - 8001:8001
+    volumes:
+      - ./.docker/cache:/data
+  mysql:
+    image: mysql:8.0.23
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: hourboost
+    ports:
+      - "3311:3306"
+    volumes:
+      - ./.docker/database:/var/lib/mysql
+  postgres:
+    image: postgres:15.3-alpine
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: root
+      POSTGRES_USER: root
+    ports:
+      - 5432:5432
+    volumes:
+      - ./.docker/postgres:/var/lib/postgresql/data
+
+volumes:
+  cache:
+  mysql:
+  postgres:

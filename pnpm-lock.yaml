@@ -27,7 +27,7 @@ importers:
         specifier: ^3.3.2
         version: 3.3.4(react-hook-form@7.51.2)
       '@prisma/client':
-        specifier: ^5.5.2
+        specifier: ^5.12.1
         version: 5.12.1(prisma@5.12.1)
       '@radix-ui/react-accordion':
         specifier: ^1.1.2

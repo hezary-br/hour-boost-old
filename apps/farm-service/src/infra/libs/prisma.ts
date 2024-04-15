@@ -6,6 +6,10 @@ export const prisma = new PrismaClient()
 //   log: [
 //     {
 //       emit: "event",
+//       level: "error",
+//     },
+//     {
+//       emit: "event",
 //       level: "query",
 //     },
 //   ],
@@ -13,4 +17,8 @@ export const prisma = new PrismaClient()
 
 // prisma.$on("query", async e => {
 //   console.log(`${e.query} ${e.params}`)
+// })
+
+// prisma.$on("error", async e => {
+//   console.log(`${e.timestamp} ${e.message} ${e.target}`)
 // })

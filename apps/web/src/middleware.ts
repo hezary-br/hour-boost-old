@@ -1,6 +1,7 @@
 import { PAGE_HELPERS } from "@/consts"
 import { t } from "@/lib/token-factory"
 import { applySetCookie } from "@/util/cookie-helpers"
+import { devlog } from "@/util/devlog"
 import { authMiddleware, clerkClient, redirectToSignIn } from "@clerk/nextjs"
 import { HBHeaders, HBIdentification } from "@hourboost/tokens"
 import { NextResponse } from "next/server"
@@ -16,7 +17,7 @@ export default authMiddleware({
 
     if (PAGE_HELPERS.includes(url.pathname)) {
       url.pathname = "/404"
-      console.log("[MIDDLEWARE]: Tentou acessar paginas helpers, mostrando 404.")
+      devlog("[MIDDLEWARE]: Tentou acessar paginas helpers, mostrando 404.")
       return NextResponse.rewrite(url, response)
     }
 
@@ -28,7 +29,7 @@ export default authMiddleware({
       }
       if (!auth.isPublicRoute) {
         url.pathname = "/maintance"
-        console.log("[MIDDLEWARE]: Em manutenção.")
+        devlog("[MIDDLEWARE]: Em manutenção.")
         return NextResponse.rewrite(url, response)
       }
 
@@ -73,18 +74,18 @@ export default authMiddleware({
         response.cookies.set(HBHeaders["hb-identification"], hbIdentificationToken)
         const [error, hbIdentification] = t.parseHBIdentification(hbIdentificationToken)
         if (error) {
-          console.log("[MIDDLEWARE]: Erro ao parsear cookie de identification.")
+          devlog("[MIDDLEWARE]: Erro ao parsear cookie de identification.")
           return NextResponse.redirect("/")
         }
         userToken = hbIdentification
       }
-      console.log("[MIDDLEWARE]: --> LOG: tem token: ", !!userToken)
+      devlog("[MIDDLEWARE]: --> LOG: tem token: ", !!userToken)
 
       if (req.nextUrl.pathname.startsWith("/admin")) {
         // if (auth.sessionClaims?.metadata.role !== "ADMIN") {
         if (!userToken || userToken.role !== "ADMIN") {
           url.pathname = "/404"
-          console.log("[MIDDLEWARE]: User tentou acessar admin sem ter role, mostrando 404")
+          devlog("[MIDDLEWARE]: User tentou acessar admin sem ter role, mostrando 404")
           return NextResponse.rewrite(url, response)
         }
       }
@@ -92,12 +93,12 @@ export default authMiddleware({
       if (!auth.userId) {
         response.cookies.delete(HBHeaders["hb-identification"])
       }
-      console.log("[MIDDLEWARE]: Next!")
+      devlog("[MIDDLEWARE]: Next!")
       applySetCookie(req, response)
       return response
     } catch (e) {
       url.pathname = "/error"
-      console.log("[MIDDLEWARE]: Caiu no catch!", e)
+      devlog("[MIDDLEWARE]: Caiu no catch!", e)
       return NextResponse.rewrite(url, response)
     }
   },

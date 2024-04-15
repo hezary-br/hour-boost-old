@@ -11,18 +11,19 @@ services:
       - 8001:8001
     volumes:
       - ./.docker/cache:/data
-  mysql:
-    image: mysql:8.0.23
-    container_name: mysql
+  postgres:
+    image: postgres:16
+    container_name: postgres
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: hourboost
+      POSTGRES_PASSWORD: longpassword
+      POSTGRES_USER: postgres
+      POSTGRES_DB: hourboost
     ports:
-      - "3311:3306"
+      - 6500:5432
     volumes:
-      - ./.docker/database:/var/lib/mysql
+      - ./.docker/postgres16:/var/lib/postgresql/data
 
 volumes:
   cache:
-  mysql:
+  postgres:
