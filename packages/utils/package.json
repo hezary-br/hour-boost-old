@@ -14,6 +14,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "tsconfig": "workspace:*",
     "core": "workspace:*",
     "tsup-node": "^0.1.0"
   }
