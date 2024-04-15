@@ -14,6 +14,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "jsonwebtoken": "^9.0.2",
+    "@types/jsonwebtoken": "^9.0.5",
     "@hourboost/utils": "workspace:*",
     "tsconfig": "workspace:*",
     "core": "workspace:*",
