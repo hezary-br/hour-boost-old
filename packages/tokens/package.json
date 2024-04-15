@@ -15,9 +15,7 @@
   "license": "ISC",
   "dependencies": {
     "@hourboost/utils": "workspace:*",
-    "core": "workspace:*"
-  },
-  "devDependencies": {
+    "core": "workspace:*",
     "tsup-node": "^0.1.0"
   }
 }

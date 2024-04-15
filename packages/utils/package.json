@@ -13,7 +13,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "devDependencies": {
+  "dependencies": {
     "core": "workspace:*",
     "tsup-node": "^0.1.0"
   }
