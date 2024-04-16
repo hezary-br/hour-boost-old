@@ -19,6 +19,7 @@ import {
   RestoreAccountSessionUseCase,
   ScheduleAutoRestartUseCase,
 } from "~/application/use-cases"
+import { AddUsageTimeToPlanUseCase } from "~/application/use-cases/AddUsageTimeToPlanUseCase"
 import { ChangeUserPlanUseCase } from "~/application/use-cases/ChangeUserPlanUseCase"
 import { RetrieveSessionListUseCase } from "~/application/use-cases/RetrieveSessionListUseCase"
 import { SetMaxSteamAccountsUseCase } from "~/application/use-cases/SetMaxSteamAccountsUseCase"
@@ -233,6 +234,12 @@ export const stopFarmDomain = new StopFarmDomain(usersClusterStorage)
 export const stopFarmUseCase = new StopFarmUseCase(planRepository, stopFarmDomain)
 export const createMeController = new CreateMeController(createUserUseCase)
 export const stagingGamesListService = new StagingGamesListService()
+export const addUsageTimeToPlanUseCase = new AddUsageTimeToPlanUseCase(
+  usersRepository,
+  flushUpdateSteamAccountDomain,
+  steamAccountClientStateCacheRepository,
+  planRepository,
+)
 
 const addSteamAccount = new AddSteamAccount(usersRepository, idGenerator)
 

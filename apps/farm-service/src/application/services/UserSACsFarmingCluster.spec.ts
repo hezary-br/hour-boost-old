@@ -3,11 +3,11 @@ import { CacheState, type CacheStateDTO } from "core"
 import SteamUser from "steam-user"
 import { connection } from "~/__tests__/connection"
 import {
-  makeTestInstances,
-  validSteamAccounts,
   type CustomInstances,
   type MakeTestInstancesProps,
   type PrefixKeys,
+  makeTestInstances,
+  validSteamAccounts,
 } from "~/__tests__/instances"
 import { PlanBuilder } from "~/application/factories/PlanFactory"
 import { testUsers as s } from "~/infra/services/UserAuthenticationInMemory"

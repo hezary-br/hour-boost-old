@@ -5,6 +5,7 @@ import { GetUsersAdminListUseCase } from "~/application/use-cases/GetUsersAdminL
 import { ensureAdmin } from "~/inline-middlewares/ensureAdmin"
 import { validateBody } from "~/inline-middlewares/validate-payload"
 import {
+  addUsageTimeToPlanUseCase,
   changeUserPlanUseCase,
   flushUpdateSteamAccountDomain,
   setMaxSteamAccountsUseCase,
@@ -104,6 +105,47 @@ query_routerAdmin.post("/set-max-steam-accounts", async (req, res) => {
   }
 
   return res.json({ usersAdminList, code: "SUCCESS" })
+})
+
+query_routerAdmin.post("/add-usage", async (req, res) => {
+  const [noAdminRole] = await ensureAdmin(req, res)
+  if (noAdminRole) return res.status(noAdminRole.status).json(noAdminRole.json)
+
+  const [invalidBody, body] = validateBody(
+    req.body,
+    z.object({
+      usageTimeInSeconds: z.number().min(1),
+      mutatingUserId: z.string().min(1),
+    })
+  )
+  if (invalidBody) return res.status(invalidBody.status).json(invalidBody.json)
+  const { mutatingUserId, usageTimeInSeconds } = body
+
+  const [error] = await addUsageTimeToPlanUseCase.execute({
+    mutatingUserId,
+    usageTimeInSeconds,
+  })
+
+  if (error) {
+    if ("code" in error) {
+      switch (error.code) {
+        case "USER-NOT-FOUND":
+        case "USER-STORAGE-NOT-FOUND":
+          return console.log({ error })
+        case "PLAN-IS-INFINITY":
+          return res
+            .status(400)
+            .json({ code: error.code, message: "Operação inválida! Plano é do tipo Infinity." })
+        case "LIST::COULD-NOT-RESET-FARM":
+          return console.log(error.payload)
+        default:
+          error satisfies never
+      }
+    }
+    error satisfies never
+  }
+
+  return res.json({ code: "SUCCESS" })
 })
 
 query_routerAdmin.post("/change-user-plan", async (req, res) => {

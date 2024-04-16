@@ -1,5 +1,4 @@
 export type UserAdminActionAddHoursPayload = {
-  hoursAddingInSeconds: number
-  planId: string
-  userId: string
+  mutatingUserId: string;
+  usageTimeInSeconds: number;
 }

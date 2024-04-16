@@ -82,7 +82,6 @@ export class UsersRepositoryDatabase implements UsersRepository {
           ])
         )
         .join(", ")
-      console.log({ VALUES })
       await this.prisma.$queryRawUnsafe(`
         INSERT INTO steam_accounts ("owner_id", "accountName", "createdAt", "id_steamAccount", "password", "autoRelogin")
         VALUES ${VALUES}

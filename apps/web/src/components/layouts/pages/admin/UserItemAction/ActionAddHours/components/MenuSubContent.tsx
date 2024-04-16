@@ -53,9 +53,8 @@ export const ActionAddHoursMenuSubContent = React.forwardRef<
     if (isSure) {
       mutationAddHours.mutate(
         {
-          hoursAddingInSeconds: finalHoursInSeconds,
-          planId,
-          userId,
+          usageTimeInSeconds: finalHoursInSeconds,
+          mutatingUserId: userId,
         },
         {
           onSuccess([undesired, message]) {

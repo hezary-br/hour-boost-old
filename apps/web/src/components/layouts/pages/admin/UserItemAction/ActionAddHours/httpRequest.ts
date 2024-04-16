@@ -1,8 +1,8 @@
-import { UserAdminActionAddHoursPayload } from "./controller"
-import { IntentionCodes } from "./types"
 import { DataOrMessage, MessageMaker } from "@/util/DataOrMessage"
 import { resolvePromiseToMessage } from "@/util/resolvePromiseToMessage"
 import { AxiosInstance, AxiosResponse } from "axios"
+import { UserAdminActionAddHoursPayload } from "./controller"
+import { IntentionCodes } from "./types"
 
 type UserAdminActionAddHoursOutput = {
   message: string
@@ -16,12 +16,15 @@ export async function httpUserAdminActionAddHours(
   const api = await getAPI()
   const [error, response] = await resolvePromiseToMessage(
     (async () => {
-      const { hoursAddingInSeconds } = payload
-      await new Promise(res => setTimeout(res, 1500))
+      await api.post<any, AxiosResponse<UserAdminActionAddHoursOutput>, UserAdminActionAddHoursPayload>(
+        "/admin/add-usage",
+        payload
+      )
+
       return {
         status: 200,
         data: {
-          message: `Você adicionou ${(hoursAddingInSeconds / 60 / 60).toFixed(2)} horas a mais no plano.`,
+          message: `Você adicionou ${(payload.usageTimeInSeconds / 60 / 60).toFixed(2)} horas a mais no plano.`,
         },
       }
     })()

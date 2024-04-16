@@ -21,9 +21,9 @@ export function useUserAdminActionAddHours() {
       queryClient.invalidateQueries({ queryKey: ECacheKeys["USER-ADMIN-ITEM-LIST"] })
       queryClient.setQueryData<UserAdminPanelSession[]>(ECacheKeys["USER-ADMIN-ITEM-LIST"], users => {
         return produce(users, users => {
-          const user = users!.find(u => u.id_user === variables.userId)!
+          const user = users!.find(u => u.id_user === variables.mutatingUserId)!
           if (planIsUsage(user.plan)) {
-            user.plan.maxUsageTime += variables.hoursAddingInSeconds
+            user.plan.maxUsageTime += variables.usageTimeInSeconds
           }
         })
       })
