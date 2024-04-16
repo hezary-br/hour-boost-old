@@ -1,7 +1,7 @@
 import { HBHeaders } from "@hourboost/tokens"
 import { CreateUserUseCase } from "~/application/use-cases"
 import { token } from "~/infra/singletons/token-factory"
-import { Cookie, ResponseAPI, createCookie, createResponse, createResponseNoJSON } from "~/types/response-api"
+import { Header, ResponseAPI, createResponse, createResponseNoJSON } from "~/types/response-api"
 import { saferAsync } from "~/utils/safer"
 
 export class CreateMeController {
@@ -29,14 +29,14 @@ export class CreateMeController {
       return createResponseNoJSON(400)
     }
 
-    const cookies: Cookie[] = []
-    cookies.push(createCookie(HBHeaders["hb-has-id"], "true"))
-    cookies.push(createCookie(HBHeaders["hb-has-user"], "true"))
-    cookies.push(createCookie(HBHeaders["hb-identification"], userToken))
+    const headers: Header[] = []
+    headers.push({ name: HBHeaders["hb-has-id"], value: "true" })
+    headers.push({ name: HBHeaders["hb-has-user"], value: "true" })
+    headers.push({ name: HBHeaders["hb-identification"], value: userToken })
 
     return {
       status: 201,
-      cookies,
+      headers,
       json: {
         code: "USER-CREATED",
         error: null,

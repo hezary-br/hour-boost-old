@@ -1,6 +1,6 @@
 import { PAGE_HELPERS } from "@/consts"
 import { t } from "@/lib/token-factory"
-import { applySetCookie } from "@/util/cookie-helpers"
+import { appendResponseCookiesToRequest, setCookiesToResponse } from "@/util/cookie-helpers"
 import { devlog } from "@/util/devlog"
 import { authMiddleware, clerkClient, redirectToSignIn } from "@clerk/nextjs"
 import { HBHeaders, HBIdentification } from "@hourboost/tokens"
@@ -10,6 +10,10 @@ export default authMiddleware({
   ignoredRoutes: ["/"],
   publicRoutes: ["/home"],
   async afterAuth(auth, req) {
+    let hbIdentificationToken: string | null = null
+    let hbHasId: string | null = null
+    let hbHasUser: string | null = null
+
     const url = req.nextUrl.clone()
 
     const response = NextResponse.rewrite(url)
@@ -33,7 +37,7 @@ export default authMiddleware({
         return NextResponse.rewrite(url, response)
       }
 
-      applySetCookie(req, response)
+      appendResponseCookiesToRequest(req, response)
       return response
     }
 
@@ -56,22 +60,23 @@ export default authMiddleware({
         headers,
       })
 
-      const hbIdentificationToken = tokenResponse.headers.get(HBHeaders["hb-identification"])
-      const userIdHasUser = tokenResponse.headers.get(HBHeaders["hb-has-user"]) === "true"
-      const hbHasId = tokenResponse.headers.get(HBHeaders["hb-has-id"])
-      if (hbHasId) response.cookies.set(HBHeaders["hb-has-id"], hbHasId)
+      hbIdentificationToken = tokenResponse.headers.get(HBHeaders["hb-identification"])
+      hbHasUser = tokenResponse.headers.get(HBHeaders["hb-has-user"])
+      hbHasId = tokenResponse.headers.get(HBHeaders["hb-has-id"])
+
+      const userIdHasUser = hbHasUser === "true"
       if (!userIdHasUser) {
         const createMeResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL!}/create-me`, {
           method: "POST",
           headers,
         })
 
-        const setCookieString = createMeResponse.headers.getSetCookie()
-        response.headers.set("Set-Cookie", setCookieString.join(", "))
+        hbIdentificationToken = createMeResponse.headers.get(HBHeaders["hb-identification"])
+        hbHasUser = createMeResponse.headers.get(HBHeaders["hb-has-user"])
+        hbHasId = createMeResponse.headers.get(HBHeaders["hb-has-id"])
       }
 
       if (hbIdentificationToken) {
-        response.cookies.set(HBHeaders["hb-identification"], hbIdentificationToken)
         const [error, hbIdentification] = t.parseHBIdentification(hbIdentificationToken)
         if (error) {
           devlog("[MIDDLEWARE]: Erro ao parsear cookie de identification.")
@@ -90,15 +95,13 @@ export default authMiddleware({
         }
       }
 
-      if (!auth.userId) {
-        response.cookies.delete(HBHeaders["hb-identification"])
-      }
+      setCookiesToResponse(response, [
+        [HBHeaders["hb-identification"], hbIdentificationToken],
+        [HBHeaders["hb-has-user"], hbHasUser],
+        [HBHeaders["hb-has-id"], hbHasId],
+      ])
+      appendResponseCookiesToRequest(req, response)
       devlog("[MIDDLEWARE]: Next!")
-      applySetCookie(req, response)
-      console.log(
-        "Setting cookies: ",
-        response.cookies.getAll().map(s => [s.name, s.value])
-      )
       return response
     } catch (e) {
       url.pathname = "/error"

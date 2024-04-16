@@ -7,3 +7,4 @@ export type HBIdentification = jwt.JwtPayload & {
 }
 
 export type HBHasUser = boolean
+export type HBHasId = string

@@ -70,6 +70,8 @@ export const DropdownMenuItemLogout = React.forwardRef<
         await signOut()
         // GAMBIARRA, REDIRECT DO CLERK DEVERIA FAZER ISSO NO MIDDLEWARE
         document.cookie = "hb-identification=; Max-Age=0"
+        document.cookie = "hb-has-user=; Max-Age=0"
+        document.cookie = "hb-has-id=false; Path=/"
         router.reload()
         onClick && onClick(e)
       }}
