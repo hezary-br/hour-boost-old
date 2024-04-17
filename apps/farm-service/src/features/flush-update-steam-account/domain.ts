@@ -21,12 +21,18 @@ export class FlushUpdateSteamAccountDomain implements IFlushUpdateSteamAccountDo
   ) {}
 
   async execute({ user, plan }: FlushUpdateSteamAccountDomainProps) {
-    const [error, updatedCacheStates] = getUserSACs_OnStorage_ByUser_UpdateStates(
+    let [error, updatedCacheStates = []] = getUserSACs_OnStorage_ByUser_UpdateStates(
       user,
       this.allUsersClientsStorage,
       plan
     )
-    if (error) return bad(Fail.create(error.code, 400, error))
+    if (error) {
+      switch (error.code) {
+        case "USER-STORAGE-NOT-FOUND": /*Do nothing, User was not farming*/
+        default:
+          error.code satisfies "USER-STORAGE-NOT-FOUND"
+      }
+    }
 
     const promises = updatedCacheStates.map(state => {
       return this.resetFarmEntities({
@@ -35,6 +41,7 @@ export class FlushUpdateSteamAccountDomain implements IFlushUpdateSteamAccountDo
         accountName: state.accountName,
         username: user.username,
         isFinalizingSession: false,
+        plan,
       })
     })
 

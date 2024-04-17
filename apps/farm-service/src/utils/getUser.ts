@@ -23,7 +23,13 @@ export function getUserSACs_OnStorage_ByUser_UpdateStates(
 }
 export function getUserSACs_OnStorage_ByUser(user: User, allUsersClientsStorage: AllUsersClientsStorage) {
   const userClientStorage = allUsersClientsStorage.get(user.id_user)
-  if (!userClientStorage) return bad({ code: EAppResults["USER-STORAGE-NOT-FOUND"], userClientStorage })
+  if (!userClientStorage)
+    return bad({
+      code: EAppResults["USER-STORAGE-NOT-FOUND"],
+      userClientStorage,
+      givenUserId: user.id_user,
+      usersInStorage: allUsersClientsStorage.listUsersKeys().join(", "),
+    })
   return nice(
     getUserSACs_OnStorage(
       user.steamAccounts.data.map(sa => sa.credentials.accountName),
@@ -37,7 +43,13 @@ export function getUserSACs_OnStorage_ByUserId(
   allUsersClientsStorage: AllUsersClientsStorage
 ) {
   const userClientStorage = allUsersClientsStorage.get(userId)
-  if (!userClientStorage) return bad({ code: EAppResults["USER-STORAGE-NOT-FOUND"], userClientStorage })
+  if (!userClientStorage)
+    return bad({
+      code: EAppResults["USER-STORAGE-NOT-FOUND"],
+      userClientStorage,
+      givenUserId: userId,
+      usersInStorage: allUsersClientsStorage.listUsersKeys().join(", "),
+    })
   return (accountNameList: string[]) => getUserSACs_OnStorage(accountNameList, userClientStorage)
 }
 

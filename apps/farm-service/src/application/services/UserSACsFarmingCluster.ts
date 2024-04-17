@@ -1,11 +1,11 @@
 import {
   ApplicationError,
-  type DataOrError,
-  type DataOrFail,
   Fail,
   PlanInfinity,
+  PlanUsage,
+  type DataOrError,
+  type DataOrFail,
   type PlanRepository,
-  type PlanUsage,
   type SACStateCache,
   type SteamAccountClientStateCacheRepository,
   type SteamAccountsRepository,
@@ -13,11 +13,11 @@ import {
 import { ErrorOccuredOnSteamClientCommand } from "~/application/commands"
 import type { FarmServiceBuilder } from "~/application/factories"
 import {
+  SACList,
   type EventEmitter,
   type FarmInfinityService,
   type FarmService,
   type FarmUsageService,
-  SACList,
 } from "~/application/services"
 import type { SteamAccountClient } from "~/application/services/steam"
 import { EAppResults, type SACGenericError } from "~/application/use-cases"
@@ -152,13 +152,13 @@ export class UserSACsFarmingCluster implements IUserSACsFarmingCluster {
     return !!this.sacList.has(accountName)
   }
 
-  async farmWithAccount({ accountName, gamesId, planId, session }: NSUserCluster.FarmWithAccount) {
+  async farmWithAccount({ accountName, gamesId, planId, session, plan }: NSUserCluster.FarmWithAccount) {
     const sac = this.sacList.get(accountName)
     if (!sac) return bad(Fail.create(EAppResults["SAC-NOT-FOUND"], 404))
 
     if (!this.farmService.hasAccountsFarming()) {
       this.logger.log("SETANDO PRIMEIRO FARM")
-      const plan = await this.planRepository.getById(planId)
+      plan ??= await this.planRepository.getById(planId)
       if (!plan) {
         return bad(Fail.create(EAppResults["PLAN-NOT-FOUND"], 404, { planId }))
       }
@@ -312,6 +312,7 @@ export namespace NSUserCluster {
     gamesId: number[]
     planId: string
     session: SessionType
+    plan?: PlanUsage | PlanInfinity | null
   }
 
   export type SessionType = SessionContinueFromPrevious | SessionNew
