@@ -1,5 +1,6 @@
 import {
   ActiveStatus,
+  BannedStatus,
   Fail,
   GuestPlan,
   PlanInfinity,
@@ -22,7 +23,7 @@ export class User {
   readonly steamAccounts: SteamAccountList
   plan: PlanUsage | PlanInfinity
   readonly role: Role
-  readonly status: Status
+  status: Status
   readonly purchases: Purchase[]
   readonly usages: UsageList
 
@@ -75,6 +76,10 @@ export class User {
     }
     this.steamAccounts.add(steamAccount)
     return nice()
+  }
+
+  ban() {
+    this.status = new BannedStatus()
   }
 }
 

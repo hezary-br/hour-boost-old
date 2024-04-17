@@ -62,6 +62,7 @@ app.get("/recovering-accounts", (req, res) => {
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   if (err) {
+    console.log(err)
     return res.status(504).json({
       message: "Something went wrong.",
       err,
@@ -96,7 +97,7 @@ async function main() {
   // })
 }
 
-main()
+// main()
 
 app.listen(process.env.PORT ?? 4000, () => {
   console.log(`Server is running on port ${process.env.PORT ?? 4000}`)

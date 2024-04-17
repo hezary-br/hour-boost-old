@@ -6,6 +6,7 @@ import { ensureAdmin } from "~/inline-middlewares/ensureAdmin"
 import { validateBody } from "~/inline-middlewares/validate-payload"
 import {
   addUsageTimeToPlanUseCase,
+  banUserUseCase,
   changeUserPlanUseCase,
   flushUpdateSteamAccountDomain,
   setMaxSteamAccountsUseCase,
@@ -143,6 +144,33 @@ query_routerAdmin.post("/add-usage", async (req, res) => {
       }
     }
     error satisfies never
+  }
+
+  return res.json({ code: "SUCCESS" })
+})
+
+query_routerAdmin.post("/ban-user", async (req, res) => {
+  const [noAdminRole] = await ensureAdmin(req, res)
+  if (noAdminRole) return res.status(noAdminRole.status).json(noAdminRole.json)
+
+  const [invalidBody, body] = validateBody(
+    req.body,
+    z.object({
+      banningUserId: z.string().min(1),
+    })
+  )
+  if (invalidBody) return res.status(invalidBody.status).json(invalidBody.json)
+  const { banningUserId } = body
+
+  const [error] = await banUserUseCase.execute(banningUserId)
+
+  if (error) {
+    switch (error.code) {
+      case "USER-NOT-FOUND":
+        return res.status(error.httpStatus).json({ code: error.code, message: "Usuário não encontrado." })
+      default:
+        error.code satisfies never
+    }
   }
 
   return res.json({ code: "SUCCESS" })

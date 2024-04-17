@@ -20,6 +20,7 @@ import {
   ScheduleAutoRestartUseCase,
 } from "~/application/use-cases"
 import { AddUsageTimeToPlanUseCase } from "~/application/use-cases/AddUsageTimeToPlanUseCase"
+import { BanUserUseCase } from "~/application/use-cases/BanUserUseCase"
 import { ChangeUserPlanUseCase } from "~/application/use-cases/ChangeUserPlanUseCase"
 import { RetrieveSessionListUseCase } from "~/application/use-cases/RetrieveSessionListUseCase"
 import { SetMaxSteamAccountsUseCase } from "~/application/use-cases/SetMaxSteamAccountsUseCase"
@@ -238,8 +239,9 @@ export const addUsageTimeToPlanUseCase = new AddUsageTimeToPlanUseCase(
   usersRepository,
   flushUpdateSteamAccountDomain,
   steamAccountClientStateCacheRepository,
-  planRepository,
+  planRepository
 )
+export const banUserUseCase = new BanUserUseCase(usersRepository)
 
 const addSteamAccount = new AddSteamAccount(usersRepository, idGenerator)
 
