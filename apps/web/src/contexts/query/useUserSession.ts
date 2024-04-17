@@ -34,7 +34,7 @@ export function useUserQuery<TData = UserSession | null>(options = {} as UserQue
     },
     // enabled: hasSession,
     refetchInterval: 6000 * 3,
-    staleTime: 6000 * 3,
+    staleTime: 1000, // 1s
     retry: 5,
     ...options,
   })
