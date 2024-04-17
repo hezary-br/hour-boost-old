@@ -19,6 +19,8 @@ export const Header = React.forwardRef<React.ElementRef<typeof HeaderStructure>,
 
     const maintance = process.env.NEXT_PUBLIC_MAINTANCE === "true"
 
+    const userIsBanned = useServerMeta()?.session?.status === "BANNED"
+
     return (
       <HeaderStructure
         {...props}
@@ -78,7 +80,11 @@ export const Header = React.forwardRef<React.ElementRef<typeof HeaderStructure>,
             <div className="flex h-full items-center gap-4">
               <Button
                 variant="ghost"
-                className="hidden h-full md:flex"
+                className={cn(
+                  "hidden h-full md:flex",
+                  userIsBanned && "pointer-events-none cursor-not-allowed opacity-50"
+                )}
+                disabled={userIsBanned}
                 asChild
               >
                 <Link href="/dashboard">Ir para Dashboard</Link>
@@ -223,3 +229,11 @@ export const SVGList = React.forwardRef<React.ElementRef<"svg">, SVGListProps>(f
 })
 
 SVGList.displayName = "SVGList"
+
+type BannedUserBoundary = {
+  children: React.ReactNode
+}
+
+export function BannedUserBoundary({ children }: BannedUserBoundary) {
+  return <div className="absolute inset-0 bg-red-500">{children}</div>
+}

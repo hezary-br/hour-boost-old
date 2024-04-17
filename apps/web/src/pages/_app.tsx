@@ -10,6 +10,7 @@ import { Analytics } from "@vercel/analytics/react"
 import { ThemeProvider } from "next-themes"
 import type { AppProps } from "next/app"
 
+import { UserBannedToaster } from "@/components/molecules/user-banned-toaster"
 import { Toaster } from "@/components/toaster"
 import { ServerMetaProvider } from "@/contexts/server-meta"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
@@ -57,11 +58,10 @@ export default function App({ Component, pageProps }: AppProps) {
             <main className={cn(barlow.className, barlow.variable)}>
               <QueryClientProvider client={queryClient}>
                 <Component {...pageProps} />
-                <ReactQueryDevtools
-                  buttonPosition="bottom-left"
-                />
+                <ReactQueryDevtools buttonPosition="bottom-left" />
               </QueryClientProvider>
               <Analytics />
+              <UserBannedToaster />
             </main>
             <Toaster />
           </ThemeProvider>

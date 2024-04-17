@@ -26,8 +26,8 @@ export function appendResponseCookiesToRequest(req: NextRequest, res: NextRespon
 }
 
 export function setCookiesToResponse(response: NextResponse, cookieList: Array<[string, string | null]>) {
-  for (const [name, value] of cookieList) {
-    if (!value) continue
+  cookieList.forEach(([name, value]) => {
+    if (!value) return
     response.cookies.set(name, value)
-  }
+  })
 }

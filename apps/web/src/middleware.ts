@@ -2,6 +2,7 @@ import { PAGE_HELPERS } from "@/consts"
 import { t } from "@/lib/token-factory"
 import { appendResponseCookiesToRequest, setCookiesToResponse } from "@/util/cookie-helpers"
 import { devlog } from "@/util/devlog"
+import { validateURL } from "@/util/validate-url"
 import { authMiddleware, clerkClient, redirectToSignIn } from "@clerk/nextjs"
 import { HBHeaders, HBIdentification } from "@hourboost/tokens"
 import { NextResponse } from "next/server"
@@ -93,6 +94,50 @@ export default authMiddleware({
           devlog("[MIDDLEWARE]: User tentou acessar admin sem ter role, mostrando 404")
           return NextResponse.rewrite(url, response)
         }
+      }
+
+      console.log({
+        "userToken?.status": userToken?.status, "auth.isPublicRoute": auth.isPublicRoute
+      })
+      if (userToken?.status === "BANNED" && !auth.isPublicRoute) {
+        setCookiesToResponse(response, [
+          ["hb-user-banned", "true"],
+          [HBHeaders["hb-identification"], hbIdentificationToken],
+          [HBHeaders["hb-has-user"], hbHasUser],
+          [HBHeaders["hb-has-id"], hbHasId],
+        ])
+        const headers = new Headers()
+        // for (const cookie of response.headers.getSetCookie()) {
+        //   // if(cookie.startsWith(HBHeaders["hb-identification"])) continue
+        //   headers.append("set-cookie", cookie)
+        // }
+        const url = new URL("/home", req.url)
+        url.searchParams.append("banned", "true")
+        console.log(response.headers.getSetCookie())
+        const response2 = new NextResponse(null, {
+          ...response,
+          headers: response.headers,
+          status: 307,
+        })
+        response2.headers.set("Location", validateURL(url))
+        setCookiesToResponse(response2, [
+          ["hb-user-banned", "true"],
+          [HBHeaders["hb-identification"], hbIdentificationToken],
+          [HBHeaders["hb-has-user"], hbHasUser],
+          [HBHeaders["hb-has-id"], hbHasId],
+        ])
+        // response2.cookies.set("hb-user-banned", "true")
+        // if (hbIdentificationToken)
+        //   response2.cookies.set(HBHeaders["hb-identification"], hbIdentificationToken)
+        // if (hbHasUser) response2.cookies.set(HBHeaders["hb-has-user"], hbHasUser)
+        // if (hbHasId) response2.cookies.set(HBHeaders["hb-has-id"], hbHasId)
+        // console.log({
+        //   hbIdentificationToken,
+        //   hbHasUser,
+        //   hbHasId,
+        // })
+        devlog("[MIDDLEWARE]: Banido, redirecionando para home.")
+        return response2
       }
 
       setCookiesToResponse(response, [
