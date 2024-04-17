@@ -37,7 +37,13 @@ export function getUserSACs_OnStorage_ByUserId(
   allUsersClientsStorage: AllUsersClientsStorage
 ) {
   const userClientStorage = allUsersClientsStorage.get(userId)
-  if (!userClientStorage) return bad({ code: EAppResults["USER-STORAGE-NOT-FOUND"], userClientStorage })
+  if (!userClientStorage)
+    return bad({
+      code: EAppResults["USER-STORAGE-NOT-FOUND"],
+      userClientStorage,
+      givenUserId: userId,
+      usersInStorage: allUsersClientsStorage.listUsersKeys(),
+    })
   return (accountNameList: string[]) => getUserSACs_OnStorage(accountNameList, userClientStorage)
 }
 
