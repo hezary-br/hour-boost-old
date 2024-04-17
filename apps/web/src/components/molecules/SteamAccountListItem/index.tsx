@@ -11,7 +11,7 @@ import { useRefreshGamesMutation, useStopFarmMutation } from "@/mutations"
 import { DataOrMessage, Message } from "@/util/DataOrMessage"
 import { planIsUsage } from "@/util/thisPlanIsUsage"
 import { useAuth } from "@clerk/clerk-react"
-import { AppAccountStatus, GameSession, formatTimeSince } from "core"
+import { AppAccountStatus, GameSession, formatTimeSinceShort } from "core"
 import React, { createContext, useContext, useMemo, useState } from "react"
 import { ISteamAccountListItemContext, SteamAccountListItemContext } from "./context"
 import { SteamAccountListItemViewDesktop } from "./desktop"
@@ -212,7 +212,7 @@ export function getActionText({
 }
 
 export function getFarmedTimeSince(timeInSeconds: number) {
-  const timeSince = formatTimeSince(timeInSeconds * 1000)
+  const timeSince = formatTimeSinceShort(timeInSeconds * 1000)
   const [timeNumber, category, ...secondaryRest] = timeSince.split(" ")
 
   const highlightTime = [timeNumber, category].join(" ")

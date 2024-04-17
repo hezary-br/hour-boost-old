@@ -109,7 +109,7 @@ export async function restoreSACSessionOnApplication({
   const userCluster = usersClusterStorage.getOrAdd(username, plan)
 
   if (state) {
-    const restore = restoreSACStateOnApplication(userCluster)
+    const restore = restoreSACStateOnApplication(userCluster, plan)
     const [error] = await restore(sac, CacheState.restoreFromDTO(state))
     if (error) return bad(error)
   }
@@ -149,7 +149,7 @@ const EAppResultsRaw = {
   "PLAN-MAX-USAGE-EXCEEDED": "PLAN-MAX-USAGE-EXCEEDED",
   "USER-STORAGE-NOT-FOUND": "USER-STORAGE-NOT-FOUND",
   "SAC-NOT-LOGGED": "SAC-NOT-LOGGED",
-  "LIST::COULD-NOT-RESET-FARM": "LIST::COULD-NOT-RESET-FARM"
+  "LIST::COULD-NOT-RESET-FARM": "LIST::COULD-NOT-RESET-FARM",
 } as const
 
 export const EAppResults = EAppResultsRaw as Pretify<Mutable<typeof EAppResultsRaw>>

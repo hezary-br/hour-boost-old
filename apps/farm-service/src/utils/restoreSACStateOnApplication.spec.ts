@@ -48,7 +48,7 @@ test("should restore session if user is not farming", async () => {
   await i.planRepository.update(meInstances.me.plan)
   const [error, userCluster] = i.usersClusterStorage.get(s.me.username)!
   expect(error).toBeNull()
-  const restore = restoreSACStateOnApplication(userCluster!)
+  const restore = restoreSACStateOnApplication(userCluster!, null)
   const sac = i.allUsersClientsStorage.getAccountClient(s.me.userId, s.me.accountName)!
   const dto: CacheStateDTO = {
     accountName: s.me.accountName,

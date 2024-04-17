@@ -45,6 +45,7 @@ export class FlushUpdateSteamAccountUseCase implements IFlushUpdateSteamAccountU
         userId: user.id_user,
         username: user.username,
         isFinalizingSession: false,
+        plan: user.plan,
       })
       if (errorReseting) errorsList.push(errorReseting)
       else dataList.push(data)

@@ -1,6 +1,6 @@
 "use client"
 import { cn } from "@/lib/utils"
-import { formatTimeSince } from "core"
+import { formatTimeSinceShort } from "core"
 import { createContext, useContext, useEffect, useState } from "react"
 
 export function useTimeSince(date: Date) {
@@ -19,7 +19,7 @@ export function useTimeSince(date: Date) {
     return () => clearInterval(interval)
   }, [])
 
-  return { timeSince: formatTimeSince(timeSince) }
+  return { timeSince: formatTimeSinceShort(timeSince) }
 }
 
 interface ITimeSinceContext {

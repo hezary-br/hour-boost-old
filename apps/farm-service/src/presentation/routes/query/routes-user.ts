@@ -4,7 +4,7 @@ import { ClerkExpressWithAuth, type WithAuthProp } from "@clerk/clerk-sdk-node"
 import { GetUser } from "core"
 
 import { HBHeaders } from "@hourboost/tokens"
-import { Router, type Request, type Response } from "express"
+import { type Request, type Response, Router } from "express"
 import { CreateUserUseCase } from "~/application/use-cases"
 import { token } from "~/infra/singletons/token-factory"
 import { GetMeController } from "~/presentation/controllers"

@@ -56,7 +56,6 @@ query_routerAdmin.post("/add-more-games", async (req, res) => {
     if ("code" in error) {
       switch (error.code) {
         case "USER-NOT-FOUND":
-        case "USER-STORAGE-NOT-FOUND":
           return console.log({ error })
         case "LIST::COULD-NOT-RESET-FARM":
           return console.log(error.payload)
@@ -93,7 +92,6 @@ query_routerAdmin.post("/set-max-steam-accounts", async (req, res) => {
     if ("code" in error) {
       switch (error.code) {
         case "USER-NOT-FOUND":
-        case "USER-STORAGE-NOT-FOUND":
           return console.log({ error })
         case "LIST::TRIMMING-ACCOUNTS":
         case "LIST::COULD-NOT-RESET-FARM":
@@ -131,7 +129,6 @@ query_routerAdmin.post("/add-usage", async (req, res) => {
     if ("code" in error) {
       switch (error.code) {
         case "USER-NOT-FOUND":
-        case "USER-STORAGE-NOT-FOUND":
           return console.log({ error })
         case "PLAN-IS-INFINITY":
           return res
