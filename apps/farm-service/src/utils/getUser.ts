@@ -28,7 +28,7 @@ export function getUserSACs_OnStorage_ByUser(user: User, allUsersClientsStorage:
       code: EAppResults["USER-STORAGE-NOT-FOUND"],
       userClientStorage,
       givenUserId: user.id_user,
-      usersInStorage: allUsersClientsStorage.listUsersKeys(),
+      usersInStorage: allUsersClientsStorage.listUsersKeys().join(", "),
     })
   return nice(
     getUserSACs_OnStorage(
@@ -48,7 +48,7 @@ export function getUserSACs_OnStorage_ByUserId(
       code: EAppResults["USER-STORAGE-NOT-FOUND"],
       userClientStorage,
       givenUserId: userId,
-      usersInStorage: allUsersClientsStorage.listUsersKeys(),
+      usersInStorage: allUsersClientsStorage.listUsersKeys().join(", "),
     })
   return (accountNameList: string[]) => getUserSACs_OnStorage(accountNameList, userClientStorage)
 }

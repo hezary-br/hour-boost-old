@@ -1,11 +1,14 @@
-import { type CacheState, Fail } from "core"
+import { Fail, PlanInfinity, PlanUsage, type CacheState } from "core"
 import type { UserSACsFarmingCluster } from "~/application/services"
 import type { SteamAccountClient } from "~/application/services/steam"
 import { EAppResults, type SACGenericError } from "~/application/use-cases"
 import { env } from "~/env"
 import { bad, nice } from "~/utils/helpers"
 
-export function restoreSACStateOnApplication(userCluster: UserSACsFarmingCluster) {
+export function restoreSACStateOnApplication(
+  userCluster: UserSACsFarmingCluster,
+  plan: PlanUsage | PlanInfinity | null
+) {
   return async (sac: SteamAccountClient, state: CacheState) => {
     const isAccountFarming = userCluster.isAccountFarmingOnService(sac.accountName)
     if (!userCluster.hasSteamAccountClient(sac.accountName) && !isAccountFarming) {
@@ -29,6 +32,7 @@ export function restoreSACStateOnApplication(userCluster: UserSACsFarmingCluster
         accountName: state.accountName,
         gamesId: state.gamesPlaying,
         planId: state.planId,
+        plan,
         session: state.farmStartedAt
           ? {
               type: "CONTINUE-FROM-PREVIOUS",

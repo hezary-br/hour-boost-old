@@ -1,4 +1,10 @@
-import { type CacheState, Fail, type SteamAccountClientStateCacheRepository } from "core"
+import {
+  Fail,
+  PlanInfinity,
+  PlanUsage,
+  type CacheState,
+  type SteamAccountClientStateCacheRepository,
+} from "core"
 import type {
   AllUsersClientsStorage,
   UserSACsFarmingCluster,
@@ -26,6 +32,7 @@ type ResetFarmProps = {
   username: string
   userId: string
   isFinalizingSession: boolean
+  plan: PlanUsage | PlanInfinity | null
 }
 
 type ResetFarmEntitiesProps = {
@@ -34,6 +41,7 @@ type ResetFarmEntitiesProps = {
   userId: string
   isFinalizingSession: boolean
   state: CacheState
+  plan: PlanUsage | PlanInfinity | null
 }
 
 export function makeResetFarm({
@@ -41,7 +49,7 @@ export function makeResetFarm({
   steamAccountClientStateCacheRepository,
   usersSACsFarmingClusterStorage,
 }: MakeResetFarmProps) {
-  return async ({ accountName, userId, username, isFinalizingSession }: ResetFarmProps) => {
+  return async ({ accountName, userId, username, isFinalizingSession, plan }: ResetFarmProps) => {
     const state = await steamAccountClientStateCacheRepository.get(accountName)
     if (!state) return bad(Fail.create("NO_CACHE_STATE_FOUND", 404))
 
@@ -62,6 +70,7 @@ export function makeResetFarm({
       userCluster,
       username,
       isFinalizingSession,
+      plan,
     })
     return result
   }
@@ -71,7 +80,14 @@ export function makeResetFarmEntities({
   allUsersClientsStorage,
   usersSACsFarmingClusterStorage,
 }: MakeResetFarmEntitiesProps) {
-  return async ({ accountName, state, userId, username, isFinalizingSession }: ResetFarmEntitiesProps) => {
+  return async ({
+    accountName,
+    state,
+    userId,
+    username,
+    isFinalizingSession,
+    plan,
+  }: ResetFarmEntitiesProps) => {
     const [errorGettingSAC, sac] = getSACOn_AllUsersClientsStorage_ByUserId(
       userId,
       allUsersClientsStorage
@@ -89,6 +105,7 @@ export function makeResetFarmEntities({
       userCluster,
       username,
       isFinalizingSession,
+      plan,
     })
   }
 }
@@ -99,11 +116,20 @@ type ResetFarmProps2 = {
   state: CacheState
   accountName: string
   username: string
+  plan: PlanUsage | PlanInfinity | null
   isFinalizingSession: boolean
 }
 
 export function resetFarm(stopFarmDomain: StopFarmDomain) {
-  return async ({ state, userCluster, sac, accountName, username, isFinalizingSession }: ResetFarmProps2) => {
+  return async ({
+    state,
+    userCluster,
+    sac,
+    accountName,
+    plan,
+    username,
+    isFinalizingSession,
+  }: ResetFarmProps2) => {
     const [error, data] = stopFarmDomain.execute({
       accountName,
       username,
@@ -122,7 +148,7 @@ export function resetFarm(stopFarmDomain: StopFarmDomain) {
       }
     }
 
-    const [errorRestoringSACState] = await restoreSACStateOnApplication(userCluster)(sac, state)
+    const [errorRestoringSACState] = await restoreSACStateOnApplication(userCluster, plan)(sac, state)
     if (errorRestoringSACState) return bad(errorRestoringSACState)
     return nice(data)
   }

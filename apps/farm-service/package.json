@@ -8,7 +8,7 @@
     "dev": "tsx src/server.ts",
     "dev:inspect": "node --import tsx/esm --inspect src/server.ts",
     "check": "tsc --noEmit",
-    "build": "tsup src/server.ts --format esm --external ../../package.json",
+    "build": "tsup src/server.ts --sourcemap --format esm --external ../../package.json",
     "build_debug": "npm run build --sourcemap",
     "build:check": "npm run check && tsup npm run build",
     "tx": "tsx",
