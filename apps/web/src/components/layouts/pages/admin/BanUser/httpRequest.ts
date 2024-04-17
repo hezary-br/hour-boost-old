@@ -1,5 +1,7 @@
+import { api } from "@/lib/axios"
 import { DataOrMessage, MessageMaker } from "@/util/DataOrMessage"
 import { resolvePromiseToMessage } from "@/util/resolvePromiseToMessage"
+import { AxiosResponse } from "axios"
 import { UserAdminActionBanUserPayload } from "./controller"
 import { IntentionCodes } from "./types"
 
@@ -13,12 +15,14 @@ export async function httpUserAdminActionBanUser(
 ): Promise<DataOrMessage<string, IntentionCodes>> {
   const [error, response] = await resolvePromiseToMessage(
     (async () => {
-      const { username } = payload
-      await new Promise(res => setTimeout(res, 1500))
+      await api.post<any, AxiosResponse<UserAdminActionBanUserOutput>, UserAdminActionBanUserPayload>(
+        "/admin/ban-user",
+        payload
+      )
       return {
         status: 200,
         data: {
-          message: `O usuário ${username} foi banido da plataforma.`,
+          message: `O usuário ${payload.username} foi banido da plataforma.`,
         },
       }
     })()

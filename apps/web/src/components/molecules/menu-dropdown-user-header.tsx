@@ -24,6 +24,9 @@ export const MenuDropdownUserHeader = React.forwardRef<
   const isAdminQuery = useUser(user => user.role === "ADMIN")
   const isAdmin = isAdminQuery.status === "pending" ? isAdminServerMeta : !!isAdminQuery.data
 
+  const userIsBanned = useServerMeta()?.session?.status === "BANNED"
+  // userIsBanned && "pointer-events-none cursor-not-allowed opacity-50"
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
@@ -33,14 +36,20 @@ export const MenuDropdownUserHeader = React.forwardRef<
         ref={ref}
         align="end"
       >
-        <HeaderLink to="/home">Home</HeaderLink>
-        <HeaderLink to="/dashboard">Dashboard</HeaderLink>
-        {isAdmin && (
+        {userIsBanned ? (
+          <DropdownMenuItemLogout>Sair</DropdownMenuItemLogout>
+        ) : (
           <>
-            <HeaderLink to="/admin">Painel Admin</HeaderLink>
+            <HeaderLink to="/home">Home</HeaderLink>
+            <HeaderLink to="/dashboard">Dashboard</HeaderLink>
+            {isAdmin && (
+              <>
+                <HeaderLink to="/admin">Painel Admin</HeaderLink>
+              </>
+            )}
+            <DropdownMenuItemLogout>Sair</DropdownMenuItemLogout>
           </>
         )}
-        <DropdownMenuItemLogout>Sair</DropdownMenuItemLogout>
       </DropdownMenuContent>
     </DropdownMenu>
   )

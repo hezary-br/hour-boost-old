@@ -3,11 +3,11 @@ import { ECacheKeys } from "@/mutations/queryKeys"
 import { DataOrMessage } from "@/util/DataOrMessage"
 import { useAuth } from "@clerk/clerk-react"
 import { DefaultError, useMutation, useQueryClient } from "@tanstack/react-query"
+import { UserAdminPanelSession } from "core"
+import { produce } from "immer"
 import { UserAdminActionBanUserPayload } from "./controller"
 import { httpUserAdminActionBanUser } from "./httpRequest"
 import { IntentionCodes } from "./types"
-import { UserAdminPanelSession } from "core"
-import { produce } from "immer"
 
 type UseUserAdminActionBanUserProps = {
   userId: string
@@ -21,10 +21,11 @@ export function useUserAdminActionBanUser({ userId }: UseUserAdminActionBanUserP
     onSuccess(_, variables) {
       queryClient.setQueryData<UserAdminPanelSession[]>(ECacheKeys["USER-ADMIN-ITEM-LIST"], users => {
         return produce(users, users => {
-          const user = users!.find(u => u.id_user === variables.userId)!
+          const user = users!.find(u => u.id_user === variables.banningUserId)!
           user.status = "BANNED"
         })
       })
+      queryClient.invalidateQueries()
     },
   })
 }

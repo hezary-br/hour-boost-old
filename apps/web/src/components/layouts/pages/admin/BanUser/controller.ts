@@ -1,4 +1,7 @@
-export type UserAdminActionBanUserPayload = {
-  userId: string
+export type UserAdminActionBanUserPayload = UserAdminActionBanUserPayloadAditional & {
+  banningUserId: string
+}
+
+type UserAdminActionBanUserPayloadAditional = {
   username: string
 }

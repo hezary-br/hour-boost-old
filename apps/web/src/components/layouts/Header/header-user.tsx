@@ -2,7 +2,6 @@ import { IconChevron } from "@/components/icons/IconChevron"
 import { MenuDropdownUserHeader } from "@/components/molecules/menu-dropdown-user-header"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { useUser } from "@/contexts/UserContext"
-import { useServerMeta } from "@/contexts/server-meta"
 import { cn } from "@/lib/utils"
 import { getUserInitials } from "@/util/getUserInitials"
 import Image from "next/image"
@@ -12,8 +11,6 @@ export type HeaderUserProps = Omit<React.ComponentPropsWithoutRef<typeof MenuDro
 
 export const HeaderUser = React.forwardRef<React.ElementRef<typeof MenuDropdownUserHeader>, HeaderUserProps>(
   function HeaderUserComponent({ className, ...props }, ref) {
-    const userIsBanned = useServerMeta()?.session?.status === "BANNED"
-
     return (
       <MenuDropdownUserHeader
         ref={ref}
@@ -21,10 +18,8 @@ export const HeaderUser = React.forwardRef<React.ElementRef<typeof MenuDropdownU
         {...props}
       >
         <button
-          disabled={userIsBanned}
           className={cn(
-            "flex h-9 cursor-pointer items-center rounded-sm px-1 hover:bg-slate-800 focus-visible:outline-none",
-            userIsBanned && "pointer-events-none cursor-not-allowed opacity-50"
+            "flex h-9 cursor-pointer items-center rounded-sm px-1 hover:bg-slate-800 focus-visible:outline-none"
           )}
         >
           <Avatar

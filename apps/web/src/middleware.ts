@@ -87,18 +87,6 @@ export default authMiddleware({
       }
       devlog("[MIDDLEWARE]: --> LOG: tem token: ", !!userToken)
 
-      if (req.nextUrl.pathname.startsWith("/admin")) {
-        // if (auth.sessionClaims?.metadata.role !== "ADMIN") {
-        if (!userToken || userToken.role !== "ADMIN") {
-          url.pathname = "/404"
-          devlog("[MIDDLEWARE]: User tentou acessar admin sem ter role, mostrando 404")
-          return NextResponse.rewrite(url, response)
-        }
-      }
-
-      console.log({
-        "userToken?.status": userToken?.status, "auth.isPublicRoute": auth.isPublicRoute
-      })
       if (userToken?.status === "BANNED" && !auth.isPublicRoute) {
         setCookiesToResponse(response, [
           ["hb-user-banned", "true"],
@@ -139,6 +127,20 @@ export default authMiddleware({
         devlog("[MIDDLEWARE]: Banido, redirecionando para home.")
         return response2
       }
+
+      if (req.nextUrl.pathname.startsWith("/admin")) {
+        // if (auth.sessionClaims?.metadata.role !== "ADMIN") {
+        if (!userToken || userToken.role !== "ADMIN") {
+          url.pathname = "/404"
+          devlog("[MIDDLEWARE]: User tentou acessar admin sem ter role, mostrando 404")
+          return NextResponse.rewrite(url, response)
+        }
+      }
+
+      console.log({
+        "userToken?.status": userToken?.status,
+        "auth.isPublicRoute": auth.isPublicRoute,
+      })
 
       setCookiesToResponse(response, [
         [HBHeaders["hb-identification"], hbIdentificationToken],

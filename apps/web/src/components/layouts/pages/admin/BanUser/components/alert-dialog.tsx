@@ -89,7 +89,7 @@ export const ConfirmButton = React.forwardRef<React.ElementRef<typeof Button>, C
     const handleBanUser = () => {
       banUserMutation.mutate(
         {
-          userId,
+          banningUserId: userId,
           username,
         },
         {
