@@ -24,6 +24,7 @@ export class CreateMeController {
     const [errorSigningToken, userToken] = token.createHBIdentification({
       role: me.role.name,
       userId,
+      status: me.status.name,
     })
     if (errorSigningToken) {
       return createResponseNoJSON(400)

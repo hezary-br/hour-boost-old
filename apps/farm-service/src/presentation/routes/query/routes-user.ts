@@ -4,7 +4,7 @@ import { ClerkExpressWithAuth, type WithAuthProp } from "@clerk/clerk-sdk-node"
 import { GetUser } from "core"
 
 import { HBHeaders } from "@hourboost/tokens"
-import { type Request, type Response, Router } from "express"
+import { Router, type Request, type Response } from "express"
 import { CreateUserUseCase } from "~/application/use-cases"
 import { token } from "~/infra/singletons/token-factory"
 import { GetMeController } from "~/presentation/controllers"
@@ -27,16 +27,17 @@ query_routerUser.head("/me", ClerkExpressWithAuth(), async (req, res) => {
     return res.setHeader(HBHeaders["hb-has-id"], "false").end()
   }
 
-  const userRole = await usersDAO.getRoleByUserId(userId)
-  if (!userRole) {
+  const user = await usersDAO.getByIDShallow(userId)
+  if (!user) {
     res.setHeader(HBHeaders["hb-has-id"], "false")
     res.setHeader(HBHeaders["hb-has-user"], "false")
     return res.end()
   }
 
   const [errorSigningToken, userToken] = token.createHBIdentification({
-    role: userRole.name,
+    role: user.role,
     userId,
+    status: user.status,
   })
   if (errorSigningToken) {
     return res.status(400).end()
