@@ -1,8 +1,8 @@
 import { HBHeaders } from "@hourboost/tokens"
+import { saferAsync } from "@hourboost/utils"
 import { CreateUserUseCase } from "~/application/use-cases"
 import { token } from "~/infra/singletons/token-factory"
 import { Header, ResponseAPI, createResponse, createResponseNoJSON } from "~/types/response-api"
-import { saferAsync } from "~/utils/safer"
 
 export class CreateMeController {
   constructor(private readonly createUserUseCase: CreateUserUseCase) {}

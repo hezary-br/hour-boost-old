@@ -1,7 +1,7 @@
+import { safer } from "@hourboost/utils"
 import { type DataOrFail, Fail, type RoleName } from "core"
 import jwt from "jsonwebtoken"
 import { bad, nice } from "~/utils/helpers"
-import { safer } from "~/utils/safer"
 
 export class TokenService implements ITokenService {
   constructor() {}

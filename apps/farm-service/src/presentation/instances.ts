@@ -242,7 +242,12 @@ export const addUsageTimeToPlanUseCase = new AddUsageTimeToPlanUseCase(
   steamAccountClientStateCacheRepository,
   planRepository
 )
-export const banUserUseCase = new BanUserUseCase(usersRepository)
+export const banUserUseCase = new BanUserUseCase(
+  usersRepository,
+  removeSteamAccount,
+  planRepository,
+  steamAccountClientStateCacheRepository
+)
 export const unbanUserUseCase = new UnbanUserUseCase(usersRepository)
 
 const addSteamAccount = new AddSteamAccount(usersRepository, idGenerator)

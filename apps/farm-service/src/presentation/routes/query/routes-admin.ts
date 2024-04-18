@@ -1,7 +1,9 @@
+import { ClerkExpressRequireAuth } from "@clerk/clerk-sdk-node"
 import { Router } from "express"
 import { z } from "zod"
 import { AddMoreGamesToPlanUseCase } from "~/application/use-cases/AddMoreGamesToPlanUseCase"
 import { GetUsersAdminListUseCase } from "~/application/use-cases/GetUsersAdminListUseCase"
+import { GENERIC_ERROR_JSON, GENERIC_ERROR_STATUS } from "~/consts"
 import { ensureAdmin } from "~/inline-middlewares/ensureAdmin"
 import { validateBody } from "~/inline-middlewares/validate-payload"
 import {
@@ -147,7 +149,7 @@ query_routerAdmin.post("/add-usage", async (req, res) => {
   return res.json({ code: "SUCCESS" })
 })
 
-query_routerAdmin.post("/ban-user", async (req, res) => {
+query_routerAdmin.post("/ban-user", ClerkExpressRequireAuth(), async (req, res) => {
   const [noAdminRole] = await ensureAdmin(req, res)
   if (noAdminRole) return res.status(noAdminRole.status).json(noAdminRole.json)
 
@@ -160,14 +162,28 @@ query_routerAdmin.post("/ban-user", async (req, res) => {
   if (invalidBody) return res.status(invalidBody.status).json(invalidBody.json)
   const { banningUserId } = body
 
+  if (req.auth.userId === banningUserId) {
+    return res.status(403).json({
+      message: "Você não pode banir a sí mesmo.",
+    })
+  }
   const [error] = await banUserUseCase.execute(banningUserId)
 
   if (error) {
     switch (error.code) {
       case "USER-NOT-FOUND":
         return res.status(error.httpStatus).json({ code: error.code, message: "Usuário não encontrado." })
+      case "LIST::REMOVING-ACCOUNTS":
+        console.log("ERROR: ", error.code, error.payload)
+      case "PAUSE-FARM-ON-ACCOUNT::DO-NOT-HAVE-ACCOUNTS-FARMING":
+      case "PAUSE-FARM-ON-ACCOUNT::PAUSE-FARM-ON-ACCOUNT-NOT-FOUND":
+      case "PAUSE-FARM-ON-ACCOUNT::TRIED-TO-STOP-FARM-ON-NON-FARMING-ACCOUNT":
+      case "STEAM_ACCOUNT_NOT_FOUND":
+      case "STEAM-ACCOUNT-NOT-FOUND":
+      case "[Users-Cluster-Storage]:CLUSTER-NOT-FOUND":
+        return res.status(GENERIC_ERROR_STATUS).json(GENERIC_ERROR_JSON)
       default:
-        error.code satisfies never
+        error satisfies never
     }
   }
 
