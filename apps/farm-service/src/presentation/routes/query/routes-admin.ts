@@ -174,13 +174,8 @@ query_routerAdmin.post("/ban-user", ClerkExpressRequireAuth(), async (req, res) 
       case "USER-NOT-FOUND":
         return res.status(error.httpStatus).json({ code: error.code, message: "Usuário não encontrado." })
       case "LIST::REMOVING-ACCOUNTS":
+      case "LIST::PERSISTING-USAGES":
         console.log("ERROR: ", error.code, error.payload)
-      case "PAUSE-FARM-ON-ACCOUNT::DO-NOT-HAVE-ACCOUNTS-FARMING":
-      case "PAUSE-FARM-ON-ACCOUNT::PAUSE-FARM-ON-ACCOUNT-NOT-FOUND":
-      case "PAUSE-FARM-ON-ACCOUNT::TRIED-TO-STOP-FARM-ON-NON-FARMING-ACCOUNT":
-      case "STEAM_ACCOUNT_NOT_FOUND":
-      case "STEAM-ACCOUNT-NOT-FOUND":
-      case "[Users-Cluster-Storage]:CLUSTER-NOT-FOUND":
         return res.status(GENERIC_ERROR_STATUS).json(GENERIC_ERROR_JSON)
       default:
         error satisfies never

@@ -19,7 +19,8 @@
     "api": "npm run build:api && npm run start:api",
     "api:debug": "npm run build:api:debug && npm run start:api:debug",
     "spinup": "npm run build && npm run start",
-    "clean": "rimraf --glob '**/.next' && rimraf --glob '**/.turbo' && rimraf --glob '**/dist' && rimraf --glob '**/node_modules'"
+    "clean": "rimraf --glob '**/.next' && rimraf --glob '**/.turbo' && rimraf --glob '**/dist' && rimraf --glob '**/node_modules'",
+    "st": "prisma studio --schema apps/farm-service/prisma/schema.prisma"
   },
   "dependencies": {
     "@clerk/clerk-react": "^4.27.1",

@@ -18,11 +18,15 @@ export function nice<const T = undefined>(result?: T) {
   return [null, result] as [null, T]
 }
 
-export type GetError<T extends (...args: any[]) => any> = T extends (...args: any) => Promise<infer R>
-  ? R extends [infer E]
+export type GetError<T extends (...args: any[]) => any> = T extends (...args: any) => Promise<infer PR>
+  ? PR extends [infer E]
     ? NonNullable<E>
     : never
-  : never
+  : T extends (...args: any) => infer R
+    ? R extends [infer E]
+      ? NonNullable<E>
+      : never
+    : never
 
 export type GetErrorByTuple<T> = T extends [infer E] ? E : never
 export type GetResultByTuple<T> = T extends [null, infer R] ? R : never
@@ -38,7 +42,6 @@ export type GetTuple<T extends (...args: any[]) => any> = T extends (...args: an
   : never
 
 export type Pretify<T> = T extends Record<string, unknown> ? { [K in keyof T]: Pretify<T[K]> } & unknown : T
-export type Mutable<T> = T extends Record<string, unknown>
-  ? { -readonly [K in keyof T]: Mutable<T[K]> } & unknown
-  : T
+export type Mutable<T> =
+  T extends Record<string, unknown> ? { -readonly [K in keyof T]: Mutable<T[K]> } & unknown : T
 export type Only<T extends any> = T extends Record<string, unknown> ? Pretify<Mutable<T>> : T
