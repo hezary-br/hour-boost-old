@@ -25,6 +25,7 @@ import { ChangeUserPlanUseCase } from "~/application/use-cases/ChangeUserPlanUse
 import { RetrieveSessionListUseCase } from "~/application/use-cases/RetrieveSessionListUseCase"
 import { SetMaxSteamAccountsUseCase } from "~/application/use-cases/SetMaxSteamAccountsUseCase"
 import { StopFarmUseCase } from "~/application/use-cases/StopFarmUseCase"
+import { UnbanUserUseCase } from "~/application/use-cases/UnbanUserUseCase"
 import type { SteamBuilder } from "~/contracts/SteamBuilder"
 import { AutoRestarterScheduler } from "~/domain/cron"
 import {
@@ -242,6 +243,7 @@ export const addUsageTimeToPlanUseCase = new AddUsageTimeToPlanUseCase(
   planRepository
 )
 export const banUserUseCase = new BanUserUseCase(usersRepository)
+export const unbanUserUseCase = new UnbanUserUseCase(usersRepository)
 
 const addSteamAccount = new AddSteamAccount(usersRepository, idGenerator)
 

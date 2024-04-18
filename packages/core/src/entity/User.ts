@@ -81,6 +81,10 @@ export class User {
   ban() {
     this.status = new BannedStatus()
   }
+
+  unban() {
+    this.status = new ActiveStatus()
+  }
 }
 
 type UserProps = {

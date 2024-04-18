@@ -1,7 +1,7 @@
 import { ApplicationError, type DataOrError } from "core"
 import type { SteamAccountClient } from "~/application/services/steam"
 import { EVENT_PROMISES_TIMEOUT_IN_SECONDS } from "~/consts"
-import { type EventPromises, SteamClientEventsRequired } from "~/utils/SteamClientEventsRequired"
+import { SteamClientEventsRequired, type EventPromises } from "~/utils/SteamClientEventsRequired"
 import { bad, nice } from "~/utils/helpers"
 
 export type Payload = {
@@ -40,6 +40,8 @@ export class LoginSteamWithToken implements ILoginSteamWithToken {
     if (eventsPromisesResolved.type === "loggedOn") {
       return nice(true)
     }
+
+    // remover refresh token do cache
 
     return bad(
       new ApplicationError(

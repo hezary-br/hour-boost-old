@@ -23,10 +23,11 @@ export function useUserAdminActionUnbanUser({ userId }: UseUserAdminActionUnbanU
     onSuccess(_, variables) {
       queryClient.setQueryData<UserAdminPanelSession[]>(ECacheKeys["USER-ADMIN-ITEM-LIST"], users => {
         return produce(users, users => {
-          const user = users!.find(u => u.id_user === variables.userId)!
+          const user = users!.find(u => u.id_user === variables.unbanningUserId)!
           user.status = "ACTIVE"
         })
       })
+      queryClient.invalidateQueries()
     },
   })
 }

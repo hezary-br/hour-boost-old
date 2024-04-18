@@ -1,6 +1,6 @@
 import { DataOrMessage, MessageMaker } from "@/util/DataOrMessage"
 import { resolvePromiseToMessage } from "@/util/resolvePromiseToMessage"
-import { AxiosInstance } from "axios"
+import { AxiosInstance, AxiosResponse } from "axios"
 import { UserAdminActionUnbanUserPayload } from "./controller"
 import { IntentionCodes } from "./types"
 
@@ -16,12 +16,14 @@ export async function httpUserAdminActionUnbanUser(
   const api = await getAPI()
   const [error, response] = await resolvePromiseToMessage(
     (async () => {
-      const { username } = payload
-      await new Promise(res => setTimeout(res, 1500))
+      await api.post<any, AxiosResponse<UserAdminActionUnbanUserOutput>, UserAdminActionUnbanUserPayload>(
+        "/admin/unban-user",
+        payload
+      )
       return {
         status: 200,
         data: {
-          message: `O usuário ${username} foi desbanido da plataforma.`,
+          message: `O usuário ${payload.username} foi desbanido da plataforma.`,
         },
       }
     })()
@@ -35,7 +37,3 @@ export async function httpUserAdminActionUnbanUser(
   console.log({ response })
   return [msg.new("Resposta desconhecida.", "info")]
 }
-
-// api.post<any, AxiosResponse<UserAdminActionUnbanUserOutput>, UserAdminActionUnbanUserPayload>(
-//   "/farm/stop",
-//   payload

@@ -11,6 +11,7 @@ import {
   flushUpdateSteamAccountDomain,
   setMaxSteamAccountsUseCase,
   steamAccountClientStateCacheRepository,
+  unbanUserUseCase,
   usersDAO,
   usersRepository,
 } from "~/presentation/instances"
@@ -160,6 +161,33 @@ query_routerAdmin.post("/ban-user", async (req, res) => {
   const { banningUserId } = body
 
   const [error] = await banUserUseCase.execute(banningUserId)
+
+  if (error) {
+    switch (error.code) {
+      case "USER-NOT-FOUND":
+        return res.status(error.httpStatus).json({ code: error.code, message: "Usuário não encontrado." })
+      default:
+        error.code satisfies never
+    }
+  }
+
+  return res.json({ code: "SUCCESS" })
+})
+
+query_routerAdmin.post("/unban-user", async (req, res) => {
+  const [noAdminRole] = await ensureAdmin(req, res)
+  if (noAdminRole) return res.status(noAdminRole.status).json(noAdminRole.json)
+
+  const [invalidBody, body] = validateBody(
+    req.body,
+    z.object({
+      unbanningUserId: z.string().min(1),
+    })
+  )
+  if (invalidBody) return res.status(invalidBody.status).json(invalidBody.json)
+  const { unbanningUserId } = body
+
+  const [error] = await unbanUserUseCase.execute(unbanningUserId)
 
   if (error) {
     switch (error.code) {

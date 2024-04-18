@@ -38,7 +38,7 @@ export const AlertDialogUnbanUser = React.forwardRef<
   const handleUnbanUser = () => {
     unbanUserMutation.mutate(
       {
-        userId,
+        unbanningUserId: userId,
         username,
       },
       {
