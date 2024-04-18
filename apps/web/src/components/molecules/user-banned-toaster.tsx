@@ -23,10 +23,19 @@ function UserBannedToasterMessage({}: UserBannedToasterMessage) {
   useEffect(() => {
     setTimeout(() => {
       if (done.current) return
-      toast.error("Você foi banido e está impedido de performar ações no site.", {
-        position: "top-center",
-        duration: 1000 * 10,
-      })
+      toast.error(
+        <div className="flex flex-col gap-2">
+          <h2 className="text-center text-lg font-bold">Você está banido.</h2>
+          <p className="text-red-100">
+            Você foi banido e está impedido de performar ações na nossa plataforma.
+          </p>
+          <p className="text-red-100">Todas as suas contas foram removidas do nosso banco de dados.</p>
+        </div>,
+        {
+          position: "top-center",
+          duration: 1000 * 10,
+        }
+      )
       done.current = true
       document.cookie = "hb-user-banned=; Max-Age=0"
     }, 500)

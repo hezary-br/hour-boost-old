@@ -290,6 +290,9 @@ importers:
       '@hourboost/tokens':
         specifier: workspace:*
         version: link:../../packages/tokens
+      '@hourboost/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
       core:
         specifier: workspace:*
         version: link:../../packages/core

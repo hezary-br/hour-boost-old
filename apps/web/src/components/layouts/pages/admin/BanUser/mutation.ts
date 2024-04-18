@@ -1,6 +1,6 @@
 import { api } from "@/lib/axios"
 import { ECacheKeys } from "@/mutations/queryKeys"
-import { DataOrMessage } from "@/util/DataOrMessage"
+import { DataOrMessage, MessageMaker } from "@/util/DataOrMessage"
 import { useAuth } from "@clerk/clerk-react"
 import { DefaultError, useMutation, useQueryClient } from "@tanstack/react-query"
 import { UserAdminPanelSession } from "core"
@@ -14,10 +14,12 @@ type UseUserAdminActionBanUserProps = {
 }
 
 export function useUserAdminActionBanUser({ userId }: UseUserAdminActionBanUserProps) {
+  const { getToken } = useAuth()
   const queryClient = useQueryClient()
   return useMutation<DataOrMessage<string, IntentionCodes>, DefaultError, UserAdminActionBanUserPayload>({
     mutationKey: ECacheKeys.banUser(userId),
-    mutationFn: async (...args) => httpUserAdminActionBanUser(...args),
+    mutationFn: async (...args) =>
+      httpUserAdminActionBanUser(...args, new MessageMaker<IntentionCodes>(), getToken),
     onSuccess(_, variables) {
       queryClient.setQueryData<UserAdminPanelSession[]>(ECacheKeys["USER-ADMIN-ITEM-LIST"], users => {
         return produce(users, users => {

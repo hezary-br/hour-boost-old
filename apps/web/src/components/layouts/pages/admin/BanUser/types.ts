@@ -1,1 +1,1 @@
-export type IntentionCodes = "UNKNOWN"
+export type IntentionCodes = "UNKNOWN" | "SUCCESS"

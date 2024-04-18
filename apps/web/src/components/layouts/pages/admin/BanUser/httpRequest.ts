@@ -1,7 +1,7 @@
 import { api } from "@/lib/axios"
 import { DataOrMessage, MessageMaker } from "@/util/DataOrMessage"
-import { resolvePromiseToMessage } from "@/util/resolvePromiseToMessage"
-import { AxiosResponse } from "axios"
+import { saferAsync } from "@hourboost/utils"
+import { AxiosError, AxiosResponse } from "axios"
 import { UserAdminActionBanUserPayload } from "./controller"
 import { IntentionCodes } from "./types"
 
@@ -11,30 +11,30 @@ type UserAdminActionBanUserOutput = {
 
 export async function httpUserAdminActionBanUser(
   payload: UserAdminActionBanUserPayload,
-  msg = new MessageMaker<IntentionCodes>()
+  msg = new MessageMaker<IntentionCodes>(),
+  getToken: () => Promise<string | null>
 ): Promise<DataOrMessage<string, IntentionCodes>> {
-  const [error, response] = await resolvePromiseToMessage(
-    (async () => {
-      await api.post<any, AxiosResponse<UserAdminActionBanUserOutput>, UserAdminActionBanUserPayload>(
-        "/admin/ban-user",
-        payload
-      )
-      return {
-        status: 200,
-        data: {
-          message: `O usuário ${payload.username} foi banido da plataforma.`,
-        },
+  const token = await getToken()
+  const [error] = await saferAsync(() =>
+    api.post<any, AxiosResponse<UserAdminActionBanUserOutput>, UserAdminActionBanUserPayload>(
+      "/admin/ban-user",
+      payload,
+      {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
       }
-    })()
+    )
   )
+  console.log(error)
   if (error) {
-    return [error]
+    if (error instanceof AxiosError) {
+      return [msg.new(error.response?.data.message, "error", error.response?.data.code)]
+    }
+    console.log(error.constructor)
+    return [msg.new("Erro desconhecido.", "error", "UNKNOWN")]
   }
-  if (response.status === 200) {
-    return [null, response.data.message]
-  }
-  console.log({ response })
-  return [msg.new("Resposta desconhecida.", "info")]
+  return [null, `O usuário ${payload.username} foi banido da plataforma.`]
 }
 
 // api.post<any, AxiosResponse<UserAdminActionBanUserOutput>, UserAdminActionBanUserPayload>(
