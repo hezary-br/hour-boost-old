@@ -6,4 +6,5 @@ export const ECacheKeys = {
   addHours: ["ADD-HOURS"],
   banUser: (userId: string) => ["BA N-USER", userId],
   unbanUser: (userId: string) => ["UNBAN-USER", userId],
+  changeUserPlan: (userId: string) => ["CHANGE-USER-PLAN", userId],
 }
