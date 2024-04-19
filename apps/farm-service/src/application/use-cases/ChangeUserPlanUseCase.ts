@@ -1,9 +1,9 @@
 import {
-  type DataOrFail,
   Fail,
+  PlanRepository,
+  type DataOrFail,
   type GetError,
   type PlanAllNames,
-  PlanRepository,
   type SteamAccountClientStateCacheRepository,
   type User,
   type UsersRepository,
@@ -37,11 +37,13 @@ export class ChangeUserPlanUseCase implements IChangeUserPlanUseCase {
     const [errorChangingPlan, newPlan] = this.planService.createPlan({ currentPlan: user.plan, newPlanName })
     if (errorChangingPlan) return bad(errorChangingPlan)
 
-    const [errorGettingUserSACList, userSacList] = getUserSACs_OnStorage_ByUser(
+    const [errorGettingUserSACList, userSacList = []] = getUserSACs_OnStorage_ByUser(
       user,
       this.allUsersClientsStorage
     )
-    if (errorGettingUserSACList) return bad(Fail.create(errorGettingUserSACList.code, 400))
+    if (errorGettingUserSACList && errorGettingUserSACList?.code !== "USER-STORAGE-NOT-FOUND") {
+      return bad(Fail.create(errorGettingUserSACList.code, 400))
+    }
 
     const [errorTrimmingSteamAccounts, trimSteamAccountsInfo] = this.trimSteamAccounts.execute({
       user,
@@ -65,7 +67,7 @@ export class ChangeUserPlanUseCase implements IChangeUserPlanUseCase {
 
     const fails: Fail[] = []
 
-    const currentSACStates = userSacList.map(sac => sac.getCache())
+    const currentSACStates = [...userSacList].map(sac => sac.getCache())
     const { updatedCacheStates } = this.userService.changePlan(user, newPlan, currentSACStates)
 
     const updatedCacheStatesFiltered = updatedCacheStates.filter(c =>
@@ -124,7 +126,6 @@ export class ChangeUserPlanUseCase implements IChangeUserPlanUseCase {
     switch (error.code) {
       case "LIST::TRIMMING-ACCOUNTS":
       case "LIST::UPDATING-CACHE":
-      case "USER-STORAGE-NOT-FOUND":
       case "COULD-NOT-PERSIST-ACCOUNT-USAGE":
         return bad(error)
     }

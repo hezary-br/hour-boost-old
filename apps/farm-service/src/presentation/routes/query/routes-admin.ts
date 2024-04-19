@@ -3,6 +3,7 @@ import { Router } from "express"
 import { z } from "zod"
 import { AddMoreGamesToPlanUseCase } from "~/application/use-cases/AddMoreGamesToPlanUseCase"
 import { GetUsersAdminListUseCase } from "~/application/use-cases/GetUsersAdminListUseCase"
+import { getUser } from "~/application/use-cases/helpers/getUser"
 import { GENERIC_ERROR_JSON, GENERIC_ERROR_STATUS } from "~/consts"
 import { ensureAdmin } from "~/inline-middlewares/ensureAdmin"
 import { validateBody } from "~/inline-middlewares/validate-payload"
@@ -213,8 +214,9 @@ query_routerAdmin.post("/unban-user", async (req, res) => {
 })
 
 query_routerAdmin.post("/change-user-plan", async (req, res) => {
-  const [noAdminRole] = await ensureAdmin(req, res)
-  if (noAdminRole || req.body.secret !== process.env.ACTIONS_SECRET) {
+  const [_, isAdmin] = await ensureAdmin(req, res)
+  const authorized = isAdmin || req.body.secret === process.env.ACTIONS_SECRET
+  if (!authorized) {
     return res.status(500).json({ message: "Unauthorized. :)" })
   }
 
@@ -228,11 +230,29 @@ query_routerAdmin.post("/change-user-plan", async (req, res) => {
   if (invalidBody) return res.status(invalidBody.status).json(invalidBody.json)
   const { newPlanName, userId } = body
 
-  const user = await usersRepository.getByID(userId)
+  const [errorGettingUser, user] = await getUser(usersRepository, userId)
+  if (errorGettingUser) {
+    return res
+      .status(errorGettingUser.httpStatus)
+      .json({ code: errorGettingUser.code, message: "Usuário não encontrado." })
+  }
   const [error] = await changeUserPlanUseCase.execute({
     newPlanName,
     user: user!,
   })
 
-  return res.status(200).json(error ?? "sucesso")
+  if (error) {
+    console.log(error)
+    switch (error.code) {
+      case "LIST::TRIMMING-ACCOUNTS":
+      case "LIST::UPDATING-CACHE":
+        console.log("ERROR: ", error.code, error.payload)
+      case "COULD-NOT-PERSIST-ACCOUNT-USAGE":
+        return res.status(GENERIC_ERROR_STATUS).json(GENERIC_ERROR_JSON)
+      default:
+        error satisfies never
+    }
+  }
+
+  return res.status(200).json({ code: "SUCCESS" })
 })

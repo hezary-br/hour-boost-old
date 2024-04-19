@@ -1,5 +1,5 @@
 import type { Prisma } from "@prisma/client"
-import { type PlanInfinity, PlanUsage, type User, makeID } from "core"
+import { PlanUsage, makeID, type PlanInfinity, type User } from "core"
 
 type UpdateData = Prisma.XOR<Prisma.UserUpdateInput, Prisma.UserUncheckedUpdateInput>
 type CreateData = Prisma.XOR<Prisma.UserCreateInput, Prisma.UserUncheckedCreateInput>
@@ -40,6 +40,7 @@ export function updateUser(user: User) {
     email: user.email,
     plan: {
       update: {
+        //nunca atualizar, semper criar um novo e atribuir
         where: {
           ownerId: plan.ownerId,
         },
