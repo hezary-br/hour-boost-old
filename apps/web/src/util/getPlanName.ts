@@ -1,6 +1,10 @@
 import { PlanAllNames } from "core"
 
-export function getPlanName(planName: PlanAllNames, custom: boolean): string {
+export function getPlanNameCheckIfCustom(planName: PlanAllNames, custom: boolean): string {
+  return `${getPlanName(planName)}${custom ? "*" : ""}`
+}
+
+export function getPlanName(planName: PlanAllNames): string {
   const planNamesMapper: Record<PlanAllNames, string> = {
     DIAMOND: "Diamante",
     GOLD: "Ouro",
@@ -8,5 +12,5 @@ export function getPlanName(planName: PlanAllNames, custom: boolean): string {
     SILVER: "Prata",
   }
 
-  return `${planNamesMapper[planName]}${custom ? "*" : ""}`
+  return planNamesMapper[planName]
 }

@@ -40,6 +40,10 @@ body {
   color: transparent;
 }
 
+button:focus-visible {
+  outline: none;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

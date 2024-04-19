@@ -24,8 +24,6 @@ export type UserAdminItemListItemProps = {
 
 export function UserAdminItemListItem({ userId }: UserAdminItemListItemProps) {
   const username = useUserAdminListItem(userId, user => user.username)
-  const planCustom = useUserAdminListItem(userId, user => user.plan.custom)
-  const planNameDomain = useUserAdminListItem(userId, user => user.plan.name)
   const typedThisUsernameAtom = useMemo(
     () => atom(get => get(filterInputAtom).length > 0 && !username.includes(get(filterInputAtom))),
     [filterInputAtom]
