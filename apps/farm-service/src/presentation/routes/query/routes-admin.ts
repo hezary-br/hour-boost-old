@@ -213,8 +213,8 @@ query_routerAdmin.post("/unban-user", async (req, res) => {
 })
 
 query_routerAdmin.post("/change-user-plan", async (req, res) => {
-  const { secret } = req.body
-  if (secret !== process.env.ACTIONS_SECRET) {
+  const [noAdminRole] = await ensureAdmin(req, res)
+  if (noAdminRole || req.body.secret !== process.env.ACTIONS_SECRET) {
     return res.status(500).json({ message: "Unauthorized. :)" })
   }
 
