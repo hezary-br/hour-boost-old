@@ -170,17 +170,6 @@ export const userService = new UserService()
 export const planService = new PlanService()
 export const restoreAccountSessionUseCase = new RestoreAccountSessionUseCase(usersClusterStorage, publisher)
 export const trimSteamAccounts = new TrimSteamAccounts(removeSteamAccount)
-export const changeUserPlanUseCase = new ChangeUserPlanUseCase(
-  allUsersClientsStorage,
-  usersRepository,
-  planService,
-  steamAccountClientStateCacheRepository,
-  restoreAccountSessionUseCase,
-  userService,
-  trimSteamAccounts,
-  planRepository,
-  publisher
-)
 export const steamAccountsDAO = new SteamAccountsDAODatabase(prisma)
 
 export const restoreAccountConnectionUseCase = new RestoreAccountConnectionUseCase(
@@ -217,6 +206,19 @@ export const flushUpdateSteamAccountDomain = new FlushUpdateSteamAccountDomain(
 export const flushUpdateSteamAccountUseCase = new FlushUpdateSteamAccountUseCase(
   steamAccountClientStateCacheRepository,
   planRepository,
+  flushUpdateSteamAccountDomain
+)
+
+export const changeUserPlanUseCase = new ChangeUserPlanUseCase(
+  allUsersClientsStorage,
+  usersRepository,
+  planService,
+  steamAccountClientStateCacheRepository,
+  restoreAccountSessionUseCase,
+  userService,
+  trimSteamAccounts,
+  planRepository,
+  publisher,
   flushUpdateSteamAccountDomain
 )
 

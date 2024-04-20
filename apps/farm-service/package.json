@@ -12,7 +12,7 @@
     "build_debug": "npm run build --sourcemap",
     "build:check": "npm run check && tsup npm run build",
     "tx": "tsx",
-    "start": "node dist/server.js",
+    "start": "node --inspect dist/server.js",
     "start_debug": "node --inspect-brk dist/server.js",
     "start:inspect": "node --inspect dist/src/server.js",
     "build:s": "npm run build && npm start",

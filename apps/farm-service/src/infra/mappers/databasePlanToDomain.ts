@@ -16,7 +16,7 @@ import { PrismaPlan } from "~/infra/repository"
 
 export function databasePlanToDomain(plan: PrismaPlan): PlanUsage | PlanInfinity {
   if (!plan) throw makeError("Usuário sem plano!", { plan })
-  if (!plan.ownerId) throw makeError("Plano sem dono", { plan })
+  if (!plan.onceBelongedTo) throw makeError("Plano sem dono", { plan })
   if (plan.customPlan) {
     const restoreFromCustomInfinityProps: PlanInfinityRestoreFromCustomProps = {
       autoRestarter: plan.customPlan.autoRelogin,
@@ -24,7 +24,7 @@ export function databasePlanToDomain(plan: PrismaPlan): PlanUsage | PlanInfinity
       maxGamesAllowed: plan.customPlan.maxGamesAllowed,
       maxSteamAccounts: plan.customPlan.maxSteamAccounts,
       price: plan.customPlan.priceInCents,
-      ownerId: plan.ownerId,
+      ownerId: plan.onceBelongedTo,
       usages: databaseUsageListToDomain(plan.usages),
     }
     const restoreFromCustomUsageProps: PlanUsageRestoreFromCustomProps = {
@@ -34,7 +34,7 @@ export function databasePlanToDomain(plan: PrismaPlan): PlanUsage | PlanInfinity
       maxSteamAccounts: plan.customPlan.maxSteamAccounts,
       maxUsageTime: plan.customPlan.maxUsageTime,
       price: plan.customPlan.priceInCents,
-      ownerId: plan.ownerId,
+      ownerId: plan.onceBelongedTo,
       usages: databaseUsageListToDomain(plan.usages),
     }
     switch (plan.name) {
@@ -53,13 +53,13 @@ export function databasePlanToDomain(plan: PrismaPlan): PlanUsage | PlanInfinity
 
   const restoreInfinityProps: PlanInfinityRestoreProps = {
     id_plan: plan.id_plan,
-    ownerId: plan.ownerId,
+    ownerId: plan.onceBelongedTo,
     usages: databaseUsageListToDomain(plan.usages),
   }
 
   const restoreUsageProps: PlanUsageRestoreProps = {
     id_plan: plan.id_plan,
-    ownerId: plan.ownerId,
+    ownerId: plan.onceBelongedTo,
     usages: databaseUsageListToDomain(plan.usages),
   }
   switch (plan.name) {

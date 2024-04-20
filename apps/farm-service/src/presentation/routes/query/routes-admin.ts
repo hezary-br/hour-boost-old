@@ -87,7 +87,7 @@ query_routerAdmin.post("/set-max-steam-accounts", async (req, res) => {
   if (invalidBody) return res.status(invalidBody.status).json(invalidBody.json)
   const { newMaxSteamAccountsAllowed, mutatingUserId } = body
 
-  const [error, usersAdminList] = await setMaxSteamAccountsUseCase.execute({
+  const [error, user] = await setMaxSteamAccountsUseCase.execute({
     newMaxSteamAccountsAllowed,
     mutatingUserId,
   })
@@ -107,7 +107,7 @@ query_routerAdmin.post("/set-max-steam-accounts", async (req, res) => {
     error satisfies never
   }
 
-  return res.json({ usersAdminList, code: "SUCCESS" })
+  return res.json({ user, code: "SUCCESS" })
 })
 
 query_routerAdmin.post("/add-usage", async (req, res) => {
@@ -246,6 +246,7 @@ query_routerAdmin.post("/change-user-plan", async (req, res) => {
     switch (error.code) {
       case "LIST::TRIMMING-ACCOUNTS":
       case "LIST::UPDATING-CACHE":
+      case "LIST::COULD-NOT-RESET-FARM":
         console.log("ERROR: ", error.code, error.payload)
       case "COULD-NOT-PERSIST-ACCOUNT-USAGE":
         return res.status(GENERIC_ERROR_STATUS).json(GENERIC_ERROR_JSON)
