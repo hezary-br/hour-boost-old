@@ -50,21 +50,21 @@ export default function App({ Component, pageProps }: AppProps) {
         localization={ptBR}
       >
         <ServerMetaProvider serverMeta={pageProps.serverMeta}>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="dark"
-            enableSystem
-          >
-            <main className={cn(barlow.className, barlow.variable)}>
-              <QueryClientProvider client={queryClient}>
+          <QueryClientProvider client={queryClient}>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="dark"
+              enableSystem
+            >
+              <main className={cn(barlow.className, barlow.variable)}>
                 <Component {...pageProps} />
                 <ReactQueryDevtools buttonPosition="bottom-left" />
-              </QueryClientProvider>
-              <Analytics />
-              <UserBannedToaster />
-            </main>
-            <Toaster />
-          </ThemeProvider>
+                <Analytics />
+                <UserBannedToaster />
+              </main>
+              <Toaster />
+            </ThemeProvider>
+          </QueryClientProvider>
         </ServerMetaProvider>
       </ClerkProvider>
     </>

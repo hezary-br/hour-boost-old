@@ -3,6 +3,7 @@ import { IconSpinner } from "@/components/icons/IconSpinner"
 import { useUserAdminItemId } from "@/components/layouts/pages/admin/UserItemAction/context"
 import { DropdownMenuSubContent } from "@/components/ui/dropdown-menu"
 import { api } from "@/lib/axios"
+import { cn } from "@/lib/utils"
 import { ECacheKeys } from "@/mutations/queryKeys"
 import { useAuth } from "@clerk/clerk-react"
 import React, { useCallback, useReducer, useState } from "react"
@@ -19,17 +20,22 @@ export type ActionSetAccountsLimitMenuSubContentProps = React.ComponentPropsWith
   render: React.FC<{ isSure: boolean; setIsSure: React.Dispatch<React.SetStateAction<boolean>> }>
 }
 
-export function ActionSetAccountsLimitMenuSubContent(props: ActionSetAccountsLimitMenuSubContentProps) {
+export const ActionSetAccountsLimitMenuSubContent = React.forwardRef<
+  React.ElementRef<typeof ActionSetAccountsLimitMenuSubContentView>,
+  ActionSetAccountsLimitMenuSubContentProps
+>(function ActionSetAccountsLimitMenuSubContentComponent({ className, ...props }, ref) {
   const userId = useUserAdminItemId()
   const maxSteamAccounts = useUserAdminListItem(userId, user => user.plan.maxSteamAccounts)
 
   return (
     <ActionSetAccountsLimitMenuSubContentView
+      ref={ref}
+      className={cn("", className)}
       {...props}
       maxSteamAccounts={maxSteamAccounts}
     />
   )
-}
+})
 
 export const ActionSetAccountsLimitMenuSubContentView = React.forwardRef<
   React.ElementRef<typeof DropdownMenuSubContent>,

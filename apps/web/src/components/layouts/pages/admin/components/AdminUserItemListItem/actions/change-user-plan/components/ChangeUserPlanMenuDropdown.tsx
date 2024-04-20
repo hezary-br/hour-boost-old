@@ -12,6 +12,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
+import { ECacheKeys } from "@/mutations/queryKeys"
+import { useMutationState } from "@tanstack/react-query"
 import { PlanAllNames } from "core"
 import { toast } from "sonner"
 
@@ -35,6 +37,7 @@ export const ChangeUserPlanMenuDropdown = React.forwardRef<
         newPlanValue: plan.value,
         userId,
         username,
+        oldPlanName: currentPlanName,
       },
       {
         onSettled() {
@@ -55,10 +58,11 @@ export const ChangeUserPlanMenuDropdown = React.forwardRef<
   function changePlanConfirmToast(plan: TypePlans) {
     refConfirmToastId.current = toast(
       <ChangePlanConfirmToastMessageComponent
+        userId={userId}
         username={username}
         currentPlanName={currentPlanName}
         planName={plan.name}
-        onActionConfirm={() => changeUserPlanMutation(plan)}
+        onActionClick={() => changeUserPlanMutation(plan)}
       />
     )
   }
@@ -89,27 +93,45 @@ export const ChangeUserPlanMenuDropdown = React.forwardRef<
 })
 
 type ChangePlanConfirmToastMessageComponent = {
+  userId: string
   username: string
   currentPlanName: string
   planName: string
-  onActionConfirm(): void
+  onActionClick(): void
 }
 
 export function ChangePlanConfirmToastMessageComponent({
+  userId,
   planName,
   currentPlanName,
   username,
-  onActionConfirm,
+  onActionClick,
 }: ChangePlanConfirmToastMessageComponent) {
+  const mutation = useMutationState({
+    filters: {
+      mutationKey: ECacheKeys.changeUserPlan(userId),
+    },
+  })
+
+  const mutationsPending = mutation.filter(m => m.status === "pending")
+  const hasMutationPending = mutationsPending.length > 0
+
   return (
     <>
-      <p>
-        Deseja mudar o plano de {username} de <strong>{currentPlanName}</strong> para{" "}
-        <strong>{planName}</strong>?
-      </p>
+      {planName === currentPlanName ? (
+        <p>
+          Deseja <strong>resetar</strong> o plano de {username}? <strong>({planName})</strong>
+        </p>
+      ) : (
+        <p>
+          Deseja mudar o plano de {username} de <strong>{currentPlanName}</strong> para{" "}
+          <strong>{planName}</strong>?
+        </p>
+      )}
       <Button
+        onClick={onActionClick}
         size="sm"
-        onClick={onActionConfirm}
+        disabled={hasMutationPending}
       >
         Confirmar
       </Button>

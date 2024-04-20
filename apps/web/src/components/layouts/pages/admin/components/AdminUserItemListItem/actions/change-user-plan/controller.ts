@@ -11,4 +11,5 @@ export type UserAdminActionChangeUserPlanPayload = {
 type UserAdminActionChangeUserPlanPayloadAditional = {
   username: string
   newPlanValue: PlanAllNames
+  oldPlanName: string
 }

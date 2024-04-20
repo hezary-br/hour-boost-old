@@ -27,7 +27,10 @@ export async function httpUserAdminActionChangeUserPlan(
       return {
         status: 200,
         data: {
-          message: `O plano de ${payload.username} foi alterado para ${payload.newPlanName}.`,
+          message:
+            payload.newPlanName === payload.oldPlanName
+              ? `O plano de ${payload.username} foi resetado com sucesso.`
+              : `O plano de ${payload.username} foi alterado para ${payload.newPlanName}.`,
         },
       }
     })()
