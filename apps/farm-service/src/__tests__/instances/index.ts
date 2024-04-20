@@ -220,7 +220,8 @@ export function makeTestInstances(props?: MakeTestInstancesProps, ci?: CustomIns
     userService,
     trimSteamAccounts,
     planRepository,
-    publisher
+    publisher,
+    flushUpdateSteamAccountDomain
   )
 
   /**

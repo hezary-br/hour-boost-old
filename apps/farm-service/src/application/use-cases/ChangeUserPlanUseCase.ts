@@ -13,12 +13,13 @@ import { persistUsagesOnDatabase } from "~/application/utils/persistUsagesOnData
 import type { PlanService } from "~/domain/services/PlanService"
 import type { UserService } from "~/domain/services/UserService"
 import { TrimSteamAccounts, batchOperations } from "~/domain/utils/trim-steam-accounts"
+import { FlushUpdateSteamAccountDomain } from "~/features/flush-update-steam-account/domain"
 import { Publisher } from "~/infra/queue"
 import { getUserSACs_OnStorage_ByUser } from "~/utils/getUser"
 import { bad, nice } from "~/utils/helpers"
 import { nonNullable } from "~/utils/nonNullable"
 import type { RestoreAccountSessionUseCase } from "."
-import type { AllUsersClientsStorage } from "../services"
+import type { AllUsersClientsStorage, FarmSession } from "../services"
 
 export class ChangeUserPlanUseCase implements IChangeUserPlanUseCase {
   constructor(
@@ -30,18 +31,21 @@ export class ChangeUserPlanUseCase implements IChangeUserPlanUseCase {
     private readonly userService: UserService,
     private readonly trimSteamAccounts: TrimSteamAccounts,
     private readonly planRepository: PlanRepository,
-    private readonly publisher: Publisher
+    private readonly publisher: Publisher,
+    private readonly flushUpdateSteamAccountDomain: FlushUpdateSteamAccountDomain
   ) {}
 
   private async executeImpl({ user, newPlanName }: ChangeUserPlanUseCasePayload) {
     const [errorChangingPlan, newPlan] = this.planService.createPlan({ currentPlan: user.plan, newPlanName })
     if (errorChangingPlan) return bad(errorChangingPlan)
 
-    const [errorGettingUserSACList, userSacList] = getUserSACs_OnStorage_ByUser(
+    const [errorGettingUserSACList, userSacList = []] = getUserSACs_OnStorage_ByUser(
       user,
       this.allUsersClientsStorage
     )
-    if (errorGettingUserSACList) return bad(Fail.create(errorGettingUserSACList.code, 400))
+    if (errorGettingUserSACList && errorGettingUserSACList?.code !== "USER-STORAGE-NOT-FOUND") {
+      return bad(Fail.create(errorGettingUserSACList.code, 400))
+    }
 
     const [errorTrimmingSteamAccounts, trimSteamAccountsInfo] = this.trimSteamAccounts.execute({
       user,
@@ -49,7 +53,16 @@ export class ChangeUserPlanUseCase implements IChangeUserPlanUseCase {
     })
     if (errorTrimmingSteamAccounts) return bad(errorTrimmingSteamAccounts)
 
-    const usagesToPersist = [
+    user.assignPlan(newPlan)
+    const [errorFlushUpdatingFarm, result] = await this.flushUpdateSteamAccountDomain.execute({
+      user,
+      plan: newPlan,
+    })
+    if (errorFlushUpdatingFarm) return bad(errorFlushUpdatingFarm)
+    const { resetFarmResultList, updatedCacheStates } = result
+
+    const usagesToPersist: FarmSession[] = [
+      ...resetFarmResultList.map(data => data?.usages).filter(nonNullable),
       ...trimSteamAccountsInfo.trimmingAccountsResults.map(data => data.stopFarmUsages).filter(nonNullable),
     ]
 
@@ -64,9 +77,6 @@ export class ChangeUserPlanUseCase implements IChangeUserPlanUseCase {
       return bad(Fail.create("COULD-NOT-PERSIST-ACCOUNT-USAGE", 400, errorPersistingUsages))
 
     const fails: Fail[] = []
-
-    const currentSACStates = userSacList.map(sac => sac.getCache())
-    const { updatedCacheStates } = this.userService.changePlan(user, newPlan, currentSACStates)
 
     const updatedCacheStatesFiltered = updatedCacheStates.filter(c =>
       user.steamAccounts.data.map(sa => sa.credentials.accountName).includes(c.accountName)
@@ -124,7 +134,7 @@ export class ChangeUserPlanUseCase implements IChangeUserPlanUseCase {
     switch (error.code) {
       case "LIST::TRIMMING-ACCOUNTS":
       case "LIST::UPDATING-CACHE":
-      case "USER-STORAGE-NOT-FOUND":
+      case "LIST::COULD-NOT-RESET-FARM":
       case "COULD-NOT-PERSIST-ACCOUNT-USAGE":
         return bad(error)
     }

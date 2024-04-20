@@ -1,5 +1,5 @@
 import { BadgePlanType } from "@/components/layouts/UserPlanStatus/components"
-import { getPlanName } from "@/util/getPlanName"
+import { getPlanNameCheckIfCustom } from "@/util/getPlanName"
 import { IPurchasePayloadTransactionPlan } from "core"
 import React from "react"
 import { twc } from "react-twc"
@@ -15,8 +15,8 @@ export const PurchasePayloadTransactionPlan = React.forwardRef<
   const { from, to } = payload
 
   // TO-DO
-  const fromPlanName = getPlanName(from.planType, false)
-  const toPlanName = getPlanName(to.planType, false)
+  const fromPlanName = getPlanNameCheckIfCustom(from.planType, false)
+  const toPlanName = getPlanNameCheckIfCustom(to.planType, false)
 
   return (
     <>

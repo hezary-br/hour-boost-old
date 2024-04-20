@@ -3,7 +3,7 @@ import { getFarmedTimeSince } from "@/components/molecules/SteamAccountListItem"
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
 import { useUser } from "@/contexts/UserContext"
 import { cn } from "@/lib/utils"
-import { getPlanName } from "@/util/getPlanName"
+import { getPlanNameCheckIfCustom } from "@/util/getPlanName"
 import { planIsUsage } from "@/util/thisPlanIsUsage"
 import React from "react"
 import { BadgePlanInfo, BadgePlanType } from "./components"
@@ -147,7 +147,7 @@ export const BadgePlanTypeAsync = React.forwardRef<
     return <div className="h-[1.625rem] w-[3.75rem] animate-pulse bg-slate-800" />
   }
 
-  const _planName = getPlanName(planName.data, planCustom.data)
+  const _planName = getPlanNameCheckIfCustom(planName.data, planCustom.data)
 
   return (
     <BadgePlanType

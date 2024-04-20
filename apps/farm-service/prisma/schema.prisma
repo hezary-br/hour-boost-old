@@ -15,6 +15,7 @@ model User {
   username      String         @unique
   profilePic    String
   plan          Plan?          @relation("user_plan")
+  planOnceHad   Plan[]         @relation("plan_once_user_had")
   custom_plan   CustomPlan?    @relation("custom_user_plan")
   role          Role
   status        Status
@@ -40,14 +41,16 @@ model SteamAccount {
 }
 
 model Plan {
-  id_plan    String          @id
-  createdAt  DateTime
-  name       PlanName
-  usages     Usage[]         @relation("plan_usages")
-  owner      User?           @relation("user_plan", fields: [ownerId], references: [id_user], onDelete: Cascade)
-  ownerId    String?         @unique
-  type       PlanType        @default(USAGE)
-  customPlan CustomPlan_NEW? @relation("custom_plan_new")
+  id_plan        String          @id
+  createdAt      DateTime
+  name           PlanName
+  usages         Usage[]         @relation("plan_usages")
+  owner          User?           @relation("user_plan", fields: [ownerId], references: [id_user], onDelete: Cascade)
+  ownerId        String?         @unique
+  belongedTo     User?           @relation("plan_once_user_had", fields: [onceBelongedTo], references: [id_user], onDelete: Cascade)
+  onceBelongedTo String?
+  type           PlanType        @default(USAGE)
+  customPlan     CustomPlan_NEW? @relation("custom_plan_new")
 
   @@map("plans")
 }

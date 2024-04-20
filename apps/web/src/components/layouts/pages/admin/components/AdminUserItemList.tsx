@@ -35,7 +35,7 @@ export function UserAdminItemList({ isPending }: PendingProps) {
   })
 
   const shownUserIdList = [...usersInfoTuples]
-    .sort((a, b) => b.accountsAmount - a.accountsAmount)
+    .sort((a, b) => (b.userId > a.userId ? 1 : b.userId > a.userId ? -1 : 0))
     .map(info => info.userId)
 
   return (
