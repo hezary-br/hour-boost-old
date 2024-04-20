@@ -22,6 +22,7 @@ export class User {
   readonly profilePic: string
   readonly steamAccounts: SteamAccountList
   plan: PlanUsage | PlanInfinity
+  plan_old: PlanUsage | PlanInfinity | null
   readonly role: Role
   status: Status
   readonly purchases: Purchase[]
@@ -38,6 +39,7 @@ export class User {
     this.status = props.status
     this.purchases = props.purchases
     this.usages = props.usages
+    this.plan_old = null
   }
 
   static create(props: UserCreateProps) {
@@ -60,6 +62,7 @@ export class User {
   }
 
   assignPlan(plan: PlanUsage | PlanInfinity) {
+    this.plan_old = this.plan
     this.plan = plan
   }
 
