@@ -9,12 +9,13 @@
     "ui:add": "pnpm dlx shadcn-ui@latest add"
   },
   "dependencies": {
+    "@hourboost/tokens": "workspace:*",
+    "@hourboost/utils": "workspace:*",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "@hourboost/tokens": "workspace:*",
-    "@hourboost/utils": "workspace:*",
     "core": "workspace:*",
+    "input-otp": "^1.2.4",
     "typescript": "^5.2.2"
   },
   "devDependencies": {
