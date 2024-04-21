@@ -17,6 +17,7 @@ export function makeSACFactory(validSteamAccounts: SteamAccountCredentials[], pu
         username: user.username,
         planId: user.plan.id_plan,
         autoRestart: false,
+        isRequiringSteamGuard: false,
       },
     })
   }

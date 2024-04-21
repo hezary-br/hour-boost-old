@@ -57,6 +57,7 @@ import {
   UsersRepositoryDatabase,
 } from "~/infra/repository"
 import { ClerkAuthentication } from "~/infra/services"
+import { AddSteamGuardCodeController } from "~/presentation/controllers"
 import { CreateMeController } from "~/presentation/controllers/CreateMeController"
 import { RefreshGamesUseCase } from "~/presentation/presenters"
 import { EventEmitterBuilder, SteamAccountClientBuilder, UserClusterBuilder } from "~/utils/builders"
@@ -118,6 +119,7 @@ export const allUsersClientsStorage = new AllUsersClientsStorage(
   planRepository,
   publisher
 )
+Object.assign(globalThis, { __allUsersClientsStorage: allUsersClientsStorage })
 export const tokenService = new TokenService()
 
 // export const farmingUsersStorage = new FarmingUsersStorage()
@@ -251,7 +253,7 @@ export const banUserUseCase = new BanUserUseCase(
   steamAccountClientStateCacheRepository
 )
 export const unbanUserUseCase = new UnbanUserUseCase(usersRepository)
-
+export const addSteamGuardCodeController = new AddSteamGuardCodeController(allUsersClientsStorage)
 const addSteamAccount = new AddSteamAccount(usersRepository, idGenerator)
 
 export const addSteamAccountUseCase = new AddSteamAccountUseCase(

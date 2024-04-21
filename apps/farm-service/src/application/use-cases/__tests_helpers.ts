@@ -33,6 +33,7 @@ export function makeRestoreAccountConnection(
           accountName: steamAccount.credentials.accountName,
           autoRestart: steamAccount.autoRelogin,
           password: steamAccount.credentials.password,
+          isRequiringSteamGuard: steamAccount.isRequiringSteamGuard,
         },
         user: {
           id: user.id_user,

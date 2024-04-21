@@ -2,10 +2,10 @@ import {
   AddSteamAccount,
   ApplicationError,
   IDGeneratorUUID,
+  type PlanInfinity,
   PlanUsage,
   SteamAccount,
   SteamAccountCredentials,
-  type PlanInfinity,
   type SteamAccountsRepository,
   type Usage,
   type User,
@@ -50,10 +50,10 @@ import {
 import { SACCacheInMemory } from "~/infra/repository/SACCacheInMemory"
 import { SteamAccountsInMemory } from "~/infra/repository/SteamAccountsInMemory"
 import {
-  UserAuthenticationInMemory,
-  testUsers,
   type TestUserProperties,
   type TestUsers,
+  UserAuthenticationInMemory,
+  testUsers,
 } from "~/infra/services/UserAuthenticationInMemory"
 import { FarmGamesController } from "~/presentation/controllers"
 import { EventEmitterBuilder, SteamAccountClientBuilder } from "~/utils/builders"
@@ -391,6 +391,7 @@ class UserInstancesBuilder implements IUserInstancesBuilder {
       username,
       planId: user.plan.id_plan,
       autoRestart: false,
+      isRequiringSteamGuard: false,
     })
     const sac2 = this.allUsersClientsStorage.addSteamAccountFrom0({
       accountName: accountName2,
@@ -398,6 +399,7 @@ class UserInstancesBuilder implements IUserInstancesBuilder {
       username,
       planId: user.plan.id_plan,
       autoRestart: false,
+      isRequiringSteamGuard: false,
     })
     const sac3 = this.allUsersClientsStorage.addSteamAccountFrom0({
       accountName: accountName3,
@@ -405,6 +407,7 @@ class UserInstancesBuilder implements IUserInstancesBuilder {
       username,
       planId: user.plan.id_plan,
       autoRestart: false,
+      isRequiringSteamGuard: false,
     })
     user.addSteamAccount(steamAccount)
     return {

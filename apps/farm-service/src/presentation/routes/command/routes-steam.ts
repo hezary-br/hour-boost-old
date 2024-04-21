@@ -12,13 +12,13 @@ import {
   StopAllFarmsController,
   StopFarmController,
 } from "~/presentation/controllers"
-import { AddSteamGuardCodeController } from "~/presentation/controllers/AddSteamGuardCodeController"
 import { RemoveSteamAccountControllerController } from "~/presentation/controllers/RemoveSteamAccountController"
 import { ToggleAutoReloginController } from "~/presentation/controllers/ToggleAutoReloginController"
 import { UpdateStagingGamesController } from "~/presentation/controllers/UpdateStagingGamesController"
 import { promiseHandler, promiseHandlerBroad } from "~/presentation/controllers/promiseHandler"
 import {
   addSteamAccountUseCase,
+  addSteamGuardCodeController,
   allUsersClientsStorage,
   farmGamesUseCase,
   hashService,
@@ -164,18 +164,31 @@ command_routerSteam.post(
 )
 
 command_routerSteam.post("/code", ClerkExpressRequireAuth(), async (req, res) => {
-  const addSteamGuardCodeController = new AddSteamGuardCodeController(allUsersClientsStorage)
-  const { json, status } = await promiseHandler(
-    addSteamGuardCodeController.handle({
-      payload: {
-        accountName: req.body.accountName,
-        code: req.body.code,
-        userId: req.auth.userId!,
-      },
+  try {
+    const { status, json, headers, cookies } = await addSteamGuardCodeController.handle({
+      accountName: req.body.accountName,
+      code: req.body.code,
+      userId: req.auth.userId!,
     })
-  )
 
-  return json ? res.status(status).json(json) : res.status(status).end()
+    headers?.forEach(header => {
+      res.setHeader(header.name, header.value)
+    })
+
+    cookies?.forEach(cookie => {
+      res.cookie(cookie.name, cookie.value, cookie.options)
+    })
+
+    res.statusCode = status
+    return json ? res.json(json) : res.end()
+
+  } catch (error) {
+    
+    console.log(error)
+    return res.status(500).json({
+      message: "Erro interno.",
+    })
+  }
 })
 
 command_routerSteam.post("/farm/stop/all", async (req, res) => {

@@ -13,7 +13,7 @@
     "build:check": "npm run check && tsup npm run build",
     "tx": "tsx",
     "start": "node --inspect dist/server.js",
-    "start_debug": "node --inspect-brk dist/server.js",
+    "start:brk": "node --inspect-brk dist/server.js",
     "start:inspect": "node --inspect dist/src/server.js",
     "build:s": "npm run build && npm start",
     "seed": "tsx seed.ts",

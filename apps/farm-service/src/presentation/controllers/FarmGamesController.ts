@@ -54,6 +54,7 @@ export class FarmGamesController implements IFarmGamesController {
       username: user.username,
       planId: user.plan.id_plan,
       autoRestart: steamAccountDomain.autoRelogin,
+      isRequiringSteamGuard: steamAccountDomain.isRequiringSteamGuard,
     })
     const sacWasNotFarming = sac.isFarming()
 

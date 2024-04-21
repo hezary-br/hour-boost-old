@@ -36,6 +36,14 @@ export class SteamAccount {
   toggleAutoRelogin() {
     this.autoRelogin = !this.autoRelogin
   }
+
+  requireSteamGuard() {
+    this.isRequiringSteamGuard = true
+  }
+
+  provideSteamGuard() {
+    this.isRequiringSteamGuard = false
+  }
 }
 
 type SteamAccountProps = {

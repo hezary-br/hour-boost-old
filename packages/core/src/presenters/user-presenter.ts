@@ -37,6 +37,7 @@ export interface SteamAccountSession extends Persona {
   autoRelogin: boolean
   status: AppAccountStatus
   isRestoringConnection: boolean
+  isRequiringSteamGuard: boolean
 }
 export const appAccountStatusSchema = z.enum(["offline", "online"])
 export type AppAccountStatus = z.infer<typeof appAccountStatusSchema>

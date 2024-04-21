@@ -61,6 +61,7 @@ export class AddSteamAccountUseCase
       username,
       planId,
       autoRestart: false,
+      isRequiringSteamGuard: false,
     })
 
     const [errorEncrypting, hashPassword] = this.hashService.encrypt(password)

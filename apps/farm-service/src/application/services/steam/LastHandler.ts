@@ -7,7 +7,9 @@ export class LastHandler {
   private readonly manualHandlers: Map<keyof HandlersEventMapping, Function> = new Map()
   private readonly lastArguments: Map<keyof EventParameters, any[]> = new Map()
 
-  getManualHandler = <K extends keyof HandlersEventMapping = keyof HandlersEventMapping>(eventName: K) => {
+  getManualHandlerOrGhost = <K extends keyof HandlersEventMapping = keyof HandlersEventMapping>(
+    eventName: K
+  ) => {
     const manualHandler = this.manualHandlers.get(eventName)
     if (!manualHandler) {
       // console.log(
@@ -42,7 +44,9 @@ export class LastHandler {
   }
 
   getLastArguments<K extends keyof EventParameters = keyof EventParameters>(eventName: K) {
-    return this.lastArguments.get(eventName) as EventParameters[K]
+    const lastArgs = this.lastArguments.get(eventName)
+    if (!lastArgs) return null
+    return lastArgs as EventParameters[K]
   }
 
   setLastArguments<K extends keyof EventParameters = keyof EventParameters>(

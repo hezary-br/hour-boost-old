@@ -79,15 +79,17 @@ export class UsersRepositoryDatabase implements UsersRepository {
             sa.id_steamAccount,
             sa.credentials.password,
             sa.autoRelogin,
+            sa.isRequiringSteamGuard,
           ])
         )
         .join(", ")
       await this.prisma.$queryRawUnsafe(`
-        INSERT INTO steam_accounts ("owner_id", "accountName", "createdAt", "id_steamAccount", "password", "autoRelogin")
+        INSERT INTO steam_accounts ("owner_id", "accountName", "createdAt", "id_steamAccount", "password", "autoRelogin", "isRequiringSteamGuard")
         VALUES ${VALUES}
         ON CONFLICT ("accountName") DO UPDATE
         SET "owner_id" = EXCLUDED."owner_id",
             "password" = EXCLUDED."password",
+            "isRequiringSteamGuard" = EXCLUDED."isRequiringSteamGuard",
             "autoRelogin" = EXCLUDED."autoRelogin";
         `)
     }
