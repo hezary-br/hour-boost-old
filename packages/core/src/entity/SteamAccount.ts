@@ -6,12 +6,14 @@ export class SteamAccount {
   credentials: SteamAccountCredentials
   ownerId: string | null
   autoRelogin: boolean
+  isRequiringSteamGuard: boolean
 
   private constructor(props: SteamAccountProps) {
     this.id_steamAccount = props.id_steamAccount
     this.credentials = props.credentials
     this.ownerId = props.ownerId
     this.autoRelogin = props.autoRelogin
+    this.isRequiringSteamGuard = props.isRequiringSteamGuard
   }
 
   static create(props: SteamAccountCreateProps) {
@@ -19,6 +21,7 @@ export class SteamAccount {
       ...props,
       id_steamAccount: props.idGenerator.makeID(),
       autoRelogin: false,
+      isRequiringSteamGuard: false,
     })
   }
 
@@ -40,6 +43,7 @@ type SteamAccountProps = {
   credentials: SteamAccountCredentials
   ownerId: string | null
   autoRelogin: boolean
+  isRequiringSteamGuard: boolean
 }
 
 type SteamAccountCreateProps = {

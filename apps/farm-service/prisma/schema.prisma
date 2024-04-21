@@ -27,14 +27,15 @@ model User {
 }
 
 model SteamAccount {
-  id_steamAccount String   @id
-  createdAt       DateTime
-  owner_id        String?
-  owner           User?    @relation("user_steam_accounts", fields: [owner_id], references: [id_user], onDelete: Cascade)
-  accountName     String   @unique
-  password        String
-  usage           Usage[]  @relation("steam_account_usages")
-  autoRelogin     Boolean  @default(false)
+  id_steamAccount       String   @id
+  createdAt             DateTime
+  owner_id              String?
+  owner                 User?    @relation("user_steam_accounts", fields: [owner_id], references: [id_user], onDelete: Cascade)
+  accountName           String   @unique
+  password              String
+  usage                 Usage[]  @relation("steam_account_usages")
+  autoRelogin           Boolean  @default(false)
+  isRequiringSteamGuard Boolean  @default(false)
 
   @@index([owner_id])
   @@map("steam_accounts")

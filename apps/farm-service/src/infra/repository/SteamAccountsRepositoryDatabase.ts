@@ -29,6 +29,7 @@ export class SteamAccountsRepositoryDatabase implements SteamAccountsRepository 
       id_steamAccount: dbSteamAccount.id_steamAccount,
       ownerId: dbSteamAccount.owner_id,
       autoRelogin: dbSteamAccount.autoRelogin,
+      isRequiringSteamGuard: dbSteamAccount.isRequiringSteamGuard,
     })
   }
 }
