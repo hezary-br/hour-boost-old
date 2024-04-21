@@ -17,6 +17,7 @@ import {
 import SteamUser from "steam-user"
 import { connection } from "~/__tests__/connection"
 import type { EventEmitter } from "~/application/services"
+import { Events } from "~/application/services/events"
 import { LastHandler } from "~/application/services/steam"
 import { getHeaderImageByGameId } from "~/consts"
 import { env } from "~/env"
@@ -38,6 +39,7 @@ export class SteamAccountClient extends LastHandler {
   accountName: string
   ownershipCached = false
   autoRestart: boolean
+  isRequiringSteamGuard: boolean
 
   restoreCacheHollowSession(props: CacheStateHollow) {
     this.cache.restoreHollow(props)
@@ -53,6 +55,7 @@ export class SteamAccountClient extends LastHandler {
     this.emitter = instances.emitter
     this.autoRestart = props.autoRestart
     this.accountName = props.accountName
+    this.isRequiringSteamGuard = props.isRequiringSteamGuard
     this.logger = new Logger(this.accountName)
 
     this.cache = CacheState.create({
@@ -63,6 +66,9 @@ export class SteamAccountClient extends LastHandler {
     })
 
     this.client.on("loggedOn", (...args) => {
+      Events.emit("account_logged_in", this.userId, this.accountName, this.isRequiringSteamGuard)
+      this.isRequiringSteamGuard = false
+
       appendFile(
         "logs/sac-loggedon.txt",
         `${new Date().toISOString()} [${this.accountName}] - ${JSON.stringify(args)} \r\n`,
@@ -100,6 +106,9 @@ export class SteamAccountClient extends LastHandler {
     })
 
     this.client.on("steamGuard", async (...args) => {
+      Events.emit("account_required_steam_guard", this.userId, this.accountName)
+      this.isRequiringSteamGuard = true
+
       const [domain] = args
       appendFile(
         "logs/sac-steam-guard.txt",
@@ -374,6 +383,7 @@ type SteamAccountClientProps = {
     planId: string
     autoRestart: boolean
     farmStartedAt?: Date | null
+    isRequiringSteamGuard: boolean
   }
   instances: {
     publisher: Publisher
