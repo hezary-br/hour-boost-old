@@ -5,12 +5,9 @@ import { Publisher } from "~/infra/queue"
 import { SteamUserMock } from "~/infra/services/SteamUserMock"
 
 import {
-  type 
-  CustomInstances,
-  type 
-  MakeTestInstancesProps,
-  type 
-  PrefixKeys,
+  type CustomInstances,
+  type MakeTestInstancesProps,
+  type PrefixKeys,
   makeTestInstances,
   password,
   validSteamAccounts,
@@ -58,6 +55,7 @@ test("should ", async () => {
       accountName: "account",
       planId: "",
       autoRestart: false,
+      isRequiringSteamGuard: false,
     },
   })
   sac.farmGames([322, 123])

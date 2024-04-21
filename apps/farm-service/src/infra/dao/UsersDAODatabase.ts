@@ -46,14 +46,14 @@ export class UsersDAODatabase implements UsersDAO {
   async getRoleByUserId(userId: string) {
     const userRole = await this.prisma.user.findUnique({
       where: { id_user: userId },
-      select: { role: true }
+      select: { role: true },
     })
 
-    if(!userRole) return null
+    if (!userRole) return null
     const { role } = userRole
 
     return {
-      name: role
+      name: role,
     }
   }
 
@@ -102,6 +102,7 @@ export class UsersDAODatabase implements UsersDAO {
             {
               accountName: sa.accountName,
               id_steamAccount: sa.id_steamAccount,
+              isRequiringSteamGuard: sa.isRequiringSteamGuard,
             },
             {
               id_user: user.id_user,
@@ -177,6 +178,7 @@ export class UsersDAODatabase implements UsersDAO {
             accountName: true,
             autoRelogin: true,
             usage: true,
+            isRequiringSteamGuard: true,
           },
         },
       },
@@ -193,6 +195,7 @@ export class UsersDAODatabase implements UsersDAO {
           {
             accountName: sa.accountName,
             id_steamAccount: sa.id_steamAccount,
+            isRequiringSteamGuard: sa.isRequiringSteamGuard,
           },
           {
             id_user: userId,
@@ -238,6 +241,7 @@ export class UsersDAODatabase implements UsersDAO {
 type DBSteamAccount = {
   accountName: string
   id_steamAccount: string
+  isRequiringSteamGuard: boolean
 }
 
 type DBUser = {
@@ -296,6 +300,7 @@ function makeSteamAccountFromDatabaseToSession(
           status: cache.status,
           autoRelogin: false,
           isRestoringConnection: true,
+          isRequiringSteamGuard: sa.isRequiringSteamGuard,
           ...persona,
         } as const)
       }
@@ -329,6 +334,7 @@ function makeSteamAccountFromDatabaseToSession(
       status,
       autoRelogin: sac.autoRestart ?? false,
       isRestoringConnection: false,
+      isRequiringSteamGuard: sa.isRequiringSteamGuard,
       ...persona,
     })
   }
@@ -369,7 +375,7 @@ function getUserAdminListDatabase(prisma: PrismaClient) {
       purchases: { select: { id_Purchase: true } },
       status: true,
       steamAccounts: {
-        select: { id_steamAccount: true, accountName: true },
+        select: { id_steamAccount: true, accountName: true, isRequiringSteamGuard: true },
       },
     },
   })

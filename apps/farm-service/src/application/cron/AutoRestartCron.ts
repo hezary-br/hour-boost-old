@@ -83,6 +83,7 @@ export class AutoRestartCron implements IAutoRestartCron {
           accountName,
           password: steamAccount.credentials.password,
           autoRestart: steamAccount.autoRelogin,
+          isRequiringSteamGuard: steamAccount.isRequiringSteamGuard,
         },
         user: {
           id: user.id,

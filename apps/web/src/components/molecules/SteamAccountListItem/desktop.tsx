@@ -28,8 +28,8 @@ export const SteamAccountListItemViewDesktop = React.memo(
       { displayUpdateInServerMessage, handleClickFarmButton, actionText },
       ref
     ) {
-      const { header, steamGuard, app, mutations, hasUsagePlanLeft, status } = useSteamAccountListItem()
-      const { accountName, profilePictureUrl, isRestoringConnection } = app
+      const { header, app, mutations, hasUsagePlanLeft, status } = useSteamAccountListItem()
+      const { accountName, profilePictureUrl, isRestoringConnection, isRequiringSteamGuard } = app
       const plan = useUser(u => u.plan)
       const isFarming = useSteamAccount(sa => sa.farmingGames.length > 0)
       const farmStartedAt = useSteamAccount(sa => sa.farmStartedAt)
@@ -72,8 +72,7 @@ export const SteamAccountListItemViewDesktop = React.memo(
             <div className="bg-accent absolute bottom-0 right-full top-0 w-[0.25rem] animate-pulse" />
           )}
           <div className="flex items-center">
-            {/* {steamGuard ? ( */}
-            {true ? (
+            {isRequiringSteamGuard ? (
               <AddSteamCodePopover>
                 <button className="group relative flex h-full items-center px-6">
                   <div className="absolute inset-0 animate-pulse bg-slate-800 group-hover:animate-none" />

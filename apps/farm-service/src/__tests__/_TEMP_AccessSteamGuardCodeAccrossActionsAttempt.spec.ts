@@ -60,7 +60,9 @@ test("should ask for the steam guard code", async () => {
   const sac2 = userClients2.getAccountClientOrThrow(s.me.accountName)
 
   expect((sac2.client as unknown as SteamUserMock).steamGuardCode).toBeUndefined()
-  const [_, setCode] = sac2.getLastArguments("steamGuard")
+  const steamGuardLastArguments = sac2.getLastArguments("steamGuard")
+  if (!steamGuardLastArguments) throw new Error("No steam guard last arguments.")
+  const [_, setCode] = steamGuardLastArguments
   setCode("998776")
   await sleep(0.1)
   expect((sac2.client as unknown as SteamUserMock).steamGuardCode).toBe("998776")

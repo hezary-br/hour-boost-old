@@ -27,6 +27,7 @@ export type RestoreAccountConnectionUseCasePayload = {
     accountName: string
     password: string
     autoRestart: boolean
+    isRequiringSteamGuard: boolean
   }
   user: {
     id: string
@@ -52,7 +53,7 @@ export class RestoreAccountConnectionUseCase implements IRestorAccountConnection
   ) {}
 
   async execute({ steamAccount, user }: RestoreAccountConnectionUseCasePayload) {
-    const { accountName, password, autoRestart } = steamAccount
+    const { accountName, password, autoRestart, isRequiringSteamGuard } = steamAccount
     const { id: userId, username, plan } = user
     /**
      * Talvez sac.isRequiringSteamGuard?
@@ -91,6 +92,7 @@ export class RestoreAccountConnectionUseCase implements IRestorAccountConnection
         userId,
         username,
         autoRestart,
+        isRequiringSteamGuard,
       })
     }
 

@@ -16,6 +16,7 @@ export class SteamAccountClientBuilder implements Builder<SteamAccountClient> {
     username,
     planId,
     autoRestart,
+    isRequiringSteamGuard,
   }: CreateSteamAccountClient): SteamAccountClient {
     return new SteamAccountClient({
       instances: {
@@ -29,6 +30,7 @@ export class SteamAccountClientBuilder implements Builder<SteamAccountClient> {
         username,
         planId,
         autoRestart,
+        isRequiringSteamGuard,
       },
     })
   }
@@ -40,4 +42,5 @@ type CreateSteamAccountClient = {
   username: string
   planId: string
   autoRestart: boolean
+  isRequiringSteamGuard: boolean
 }

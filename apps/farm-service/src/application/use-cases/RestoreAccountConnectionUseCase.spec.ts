@@ -81,6 +81,7 @@ describe("NOT MOBILE test suite", () => {
         accountName: steamAccount.credentials.accountName,
         password: steamAccount.credentials.password,
         autoRestart: steamAccount.autoRelogin,
+        isRequiringSteamGuard: steamAccount.isRequiringSteamGuard,
       },
       user: {
         id: user.id_user,
@@ -148,6 +149,7 @@ describe("NOT MOBILE test suite", () => {
         accountName: steamAccount.credentials.accountName,
         password: steamAccount.credentials.password,
         autoRestart: steamAccount.autoRelogin,
+        isRequiringSteamGuard: steamAccount.isRequiringSteamGuard,
       },
       user: {
         id: user.id_user,
@@ -191,6 +193,7 @@ describe("NOT MOBILE test suite", () => {
         accountName: steamAccount.credentials.accountName,
         password: steamAccount.credentials.password,
         autoRestart: steamAccount.autoRelogin,
+        isRequiringSteamGuard: steamAccount.isRequiringSteamGuard,
       },
       user: {
         id: user.id_user,
@@ -233,6 +236,7 @@ describe("NOT MOBILE test suite", () => {
         accountName: steamAccount.credentials.accountName,
         password: steamAccount.credentials.password,
         autoRestart: steamAccount.autoRelogin,
+        isRequiringSteamGuard: steamAccount.isRequiringSteamGuard,
       },
       user: {
         id: user.id_user,
@@ -284,6 +288,7 @@ describe("mobile test suite", () => {
         accountName: steamAccount.credentials.accountName,
         password: steamAccount.credentials.password,
         autoRestart: steamAccount.autoRelogin,
+        isRequiringSteamGuard: steamAccount.isRequiringSteamGuard,
       },
       user: {
         id: user.id_user,

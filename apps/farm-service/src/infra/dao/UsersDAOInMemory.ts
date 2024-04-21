@@ -45,6 +45,7 @@ export class UsersDAOInMemory implements UsersDAO {
         farmingGames: [],
         farmStartedAt: null,
         isRestoringConnection: false,
+        isRequiringSteamGuard: sa.isRequiringSteamGuard,
       }))
 
       const finalUser: UserAdminPanelSession = {
@@ -159,6 +160,7 @@ export class UsersDAOInMemory implements UsersDAO {
         stagingGames: [],
         farmingGames: [],
         farmStartedAt: null,
+        isRequiringSteamGuard: sa.isRequiringSteamGuard,
       })),
       username: foundUser.username,
     }

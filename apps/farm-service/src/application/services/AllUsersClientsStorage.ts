@@ -1,4 +1,4 @@
-import { ApplicationError, type PlanRepository, type SteamAccountClientStateCacheRepository, } from "core"
+import { ApplicationError, type PlanRepository, type SteamAccountClientStateCacheRepository } from "core"
 import { UserClientsStorage } from "~/application/services"
 import type { SteamAccountClient } from "~/application/services/steam"
 import type { FarmGamesUseCase } from "~/application/use-cases/FarmGamesUseCase"
@@ -17,13 +17,21 @@ export class AllUsersClientsStorage {
     private readonly publisher: Publisher
   ) {}
 
-  private generateSAC({ accountName, userId, username, planId, autoRestart }: AddUserProps) {
+  private generateSAC({
+    accountName,
+    userId,
+    username,
+    planId,
+    autoRestart,
+    isRequiringSteamGuard,
+  }: AddUserProps) {
     return this.sacBuilder.create({
       accountName,
       userId,
       username,
       planId,
       autoRestart,
+      isRequiringSteamGuard,
     })
   }
 
@@ -47,6 +55,7 @@ export class AllUsersClientsStorage {
     username,
     planId,
     autoRestart,
+    isRequiringSteamGuard,
   }: AddUserProps): SteamAccountClient {
     const userClients = this.get(userId)
     const userRegistered = !!userClients
@@ -57,14 +66,14 @@ export class AllUsersClientsStorage {
       return this.addSteamAccount(
         username,
         userId,
-        this.generateSAC({ accountName, userId, username, planId, autoRestart })
+        this.generateSAC({ accountName, userId, username, planId, autoRestart, isRequiringSteamGuard })
       )
     }
     if (!userHasAccount) {
       return this.addSteamAccount(
         username,
         userId,
-        this.generateSAC({ accountName, userId, username, planId, autoRestart })
+        this.generateSAC({ accountName, userId, username, planId, autoRestart, isRequiringSteamGuard })
       )
     }
     return foundSac
@@ -76,6 +85,7 @@ export class AllUsersClientsStorage {
     username,
     planId,
     autoRestart,
+    isRequiringSteamGuard,
   }: AddUserProps): [sac: SteamAccountClient, unsub: () => void] {
     const unsub = () => this.removeSteamAccount(userId, accountName)
     const userClients = this.get(userId)
@@ -87,7 +97,7 @@ export class AllUsersClientsStorage {
       const sac = this.addSteamAccount(
         username,
         userId,
-        this.generateSAC({ accountName, userId, username, planId, autoRestart })
+        this.generateSAC({ accountName, userId, username, planId, autoRestart, isRequiringSteamGuard })
       )
       return [sac, unsub]
     }
@@ -95,7 +105,7 @@ export class AllUsersClientsStorage {
       const sac = this.addSteamAccount(
         username,
         userId,
-        this.generateSAC({ accountName, userId, username, planId, autoRestart })
+        this.generateSAC({ accountName, userId, username, planId, autoRestart, isRequiringSteamGuard })
       )
       return [sac, unsub]
     }
@@ -135,8 +145,9 @@ export class AllUsersClientsStorage {
     username,
     planId,
     autoRestart,
+    isRequiringSteamGuard,
   }: AddUserProps): SteamAccountClient {
-    const sac = this.sacBuilder.create({ accountName, userId, username, planId, autoRestart })
+    const sac = this.sacBuilder.create({ accountName, userId, username, planId, autoRestart, isRequiringSteamGuard })
     this.addSteamAccount(username, userId, sac)
     return sac
   }
@@ -197,4 +208,5 @@ export type AddUserProps = {
   accountName: string
   planId: string
   autoRestart: boolean
+  isRequiringSteamGuard: boolean
 }
