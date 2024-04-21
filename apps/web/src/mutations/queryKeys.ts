@@ -7,4 +7,5 @@ export const ECacheKeys = {
   banUser: (userId: string) => ["BA N-USER", userId],
   unbanUser: (userId: string) => ["UNBAN-USER", userId],
   changeUserPlan: (userId: string) => ["CHANGE-USER-PLAN", userId],
+  addSteamGuard: (accountName: string) => ["ADD-STEAM-GUARD", accountName],
 }

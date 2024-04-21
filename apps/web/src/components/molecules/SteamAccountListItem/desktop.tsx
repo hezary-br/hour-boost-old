@@ -6,6 +6,7 @@ import { IconTrash } from "@/components/icons/IconTrash"
 import { MenuDropdownChangeAccountStatus } from "@/components/molecules/ChangeAccountStatus/components"
 import { ChooseFarmingGames } from "@/components/molecules/FarmGames/controller"
 import { AlertDialogRemoveSteamAccount } from "@/components/molecules/RemoveSteamAccount/components/controller"
+import { AddSteamCodePopover } from "@/components/molecules/SteamAccountListItem/AddSteamCode/components/popover"
 import { ToggleAutoRelogin, useSteamAccount } from "@/components/molecules/ToggleAutoRelogin/controller"
 import { IMG_USER_PLACEHOLDER } from "@/consts"
 import { useUser } from "@/contexts/UserContext"
@@ -71,17 +72,20 @@ export const SteamAccountListItemViewDesktop = React.memo(
             <div className="bg-accent absolute bottom-0 right-full top-0 w-[0.25rem] animate-pulse" />
           )}
           <div className="flex items-center">
-            {steamGuard ? (
-              <button className="group relative flex h-full items-center px-6">
-                <div className="absolute inset-0 animate-pulse bg-slate-800 group-hover:animate-none" />
-                <div className="relative z-10">
-                  <span className="absolute right-0 top-0 flex h-2 w-2 -translate-y-1/2">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
-                    <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500"></span>
-                  </span>
-                  <IconDeviceMobile className="h-5 w-5" />
-                </div>
-              </button>
+            {/* {steamGuard ? ( */}
+            {true ? (
+              <AddSteamCodePopover>
+                <button className="group relative flex h-full items-center px-6">
+                  <div className="absolute inset-0 animate-pulse bg-slate-800 group-hover:animate-none" />
+                  <div className="relative z-10">
+                    <span className="absolute right-0 top-0 flex h-2 w-2 -translate-y-1/2">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
+                      <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500"></span>
+                    </span>
+                    <IconDeviceMobile className="h-5 w-5" />
+                  </div>
+                </button>
+              </AddSteamCodePopover>
             ) : (
               <div className="flex h-full items-center px-6">
                 <IconDeviceMobile className="h-5 w-5" />

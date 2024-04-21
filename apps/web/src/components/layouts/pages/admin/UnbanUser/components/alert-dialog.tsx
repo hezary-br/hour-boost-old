@@ -93,4 +93,4 @@ export const AlertDialogUnbanUser = React.forwardRef<
 
 AlertDialogUnbanUser.displayName = "AlertDialogUnbanUser"
 
-const Accent = twc.span`inline-flex items-center text-xs/none h-4 rounded-sm px-2 bg-accent text-white font-semibold`
+export const Accent = twc.span`inline-flex items-center text-xs/none h-4 rounded-sm px-2 bg-accent text-white font-semibold`
