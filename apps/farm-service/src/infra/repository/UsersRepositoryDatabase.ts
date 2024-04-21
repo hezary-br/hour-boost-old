@@ -129,6 +129,7 @@ function prismaUserFindManyToUserDomain(user: PrismaFindMany[number]): User {
         id_steamAccount: sa.id_steamAccount,
         ownerId: user.id_user,
         autoRelogin: sa.autoRelogin,
+        isRequiringSteamGuard: sa.isRequiringSteamGuard,
       })
     ),
   })
@@ -169,6 +170,7 @@ export function prismaUserToDomain(dbUser: PrismaGetUser) {
         id_steamAccount: sa.id_steamAccount,
         ownerId: dbUser.id_user,
         autoRelogin: sa.autoRelogin,
+        isRequiringSteamGuard: sa.isRequiringSteamGuard,
       })
     ),
   })
