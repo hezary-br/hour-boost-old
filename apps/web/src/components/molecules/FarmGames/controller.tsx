@@ -88,8 +88,17 @@ export const ChooseFarmingGames = React.memo(
 
       const setGames = useUserSetterSetGames()
       async function handleRefreshGames() {
-        const { games } = await refreshGames.mutateAsync({ accountName: accountName })
-        setGames(accountName, games)
+        refreshGames.mutate({ accountName: accountName }, {
+          onSuccess([undesired, response]) {
+            if (undesired) {
+              toast[undesired.type](undesired.message)
+              return
+            }
+
+            toast.success(response.message)
+            setGames(accountName, response.games)
+          }
+        })
       }
 
       const handleAddGameToFarmStaging = React.useCallback(

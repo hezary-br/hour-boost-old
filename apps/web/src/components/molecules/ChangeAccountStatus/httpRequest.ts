@@ -15,10 +15,18 @@ export async function httpChangeAccountStatus(
 ): Promise<DataOrMessage<string, IntentionCodes>> {
   const api = await getAPI()
   const [error, response] = await resolvePromiseToMessage(
-    api.patch<any, AxiosResponse<ChangeAccountStatusOutput>, ChangeAccountStatusPayload>(
-      "/account/status",
-      payload
-    )
+    (async () => {
+      const res = await api.patch<any, AxiosResponse<ChangeAccountStatusOutput>, ChangeAccountStatusPayload>(
+        "/account/status",
+        payload
+      )
+      return {
+        status: 200,
+        data: {
+          message: res.data.message,
+        },
+      }
+    })()
   )
   if (error) {
     return [error]

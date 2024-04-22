@@ -12,7 +12,12 @@ Events.on("account_required_steam_guard", async (userId, accountName) => {
     username: user.username,
   })
 
-  if (errorStoppingFarm) return notifyError(errorStoppingFarm)
+  if (errorStoppingFarm) {
+    if (errorStoppingFarm.code === "DO-NOT-HAVE-ACCOUNTS-FARMING") {
+      return
+    }
+    return notifyError(errorStoppingFarm)
+  }
 })
 
 // change require steam guard on db -> true
@@ -20,7 +25,7 @@ Events.on("account_required_steam_guard", async (userId, accountName) => {
   const [errorGettingUser, user] = await getUser(usersRepository, userId)
   if (errorGettingUser) return notifyError(errorGettingUser)
   const steamAccount = user.steamAccounts.getByAccountName(accountName)
-  if (!steamAccount) return notifyError(`${accountName} not found.`)
+  if (!steamAccount) return
   steamAccount.requireSteamGuard()
   await usersRepository.update(user)
 })
@@ -31,7 +36,7 @@ Events.on("account_logged_in", async (userId, accountName, wasRequiringSteamGuar
   const [errorGettingUser, user] = await getUser(usersRepository, userId)
   if (errorGettingUser) return notifyError(errorGettingUser)
   const steamAccount = user.steamAccounts.getByAccountName(accountName)
-  if (!steamAccount) return notifyError(`${accountName} not found.`)
+  if (!steamAccount) return
   steamAccount.provideSteamGuard()
   await usersRepository.update(user)
 })

@@ -15,16 +15,18 @@ export async function httpFarmGames(
 ): Promise<DataOrMessage<string, IntentionCodes>> {
   const api = await getAPI()
   const [error, response] = await resolvePromiseToMessage(
-    api.post<any, AxiosResponse<FarmGamesOutput>, FarmGamesPayload>("/farm/start", payload)
+    api.post<any, AxiosResponse<FarmGamesOutput>, FarmGamesPayload>("/farm/start", payload).then(() => ({
+      status: 200,
+      data: {
+        message: "Farm iniciado.",
+      },
+    }))
   )
   if (error) {
     return [error]
   }
   if (response.status === 200) {
     return [null, response.data.message]
-  }
-  if (response.status === 202) {
-    return [msg.new("Código Steam Guard requerido.", "info", "STEAM_GUARD_REQUIRED")]
   }
   console.log({ response })
   return [msg.new("Resposta desconhecida.", "info")]

@@ -1,19 +1,20 @@
 import { ChangeAccountStatusPayload } from "@/components/molecules/ChangeAccountStatus/controller"
-import { IntentionCodes as IntentionCodes_ToggleAutoRelogin } from "@/components/molecules/ToggleAutoRelogin/types"
 import { IntentionCodes as IntentionCodes_ChangeStatus } from "@/components/molecules/ChangeAccountStatus/types"
 import { FarmGamesPayload } from "@/components/molecules/FarmGames/controller"
 import { IntentionCodes as IntentionCodes_FarmGames } from "@/components/molecules/FarmGames/types"
 import { HHandlers } from "@/components/molecules/SteamAccountListItem/hooks/useHandlers"
 import { StopFarmPayload } from "@/components/molecules/StopFarm/controller"
 import { IntentionCodes as IntentionCodes_StopFarm } from "@/components/molecules/StopFarm/types"
+import { ToggleAutoReloginPayload } from "@/components/molecules/ToggleAutoRelogin/controller"
+import { ToggleAutoReloginMutationResult } from "@/components/molecules/ToggleAutoRelogin/mutation"
+import { IntentionCodes as IntentionCodes_ToggleAutoRelogin } from "@/components/molecules/ToggleAutoRelogin/types"
+import { UpdateStagingGamesMutationResult } from "@/components/molecules/UpdateStagingGames"
+import { SuccessResponse as RefreshGames_SuccessResponse } from "@/mutations"
 import { DataOrMessage } from "@/util/DataOrMessage"
 import { DefaultError, UseMutationResult } from "@tanstack/react-query"
-import { API_GET_RefreshAccountGames, AppAccountStatus } from "core"
+import { AppAccountStatus } from "core"
 import React from "react"
 import { SteamAccountAppProps, SteamAccountStatusLiveProps, SteamAccountStatusProps } from "./types"
-import { ToggleAutoReloginMutationResult } from "@/components/molecules/ToggleAutoRelogin/mutation"
-import { ToggleAutoReloginPayload } from "@/components/molecules/ToggleAutoRelogin/controller"
-import { UpdateStagingGamesMutationResult } from "@/components/molecules/UpdateStagingGames"
 
 export interface ISteamAccountListItemContext extends SteamAccountStatusProps, SteamAccountStatusLiveProps {
   app: SteamAccountAppProps
@@ -51,7 +52,7 @@ export type MutationStopFarm = UseMutationResult<
 >
 
 export type MutationRefreshGames = UseMutationResult<
-  API_GET_RefreshAccountGames,
+  DataOrMessage<RefreshGames_SuccessResponse, "UNKNOWN">,
   unknown,
   {
     accountName: string

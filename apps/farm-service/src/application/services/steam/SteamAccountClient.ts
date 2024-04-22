@@ -237,9 +237,11 @@ export class SteamAccountClient extends LastHandler {
   }
 
   farmGames(gamesID: number[]) {
-    if (this.isRequiringSteamGuard) return bad(Fail.create("SAC-IS-REQUIRING-STEAM-GUARD", 400, this))
+    if (this.isRequiringSteamGuard)
+      return bad(Fail.create("SAC-IS-REQUIRING-STEAM-GUARD", 403, { accountName: this.accountName }))
     const userIntention = getUserFarmIntention(gamesID, this.cache.gamesPlaying)
-    if (userIntention === "DIDNT-ADD-GAMES") return bad(Fail.create("DIDNT-ADD-GAMES", 203, this))
+    if (userIntention === "DIDNT-ADD-GAMES")
+      return bad(Fail.create("DIDNT-ADD-GAMES", 203, { accountName: this.accountName }))
 
     this.cache.farmGames(gamesID)
     this.logger.log(`Calling the client with `, gamesID)
@@ -315,7 +317,8 @@ export class SteamAccountClient extends LastHandler {
   }
 
   setStatus(status: AppAccountStatus) {
-    if (this.isRequiringSteamGuard) return bad(Fail.create("SAC-IS-REQUIRING-STEAM-GUARD", 400, this))
+    if (this.isRequiringSteamGuard)
+      return bad(Fail.create("SAC-IS-REQUIRING-STEAM-GUARD", 400, { accountName: this.accountName }))
     const persona = mapStatusToPersona(status)
     this.client.setPersona(persona)
     this.cache.changeStatus(status)
@@ -323,7 +326,8 @@ export class SteamAccountClient extends LastHandler {
   }
 
   async getAccountGamesList() {
-    if (this.isRequiringSteamGuard) return bad(Fail.create("SAC-IS-REQUIRING-STEAM-GUARD", 400, this))
+    if (this.isRequiringSteamGuard)
+      return bad(Fail.create("SAC-IS-REQUIRING-STEAM-GUARD", 400, { accountName: this.accountName }))
     if (!this.client.steamID) return [new ApplicationError("No steam id set.")] as const
     const { apps } = (await this.client.getUserOwnedApps(this.client.steamID)) as unknown as AccountGames
     const games: GameSession[] = apps.map(game => ({
@@ -336,7 +340,8 @@ export class SteamAccountClient extends LastHandler {
   }
 
   async getAccountPersona() {
-    if (this.isRequiringSteamGuard) return bad(Fail.create("SAC-IS-REQUIRING-STEAM-GUARD", 400, this))
+    if (this.isRequiringSteamGuard)
+      return bad(Fail.create("SAC-IS-REQUIRING-STEAM-GUARD", 400, { accountName: this.accountName }))
     const steamId = this.client.steamID?.toString()
     if (!steamId) return bad(Fail.create("NO_STEAM_ID_FOUND", 400, { steamId }))
 

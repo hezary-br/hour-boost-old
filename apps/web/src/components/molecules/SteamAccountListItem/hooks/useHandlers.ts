@@ -2,7 +2,6 @@ import { FarmGamesMutationResult } from "@/components/molecules/FarmGames"
 import { IntentionCodes as IntentionCodes_FarmGames } from "@/components/molecules/FarmGames/types"
 import { useSteamAccountStore } from "@/components/molecules/SteamAccountListItem/store/useSteamAccountStore"
 import { IntentionCodes as IntentionCodes_StopFarm } from "@/components/molecules/StopFarm/types"
-import { useUserSetterUpdateFarmingGames } from "@/contexts/user-actions"
 import { StopFarmMutationResult } from "@/mutations"
 import { ECacheKeys } from "@/mutations/queryKeys"
 import { DataOrMessage } from "@/util/DataOrMessage"
@@ -41,8 +40,6 @@ export function useHandlers({ stopFarm, userId, farmGames }: Props) {
     [stopFarm, queryClient]
   )
 
-  const updateFarmingGames = useUserSetterUpdateFarmingGames(queryClient)
-
   const handleFarmGames = React.useCallback(
     async (
       accountName: string,
@@ -56,15 +53,13 @@ export function useHandlers({ stopFarm, userId, farmGames }: Props) {
         gamesID,
         userId,
       })
-      const now = new Date()
-      updateFarmingGames(accountName, gamesID)
       setUrgent(false)
       // 22: startFarm() only if farming games was 0 and staging list had more than 1 game
       return {
         dataOrMessage,
       }
     },
-    [farmGames, updateFarmingGames]
+    [farmGames]
   )
 
   return {

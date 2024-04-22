@@ -57,6 +57,8 @@ export class FarmGamesController implements IFarmGamesController {
       isRequiringSteamGuard: steamAccountDomain.isRequiringSteamGuard,
     })
     const sacWasNotFarming = sac.isFarming()
+    if (sac.isRequiringSteamGuard)
+      throw new ApplicationError("Você precisa informar o Steam Guard primeiro.", 403)
 
     const [errorDecrypting, decryptedPassword] = this.hashService.decrypt(
       steamAccountDomain.credentials.password
@@ -142,7 +144,7 @@ export class FarmGamesController implements IFarmGamesController {
           sac.setManualHandler("steamGuard", code => setCode(code))
           return [
             makeRes(
-              202,
+              403,
               `Steam Guard requerido. Enviando para ${domain ? `e-mail com final ${domain}` : `seu celular.`}`
             ),
           ]
