@@ -6,6 +6,7 @@ import { ChangeAccountStatusUseCase, UpdateStagingGamesUseCase } from "~/applica
 import { StopAllFarms } from "~/application/use-cases/StopAllFarms"
 import { ToggleAutoReloginUseCase } from "~/application/use-cases/ToggleAutoReloginUseCase"
 import { GENERIC_ERROR_JSON, GENERIC_ERROR_STATUS } from "~/consts"
+import { rateLimit } from "~/inline-middlewares/rate-limit"
 
 import {
   AddSteamAccountController,
@@ -90,6 +91,9 @@ command_routerSteam.post(
   "/farm/start",
   ClerkExpressRequireAuth(),
   async (req: WithAuthProp<Request>, res: Response) => {
+    const [limited] = await rateLimit(req)
+    if (limited) return res.status(limited.status).json(limited.json)
+
     const startFarmController = new FarmGamesController({
       allUsersClientsStorage,
       farmGamesUseCase,
@@ -166,6 +170,9 @@ command_routerSteam.post(
 
 command_routerSteam.post("/code", ClerkExpressRequireAuth(), async (req, res) => {
   try {
+    const [limited] = await rateLimit(req, { tokens: 7, window: "30 s", timeout: 1000 * 60 })
+    if (limited) return res.status(limited.status).json(limited.json)
+
     const { status, json, headers, cookies } = await addSteamGuardCodeController.handle({
       accountName: req.body.accountName,
       code: req.body.code,
