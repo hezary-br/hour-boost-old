@@ -59,7 +59,7 @@ describe("mobile", () => {
     )
 
     expect(response).toStrictEqual({
-      status: 202,
+      status: 403,
       json: { message: "Steam Guard requerido. Enviando para seu celular." },
     })
   })

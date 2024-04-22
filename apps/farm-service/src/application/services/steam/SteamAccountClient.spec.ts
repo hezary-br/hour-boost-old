@@ -4,6 +4,7 @@ import { SteamAccountClient } from "~/application/services/steam"
 import { Publisher } from "~/infra/queue"
 import { SteamUserMock } from "~/infra/services/SteamUserMock"
 
+import { makeSACFactoryOptional } from "~/__tests__/factories"
 import {
   type CustomInstances,
   type MakeTestInstancesProps,
@@ -23,6 +24,7 @@ let i = makeTestInstances({
 let meInstances = {} as PrefixKeys<"me">
 const friendInstances = {} as PrefixKeys<"friend">
 let logSpy: jest.SpyInstance
+const makeSAC = makeSACFactoryOptional(validSteamAccounts, i.publisher)
 
 async function setupInstances(props?: MakeTestInstancesProps, customInstances?: CustomInstances) {
   i = makeTestInstances(props, customInstances)
@@ -70,12 +72,12 @@ test("should await promise, call hasSession resolver once user logged in", async
   const seconds = 2
 
   sac.emitter.on("hasSession", async () => {
-    await new Promise(res => setTimeout(res, seconds * 1000 - 1000))
+    await new Promise(res => setTimeout(res, seconds * 100 - 100))
     console.log(`Resolved after ${seconds - 1} seconds`)
   })
 
   sac.emitter.on("hasSession", async () => {
-    await new Promise(res => setTimeout(res, seconds * 1000))
+    await new Promise(res => setTimeout(res, seconds * 100))
     console.log(`Resolved after ${seconds} seconds`)
   })
   sac.login(s.me.accountName, password)
@@ -106,5 +108,44 @@ test("should await promise, call interrupt resolver once connection is break", a
       res(true)
     })
   })
+  await new Promise(res => {
+    setTimeout(res, 200)
+  })
   expect(xs).toBe(1)
+})
+
+describe("requiring steam guard", () => {
+  beforeEach(() => {
+    // talvez makeSAC precise ser dinâmico no beforeEach
+    meInstances.meSAC = makeSAC(meInstances.me, s.me.accountName, {
+      isRequiringSteamGuard: true,
+    })
+  })
+
+  test("should not be able to farm", async () => {
+    expect(meInstances.meSAC.isRequiringSteamGuard).toBe(true)
+    const [error] = meInstances.meSAC.farmGames([500])
+    expect(error?.code).toBe("SAC-IS-REQUIRING-STEAM-GUARD")
+
+    meInstances.meSAC.client.emit("loggedOn")
+    expect(meInstances.meSAC.isRequiringSteamGuard).toBe(false)
+  })
+
+  test("should not be able to set his status", async () => {
+    expect(meInstances.meSAC.isRequiringSteamGuard).toBe(true)
+    const [error] = meInstances.meSAC.setStatus("offline")
+    expect(error?.code).toBe("SAC-IS-REQUIRING-STEAM-GUARD")
+  })
+
+  test("should not be able to get account games", async () => {
+    expect(meInstances.meSAC.isRequiringSteamGuard).toBe(true)
+    const [error] = await meInstances.meSAC.getAccountGamesList()
+    expect(error?.code).toBe("SAC-IS-REQUIRING-STEAM-GUARD")
+  })
+
+  test("should not be able to get account games", async () => {
+    expect(meInstances.meSAC.isRequiringSteamGuard).toBe(true)
+    const [error] = await meInstances.meSAC.getAccountPersona()
+    expect(error?.code).toBe("SAC-IS-REQUIRING-STEAM-GUARD")
+  })
 })

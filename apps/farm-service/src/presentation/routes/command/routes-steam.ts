@@ -1,10 +1,11 @@
 import { ClerkExpressRequireAuth, type WithAuthProp } from "@clerk/clerk-sdk-node"
-import { AddSteamAccount, type HttpClient, appAccountStatusSchema } from "core"
-import { type Request, type Response, Router } from "express"
+import { AddSteamAccount, ApplicationError, appAccountStatusSchema, type HttpClient } from "core"
+import { Router, type Request, type Response } from "express"
 import { z } from "zod"
 import { ChangeAccountStatusUseCase, UpdateStagingGamesUseCase } from "~/application/use-cases"
 import { StopAllFarms } from "~/application/use-cases/StopAllFarms"
 import { ToggleAutoReloginUseCase } from "~/application/use-cases/ToggleAutoReloginUseCase"
+import { GENERIC_ERROR_JSON, GENERIC_ERROR_STATUS } from "~/consts"
 
 import {
   AddSteamAccountController,
@@ -181,9 +182,7 @@ command_routerSteam.post("/code", ClerkExpressRequireAuth(), async (req, res) =>
 
     res.statusCode = status
     return json ? res.json(json) : res.end()
-
   } catch (error) {
-    
     console.log(error)
     return res.status(500).json({
       message: "Erro interno.",
@@ -234,14 +233,30 @@ command_routerSteam.patch(
         status,
         userId: req.auth.userId!,
       })
-      if (error)
-        return {
-          status: error.status,
-          json: {
-            code: "ERROR_ChangeAccountStatusUseCase",
-            message: error.message,
-          },
+      if (error) {
+        if (error instanceof ApplicationError) {
+          return {
+            status: error.status,
+            json: {
+              code: "ERROR_ChangeAccountStatusUseCase",
+              message: error.message,
+            },
+          }
         }
+        if (error.code === "SAC-IS-REQUIRING-STEAM-GUARD") {
+          return {
+            status: error.httpStatus,
+            json: {
+              code: error.code,
+              message: "Você precisa informar o Steam Guard primeiro.",
+            },
+          }
+        }
+        return {
+          status: GENERIC_ERROR_STATUS,
+          json: GENERIC_ERROR_JSON,
+        }
+      }
       return Promise.resolve({
         status: 200,
         json: {

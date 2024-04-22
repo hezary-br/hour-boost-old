@@ -13,14 +13,20 @@ import type { AppProps } from "next/app"
 import { UserBannedToaster } from "@/components/molecules/user-banned-toaster"
 import { Toaster } from "@/components/toaster"
 import { ServerMetaProvider } from "@/contexts/server-meta"
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { MutationCache, QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import Head from "next/head"
 import { useRouter } from "next/router"
 import { PropsWithChildren, useState, useSyncExternalStore } from "react"
 import { useIsomorphicLayoutEffect } from "react-use"
+import { toast } from "sonner"
 
 export default function App({ Component, pageProps }: AppProps) {
-  const [queryClient] = useState(() => new QueryClient())
+  const [queryClient] = useState(() => new QueryClient({
+    mutationCache: new MutationCache({
+      onError: (error) =>
+        toast.error(error.message),
+    }),
+  }))
   const router = useRouter()
   useIsomorphicLayoutEffect(() => {
     document.body.style.setProperty("--font-family", barlow.style.fontFamily)
@@ -73,7 +79,7 @@ export default function App({ Component, pageProps }: AppProps) {
 
 export function ClientOnly({ children }: PropsWithChildren) {
   const isClient = useSyncExternalStore(
-    () => () => {},
+    () => () => { },
     () => true,
     () => false
   )

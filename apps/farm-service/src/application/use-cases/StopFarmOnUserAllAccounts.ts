@@ -12,7 +12,6 @@ export class StopFarmOnUserAllAccounts implements IStopFarmOnUserAllAccounts {
       const [errorStoppingFarm, usagesInfo] = await this.stopFarmUseCase.execute(
         {
           accountName: steamAccount.credentials.accountName,
-          planId: user.plan.id_plan,
           username: user.username,
           isFinalizingSession: true,
         },

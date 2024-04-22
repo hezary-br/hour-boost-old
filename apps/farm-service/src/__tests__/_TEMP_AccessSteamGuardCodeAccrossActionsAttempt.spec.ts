@@ -44,14 +44,14 @@ test("should ask for the steam guard code", async () => {
     })
   )
 
-  expect(response.status).toBe(202)
+  expect(response.status).toBe(403)
 
   const sac1 = i.allUsersClientsStorage.getAccountClientOrThrow(s.me.userId, s.me.accountName)
   expect(sac1.getLastArguments("steamGuard")).toHaveLength(3)
   expect((sac1.client as unknown as SteamUserMock).steamGuardCode).toBeUndefined()
 
   expect(response).toStrictEqual({
-    status: 202,
+    status: 403,
     json: { message: "Steam Guard requerido. Enviando para seu celular." },
   })
 

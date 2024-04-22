@@ -6,14 +6,12 @@ import { IconTrash } from "@/components/icons/IconTrash"
 import { MenuDropdownChangeAccountStatus } from "@/components/molecules/ChangeAccountStatus/components"
 import { ChooseFarmingGames } from "@/components/molecules/FarmGames/controller"
 import { AlertDialogRemoveSteamAccount } from "@/components/molecules/RemoveSteamAccount/components/controller"
+import { AddSteamCodePopover } from "@/components/molecules/SteamAccountListItem/AddSteamCode/components/popover"
 import { ToggleAutoRelogin, useSteamAccount } from "@/components/molecules/ToggleAutoRelogin/controller"
 import { IMG_USER_PLACEHOLDER } from "@/consts"
 import { useUser } from "@/contexts/UserContext"
 import { cn } from "@/lib/utils"
-import { Message } from "@/util/DataOrMessage"
-import { showToastFarmingGame } from "@/util/toaster"
 import React, { CSSProperties } from "react"
-import { toast } from "sonner"
 import twc from "tailwindcss/colors"
 import { ButtonAddNewAccount } from "./components"
 import { useSteamAccountListItem } from "./context"
@@ -27,25 +25,20 @@ export const SteamAccountListItemViewMobile = React.memo(
       { displayUpdateInServerMessage, handleClickFarmButton, actionText },
       ref
     ) {
-      const { header, steamGuard, mutations, app, status } = useSteamAccountListItem()
-      const { accountName, profilePictureUrl, isRestoringConnection } = app
+      const { header, mutations, app, status } = useSteamAccountListItem()
+      const { accountName, profilePictureUrl, isRestoringConnection, isRequiringSteamGuard } = app
       const autoRestarter = useUser(user => user.plan.autoRestarter)
       const isFarming = useSteamAccount(sa => sa.farmingGames.length > 0)
       const farmStartedAt = useSteamAccount(sa => sa.farmStartedAt)
-
-      const handleClickFarmButtonImpl = async () => {
-        const [undesired, payload] = await handleClickFarmButton()
-        if (undesired) return toast[undesired.type](undesired.message)
-        if (payload instanceof Message) return toast[payload.type](payload.message)
-        const { games, list } = payload
-        showToastFarmingGame(list, games)
-      }
 
       return (
         <div
           className={cn("relative flex flex-col border-t border-slate-800", header && "mt-[4.5rem]")}
           ref={ref}
         >
+          {isRequiringSteamGuard && (
+            <div className="absolute inset-0 z-40 flex cursor-not-allowed items-center justify-center bg-black/50" />
+          )}
           {isRestoringConnection && (
             <div className="absolute inset-0 z-50 flex cursor-not-allowed items-center justify-center bg-black/80 text-white">
               <div className="flex flex-col items-center">
@@ -63,7 +56,7 @@ export const SteamAccountListItemViewMobile = React.memo(
               <ButtonAddNewAccount />
             </div>
           )}
-          <div className="flex items-center gap-4 overflow-hidden">
+          <div className="flex items-center gap-4 overflow-hidden h-[4.5rem]">
             <div className="flex">
               {isFarming && <div className="bg-accent h-[4.5rem] w-[0.25rem] animate-pulse" />}
               <div className={cn("relative h-[4.5rem] w-[4.5rem] shrink-0")}>
@@ -110,20 +103,22 @@ export const SteamAccountListItemViewMobile = React.memo(
                 </MenuDropdownChangeAccountStatus>
               </div>
             </div>
-            <div className="flex items-center">
-              {steamGuard ? (
-                <button className="group relative flex h-full items-center">
-                  <div className="absolute inset-0 animate-pulse bg-slate-800 group-hover:animate-none" />
-                  <div className="relative z-10">
-                    <span className="absolute right-0 top-0 flex h-2 w-2 -translate-y-1/2">
-                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
-                      <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500"></span>
-                    </span>
-                    <IconDeviceMobile className="h-5 w-5" />
-                  </div>
-                </button>
+            <div className="flex items-center h-full">
+              {isRequiringSteamGuard ? (
+                <AddSteamCodePopover>
+                  <button className="z-50 group relative flex h-full items-center justify-center size-[4.5rem]">
+                    <div className="absolute inset-0 animate-pulse bg-slate-800 group-hover:animate-none" />
+                    <div className="relative z-10">
+                      <span className="absolute right-0 top-0 flex h-2 w-2 -translate-y-1/2">
+                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
+                        <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500"></span>
+                      </span>
+                      <IconDeviceMobile className="h-5 w-5" />
+                    </div>
+                  </button>
+                </AddSteamCodePopover>
               ) : (
-                <div className="flex h-full items-center px-6">
+                <div className="z-50 flex h-full items-center px-6">
                   <IconDeviceMobile className="h-5 w-5" />
                 </div>
               )}
@@ -233,7 +228,7 @@ export const SteamAccountListItemViewMobile = React.memo(
                 "flex h-20 w-full items-center justify-center bg-slate-800 px-8 text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-900",
                 isFarming && "bg-accent hover:bg-accent-500 disabled:bg-accent-700"
               )}
-              onClick={handleClickFarmButtonImpl}
+              onClick={handleClickFarmButton}
             >
               {actionText}
             </button>

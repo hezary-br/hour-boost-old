@@ -1,18 +1,19 @@
 import { useMediaQuery } from "@/components/hooks"
 import { useChangeAccountStatus } from "@/components/molecules/ChangeAccountStatus"
 import { IntentionCodes as IntentionCodes_ChangeStatus } from "@/components/molecules/ChangeAccountStatus/types"
-import { IntentionCodes, useFarmGamesMutation } from "@/components/molecules/FarmGames"
+import { useFarmGamesMutation } from "@/components/molecules/FarmGames"
 import { useSteamAccountStore } from "@/components/molecules/SteamAccountListItem/store/useSteamAccountStore"
 import { useToggleAutoReloginMutation } from "@/components/molecules/ToggleAutoRelogin/mutation"
 import { useUpdateStagingGames } from "@/components/molecules/UpdateStagingGames"
 import { useUser$, useUserId } from "@/contexts/UserContext"
 import { api } from "@/lib/axios"
 import { useRefreshGamesMutation, useStopFarmMutation } from "@/mutations"
-import { DataOrMessage, Message } from "@/util/DataOrMessage"
+import { DataOrMessage } from "@/util/DataOrMessage"
 import { planIsUsage } from "@/util/thisPlanIsUsage"
 import { useAuth } from "@clerk/clerk-react"
-import { AppAccountStatus, GameSession, formatTimeSinceShort } from "core"
+import { AppAccountStatus, formatTimeSinceShort } from "core"
 import React, { createContext, useContext, useMemo, useState } from "react"
+import { toast } from "sonner"
 import { ISteamAccountListItemContext, SteamAccountListItemContext } from "./context"
 import { SteamAccountListItemViewDesktop } from "./desktop"
 import { useHandlers } from "./hooks/useHandlers"
@@ -51,7 +52,6 @@ export function SteamAccountList({
   const stageFarmingGames_hasGamesOnTheList = useSteamAccountStore(
     state => state.stageFarmingGames_hasGamesOnTheList
   )
-  const urgent = useSteamAccountStore(state => state.urgent)
   const setUrgent = useSteamAccountStore(state => state.setUrgent)
   const openModal_desktop = useSteamAccountStore(state => state.openModal_desktop)
   const toggleAutoRelogin = useSteamAccountStore(state => state.toggleAutoRelogin)
@@ -60,6 +60,7 @@ export function SteamAccountList({
     farmGames,
     stopFarm,
     userId,
+    games: app.games,
   })
 
   const isFarming = React.useCallback(() => {
@@ -84,40 +85,26 @@ export function SteamAccountList({
   /**
    * Farm Games
    */
-  const handleClickFarmButton = React.useCallback(async (): Promise<
-    DataOrMessage<{ list: number[]; games: GameSession[] } | Message, IntentionCodes>
-  > => {
+  // USE CALLBACK?
+  const handleClickFarmButton = () => {
     if (isFarming()) {
-      const { dataOrMessage } = await handlers.handleStopFarm(app.accountName)
-      const [undesired] = dataOrMessage
-      if (undesired) return [undesired]
-      return [null, new Message("Farm pausado.", "info")]
+      handlers.handleStopFarm(app.accountName)
+      toast.info("Farm pausado")
+      return
     }
     if (!stageFarmingGames_hasGamesOnTheList()) {
       setUrgent(true)
       openModal_desktop()
 
-      return [new Message("Escolha alguns jogos primeiro.", "info")]
+      toast.info("Escolha alguns jogos primeiro.")
+      return
     }
     if (!app.games) {
-      return [
-        new Message("Nenhum jogo foi encontrado na sua conta, atualize seus jogos ou a página.", "error"),
-      ]
+      toast.error("Nenhum jogo foi encontrado na sua conta, atualize seus jogos ou a página.")
+      return
     }
-    const { dataOrMessage } = await handlers.handleFarmGames(app.accountName, stageFarmingGames_list, userId)
-    const [undesired] = dataOrMessage
-    if (undesired) return [undesired]
-    return [null, { list: stageFarmingGames_list, games: app.games }]
-  }, [
-    handlers.handleStopFarm,
-    app.accountName,
-    stageFarmingGames_hasGamesOnTheList,
-    urgent,
-    openModal_desktop,
-    app.games,
-    handlers.handleFarmGames,
-    stageFarmingGames_list,
-  ])
+    handlers.handleFarmGames(app.accountName, stageFarmingGames_list, userId)
+  }
 
   const handleChangeStatus = React.useCallback(
     async (newStatus: AppAccountStatus) => {

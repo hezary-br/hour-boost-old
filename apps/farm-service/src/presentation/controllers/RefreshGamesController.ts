@@ -1,18 +1,27 @@
-import type { API_GET_RefreshAccountGames, Controller, HttpClient } from "core"
+import { type API_GET_RefreshAccountGames, ApplicationError, type HttpClient } from "core"
 import type { RefreshGamesUseCase, RefreshGamesUseCaseProps } from "~/presentation/presenters/RefreshGamesUseCase"
 
-export class RefreshGamesController implements Controller<RefreshGames.Payload, RefreshGames.Response> {
+export class RefreshGamesController {
   constructor(private readonly refreshGamesUseCase: RefreshGamesUseCase) {}
 
   async handle({
     payload,
-  }: HttpClient.Request<RefreshGames.Payload>): Promise<HttpClient.Response<RefreshGames.Response>> {
+  }: HttpClient.Request<RefreshGames.Payload>) {
     const input: RefreshGamesUseCaseProps = {
       accountName: payload.accountName,
       userId: payload.userId,
     }
     const [error, accountSteamGamesList] = await this.refreshGamesUseCase.execute(input)
-    if (error) throw error
+    if (error) {
+      if(error instanceof ApplicationError) throw error
+      return {
+        json: {
+          code: error.code,
+          message: "Você precisa informar o Steam Guard primeiro.",
+        },
+        status: 403
+      }
+    }
     return {
       status: 200,
       json: {
@@ -28,5 +37,4 @@ export namespace RefreshGames {
     accountName: string
   }
 
-  export type Response = API_GET_RefreshAccountGames
 }

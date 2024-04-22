@@ -1,4 +1,4 @@
-import type { DataOrFail, Fail, PlanInfinity, PlanUsage } from "core"
+import type { DataOrFail, Fail } from "core"
 import type { NSUserCluster, UsersSACsFarmingClusterStorage } from "~/application/services"
 import type { SteamAccountClient } from "~/application/services/steam"
 import { bad, nice } from "~/utils/helpers"
@@ -12,7 +12,7 @@ export class FarmGamesUseCase extends IFarmGamesUseCase {
     super()
   }
 
-  async execute({ username, plan, accountName, sac, gamesId, planId, session }: FarmGamesUseCaseProps) {
+  async execute({ username, accountName, sac, gamesId, planId, session }: FarmGamesUseCaseProps) {
     // const userCluster = this.usersClusterStorage.getOrAdd(username, plan)
     const [error, userCluster] = this.usersClusterStorage.get(username)
     if (error) return bad(error)
@@ -33,7 +33,6 @@ export class FarmGamesUseCase extends IFarmGamesUseCase {
 
 type FarmGamesUseCaseProps = {
   username: string
-  plan: PlanUsage | PlanInfinity
   accountName: string
   sac: SteamAccountClient
   gamesId: number[]

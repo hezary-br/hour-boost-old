@@ -94,11 +94,13 @@ export class ChangeUserPlanUseCase implements IChangeUserPlanUseCase {
         case "OTHER-SESSION-STILL-ON":
         case "[RestoreAccountSessionUseCase]::PLAN-NOT-FOUND":
         case "[RestoreAccountSessionUseCase]::[FarmInfinityService]:ACCOUNT-ALREADY-FARMING":
+        case "[RestoreAccountSessionUseCase]::DIDNT-ADD-GAMES":
         case "[FarmUsageService]:PLAN-MAX-USAGE-EXCEEDED":
           continue
         case "cluster.farmWithAccount()::UNKNOWN-CLIENT-ERROR":
         case "[RestoreAccountSessionUseCase]::SAC-NOT-FOUND":
         case "[RestoreAccountSessionUseCase]::UNKNOWN-CLIENT-ERROR":
+        case "[RestoreAccountSessionUseCase]::SAC-IS-REQUIRING-STEAM-GUARD":
         case "UNKNOWN-APPLICATION-ERROR":
         case "UNKNOWN-CLIENT-ERROR":
           fails.push(error)

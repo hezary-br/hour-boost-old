@@ -7,7 +7,6 @@ import {
   CacheState,
   CacheStateDTO,
   CacheStateHollow,
-  DataOrError,
   DataOrFail,
   Fail,
   GameSession,
@@ -238,12 +237,16 @@ export class SteamAccountClient extends LastHandler {
   }
 
   farmGames(gamesID: number[]) {
+    if (this.isRequiringSteamGuard)
+      return bad(Fail.create("SAC-IS-REQUIRING-STEAM-GUARD", 403, { accountName: this.accountName }))
     const userIntention = getUserFarmIntention(gamesID, this.cache.gamesPlaying)
-    if (userIntention === "DIDNT-ADD-GAMES") return
+    if (userIntention === "DIDNT-ADD-GAMES")
+      return bad(Fail.create("DIDNT-ADD-GAMES", 203, { accountName: this.accountName }))
 
     this.cache.farmGames(gamesID)
     this.logger.log(`Calling the client with `, gamesID)
     this.client.gamesPlayed(gamesID)
+    return nice()
   }
 
   stopFarm() {
@@ -313,14 +316,19 @@ export class SteamAccountClient extends LastHandler {
     return this.cache.isFarming()
   }
 
-  setStatus(status: AppAccountStatus): void {
+  setStatus(status: AppAccountStatus) {
+    if (this.isRequiringSteamGuard)
+      return bad(Fail.create("SAC-IS-REQUIRING-STEAM-GUARD", 400, { accountName: this.accountName }))
     const persona = mapStatusToPersona(status)
     this.client.setPersona(persona)
     this.cache.changeStatus(status)
+    return nice()
   }
 
-  async getAccountGamesList(): Promise<DataOrError<AccountSteamGamesList>> {
-    if (!this.client.steamID) return [new ApplicationError("No steam id set.")]
+  async getAccountGamesList() {
+    if (this.isRequiringSteamGuard)
+      return bad(Fail.create("SAC-IS-REQUIRING-STEAM-GUARD", 400, { accountName: this.accountName }))
+    if (!this.client.steamID) return [new ApplicationError("No steam id set.")] as const
     const { apps } = (await this.client.getUserOwnedApps(this.client.steamID)) as unknown as AccountGames
     const games: GameSession[] = apps.map(game => ({
       id: game.appid,
@@ -328,10 +336,12 @@ export class SteamAccountClient extends LastHandler {
       name: game.name ?? "unnamed game",
     }))
     const userSteamGames = new AccountSteamGamesList(games)
-    return [null, userSteamGames]
+    return [null, userSteamGames] as const
   }
 
   async getAccountPersona() {
+    if (this.isRequiringSteamGuard)
+      return bad(Fail.create("SAC-IS-REQUIRING-STEAM-GUARD", 400, { accountName: this.accountName }))
     const steamId = this.client.steamID?.toString()
     if (!steamId) return bad(Fail.create("NO_STEAM_ID_FOUND", 400, { steamId }))
 
@@ -374,7 +384,7 @@ function getUserFarmIntention(gamesID: number[], currentFarmingGames: number[]) 
   throw new ApplicationError("Server wasn't able to understand user intention.")
 }
 
-type SteamAccountClientProps = {
+export type SteamAccountClientProps = {
   props: {
     userId: string
     username: string

@@ -183,7 +183,8 @@ export class UserSACsFarmingCluster implements IUserSACsFarmingCluster {
       }
     }
 
-    sac.farmGames(gamesId)
+    const [error] = sac.farmGames(gamesId)
+    if(error) return bad(error)
     // const errorTryingToFarm = false
     const errorTryingToFarm = await Promise.race([
       new Promise<SACGenericError>(res => sac.client.once("error", res)),

@@ -23,7 +23,6 @@ export class AddSteamGuardCodeController {
     if (!sac) throw new ApplicationError("User never tried to log in.")
 
     const steamGuardArguments = sac.getLastArguments("steamGuard")
-    console.log({ steamGuardArguments })
     if (!steamGuardArguments) {
       return {
         status: 400,

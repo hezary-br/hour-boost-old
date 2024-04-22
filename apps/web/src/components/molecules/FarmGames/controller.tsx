@@ -4,14 +4,12 @@ import { useSteamAccountListItem } from "@/components/molecules/SteamAccountList
 import { useSteamAccountStore } from "@/components/molecules/SteamAccountListItem/store/useSteamAccountStore"
 import { useUser$, useUserId } from "@/contexts/UserContext"
 import { useUserSetterSetGames } from "@/contexts/user-actions"
-import { DataOrMessage } from "@/util/DataOrMessage"
-import { showToastFarmGamesResult, showToastFarmingGame } from "@/util/toaster"
 import { GameSession } from "core"
 import React, { ChangeEvent } from "react"
 import { toast } from "sonner"
 import { ChooseFarmingGamesDesktop } from "./desktop"
 import { DrawerChooseFarmingGamesView } from "./mobile"
-import { ChooseFarmingGamesHelpers, IntentionCodes } from "./types"
+import { ChooseFarmingGamesHelpers } from "./types"
 
 export interface FarmGamesPayload {
   accountName: string
@@ -50,17 +48,17 @@ export const ChooseFarmingGames = React.memo(
         if (errorUpdatingStagingGames) return
         stageFarmingGames_update()
 
-        const getFarmGamesPromise = () => {
+        const action = () => {
           return handlers.handleFarmGames(accountName, localStagingFarm_list, userId)
         }
-        const args = [app.games, localStagingFarm_list, () => closeModal_desktop()] as const
+        const args = [app.games, () => closeModal_desktop()] as const
 
         if (urgent) {
           if (!stageFarmingGames_hasGamesOnTheList()) {
             toast.warning("Adicione pelo menos 1 jogo para começar o farm.")
             return
           }
-          const [error] = await startFarmAbstraction(getFarmGamesPromise(), ...args)
+          const [error] = await startFarmAbstraction(action, ...args)
           if (error) return
           return
         }
@@ -69,7 +67,7 @@ export const ChooseFarmingGames = React.memo(
           closeModal_desktop()
           return
         }
-        const [error] = await startFarmAbstraction(getFarmGamesPromise(), ...args)
+        const [error] = await startFarmAbstraction(action, ...args)
         if (error) return
         return
       }, [
@@ -88,8 +86,17 @@ export const ChooseFarmingGames = React.memo(
 
       const setGames = useUserSetterSetGames()
       async function handleRefreshGames() {
-        const { games } = await refreshGames.mutateAsync({ accountName: accountName })
-        setGames(accountName, games)
+        refreshGames.mutate({ accountName: accountName }, {
+          onSuccess([undesired, response]) {
+            if (undesired) {
+              toast[undesired.type](undesired.message)
+              return
+            }
+
+            toast.success(response.message)
+            setGames(accountName, response.games)
+          }
+        })
       }
 
       const handleAddGameToFarmStaging = React.useCallback(
@@ -209,24 +216,15 @@ export const local_useSteamAccountListItem = {
 }
 
 async function startFarmAbstraction(
-  promise: Promise<{
-    dataOrMessage: DataOrMessage<string, IntentionCodes>
-  }>,
+  action: () => void,
   games: GameSession[] | null,
-  stageFarmingGamesList: number[],
   closeModal: () => void
 ): Promise<[error: boolean]> {
   if (!games) {
     toast.error("Nenhum jogo foi encontrado na sua conta, atualize seus jogos ou a página.")
     return [true]
   }
-  const { dataOrMessage } = await promise
-  const [undesired] = dataOrMessage
-  if (undesired) {
-    showToastFarmGamesResult(undesired)
-    return [true]
-  }
-  showToastFarmingGame(stageFarmingGamesList, games)
+  action()
   closeModal()
   return [false]
 }

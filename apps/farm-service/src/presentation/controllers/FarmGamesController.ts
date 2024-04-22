@@ -57,6 +57,8 @@ export class FarmGamesController implements IFarmGamesController {
       isRequiringSteamGuard: steamAccountDomain.isRequiringSteamGuard,
     })
     const sacWasNotFarming = sac.isFarming()
+    if (sac.isRequiringSteamGuard)
+      throw new ApplicationError("Você precisa informar o Steam Guard primeiro.", 403)
 
     const [errorDecrypting, decryptedPassword] = this.hashService.decrypt(
       steamAccountDomain.credentials.password
@@ -100,7 +102,6 @@ export class FarmGamesController implements IFarmGamesController {
     const [error] = await this.farmGamesUseCase.execute({
       accountName,
       gamesId: gamesID,
-      plan: user.plan,
       planId: user.plan.id_plan,
       sac,
       username: user.username,
@@ -115,6 +116,9 @@ export class FarmGamesController implements IFarmGamesController {
       }
       if (error.code === "[FarmInfinityService]:ACCOUNT-ALREADY-FARMING") {
         return makeRes(403, "Essa conta já está farmando.")
+      }
+      if (error.code === "SAC-IS-REQUIRING-STEAM-GUARD") {
+        return makeRes(403, "Você precisa informar o Steam Guard primeiro.")
       }
       return {
         json: {
@@ -140,7 +144,7 @@ export class FarmGamesController implements IFarmGamesController {
           sac.setManualHandler("steamGuard", code => setCode(code))
           return [
             makeRes(
-              202,
+              403,
               `Steam Guard requerido. Enviando para ${domain ? `e-mail com final ${domain}` : `seu celular.`}`
             ),
           ]

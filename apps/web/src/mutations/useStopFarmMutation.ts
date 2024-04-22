@@ -14,8 +14,10 @@ export function useStopFarmMutation(getApi: () => Promise<AxiosInstance>) {
     mutationFn: async (...args) => httpStopFarm(...args, getApi),
     onSuccess(_, { accountName }) {
       stopFarm(accountName)
-      queryClient.invalidateQueries()
     },
+    onSettled() {
+      queryClient.invalidateQueries()
+    }
   })
 }
 

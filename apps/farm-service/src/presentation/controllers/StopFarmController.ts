@@ -23,7 +23,6 @@ export class StopFarmController implements Controller<StopFarmHandle.Payload, St
 
     const [errorPausingFarm] = await this.stopFarmUseCase.execute({
       accountName,
-      planId: user.plan.id_plan,
       username: user.username,
       isFinalizingSession: true,
     })
