@@ -181,9 +181,7 @@ command_routerSteam.post("/code", ClerkExpressRequireAuth(), async (req, res) =>
 
     res.statusCode = status
     return json ? res.json(json) : res.end()
-
   } catch (error) {
-    
     console.log(error)
     return res.status(500).json({
       message: "Erro interno.",
@@ -236,7 +234,7 @@ command_routerSteam.patch(
       })
       if (error)
         return {
-          status: error.status,
+          status: "status" in error ? error.status : error.httpStatus,
           json: {
             code: "ERROR_ChangeAccountStatusUseCase",
             message: error.message,

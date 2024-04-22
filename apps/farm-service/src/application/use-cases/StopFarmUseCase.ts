@@ -14,7 +14,7 @@ export class StopFarmUseCase implements IStopFarmUseCase {
   ) {}
 
   async execute(
-    { planId, accountName, username, isFinalizingSession }: StopFarmUseCasePayload,
+    { accountName, username, isFinalizingSession }: StopFarmUseCasePayload,
     options = { persistUsages: true } as Options
   ) {
     const [errorStoppingFarmDomain, data] = this.stopFarmDomain.execute({
@@ -31,12 +31,11 @@ export class StopFarmUseCase implements IStopFarmUseCase {
       if (errorPersisting) return bad(errorPersisting)
     }
 
-    return nice({ usages, planId })
+    return nice({ usages })
   }
 }
 
 export type StopFarmUseCasePayload = {
-  planId: string
   username: string
   accountName: string
   isFinalizingSession: boolean

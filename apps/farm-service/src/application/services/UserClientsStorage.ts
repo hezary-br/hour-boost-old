@@ -1,11 +1,8 @@
 import {
-  type 
-  AppAccountStatusIddle,
+  type AppAccountStatusIddle,
   ApplicationError,
-  type 
-  PlanRepository,
-  type 
-  SteamAccountClientStateCacheRepository,
+  type PlanRepository,
+  type SteamAccountClientStateCacheRepository,
 } from "core"
 import type { SteamAccountClient } from "~/application/services/steam"
 import type { FarmGamesUseCase } from "~/application/use-cases/FarmGamesUseCase"
@@ -73,7 +70,6 @@ export class UserClientsStorage {
         const [error] = await this.farmGamesUseCase.execute({
           accountName,
           gamesId: gamesPlaying,
-          plan,
           planId,
           sac,
           username,

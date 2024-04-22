@@ -1,4 +1,4 @@
-import type { AccountSteamGamesList, DataOrError, SteamAccountClientStateCacheRepository } from "core"
+import type { SteamAccountClientStateCacheRepository } from "core"
 import type { RefreshGamesUseCase } from "~/presentation/presenters/RefreshGamesUseCase"
 
 export class GetUserSteamGamesUseCase {
@@ -7,18 +7,15 @@ export class GetUserSteamGamesUseCase {
     private readonly refreshGamesUseCase: RefreshGamesUseCase
   ) {}
 
-  async execute({
-    accountName,
-    userId,
-  }: GetUserSteamGamesUseCaseProps): Promise<DataOrError<AccountSteamGamesList>> {
+  async execute({ accountName, userId }: GetUserSteamGamesUseCaseProps) {
     const foundSteamGamesList = await this.steamAccountClientStateCacheRepository.getAccountGames(accountName)
-    if (foundSteamGamesList) return [null, foundSteamGamesList]
+    if (foundSteamGamesList) return [null, foundSteamGamesList] as const
     const [error, steamGamesList] = await this.refreshGamesUseCase.execute({
       accountName,
       userId,
     })
-    if (error) return [error]
-    return [null, steamGamesList]
+    if (error) return [error] as const
+    return [null, steamGamesList] as const
   }
 }
 

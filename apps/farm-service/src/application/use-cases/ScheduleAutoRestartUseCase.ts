@@ -65,6 +65,8 @@ export class ScheduleAutoRestartUseCase implements IScheduleRestartRelogin {
           case "[RestoreAccountSessionUseCase]::SAC-NOT-FOUND":
           case "[RestoreAccountSessionUseCase]::UNKNOWN-CLIENT-ERROR":
           case "[RestoreAccountSessionUseCase]::[FarmInfinityService]:ACCOUNT-ALREADY-FARMING":
+          case "[RestoreAccountSessionUseCase]::DIDNT-ADD-GAMES":
+          case "[RestoreAccountSessionUseCase]::SAC-IS-REQUIRING-STEAM-GUARD":
           case "cluster.farmWithAccount()::UNKNOWN-CLIENT-ERROR":
             return this.logger.log(`erro não tratado: ${errorWhileRestarting.code}`)
 
