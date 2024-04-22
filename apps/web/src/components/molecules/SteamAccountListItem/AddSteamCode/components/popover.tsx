@@ -70,6 +70,7 @@ export function AddSteamCodePopover({ children, ...props }: AddSteamCodePopoverP
         collisionPadding={38}
       >
         <h2 className="text-lg font-semibold">Adicionar Steam Guard</h2>
+        <p className="text-sm text-slate-400">Essa conta precisa do código Steam Guard para continuar.</p>
         <form onSubmit={handleSubmit(sendSteamCode)}>
           <Input
             className="mt-1"

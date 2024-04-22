@@ -1,7 +1,6 @@
 import { ChangeAccountStatusPayload } from "@/components/molecules/ChangeAccountStatus/controller"
 import { IntentionCodes as IntentionCodes_ChangeStatus } from "@/components/molecules/ChangeAccountStatus/types"
 import { FarmGamesPayload } from "@/components/molecules/FarmGames/controller"
-import { IntentionCodes as IntentionCodes_FarmGames } from "@/components/molecules/FarmGames/types"
 import { HHandlers } from "@/components/molecules/SteamAccountListItem/hooks/useHandlers"
 import { StopFarmPayload } from "@/components/molecules/StopFarm/controller"
 import { IntentionCodes as IntentionCodes_StopFarm } from "@/components/molecules/StopFarm/types"
@@ -60,12 +59,7 @@ export type MutationRefreshGames = UseMutationResult<
   unknown
 >
 
-export type MutationFarmGames = UseMutationResult<
-  DataOrMessage<string, IntentionCodes_FarmGames>,
-  Error,
-  FarmGamesPayload,
-  unknown
->
+export type MutationFarmGames = UseMutationResult<void, Error, FarmGamesPayload, unknown>
 
 export type MutationChangeAccountStatus = UseMutationResult<
   DataOrMessage<string, IntentionCodes_ChangeStatus>,

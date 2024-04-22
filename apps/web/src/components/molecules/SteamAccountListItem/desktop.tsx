@@ -11,10 +11,7 @@ import { ToggleAutoRelogin, useSteamAccount } from "@/components/molecules/Toggl
 import { IMG_USER_PLACEHOLDER } from "@/consts"
 import { useUser } from "@/contexts/UserContext"
 import { cn } from "@/lib/utils"
-import { Message } from "@/util/DataOrMessage"
-import { showToastFarmingGame } from "@/util/toaster"
 import React from "react"
-import { toast } from "sonner"
 import twc from "tailwindcss/colors"
 import { ButtonAddNewAccount } from "./components"
 import { useSteamAccountListItem } from "./context"
@@ -35,14 +32,6 @@ export const SteamAccountListItemViewDesktop = React.memo(
       const farmStartedAt = useSteamAccount(sa => sa.farmStartedAt)
       if (plan.status !== "success") return "loading plan"
 
-      const handleClickFarmButtonImpl = async () => {
-        const [undesired, payload] = await handleClickFarmButton()
-        if (undesired) return toast[undesired.type](undesired.message)
-        if (payload instanceof Message) return toast[payload.type](payload.message)
-        const { games, list } = payload
-        showToastFarmingGame(list, games)
-      }
-
       // const farmedTimeSince = getFarmedTimeSince(app.farmedTimeInSeconds)
 
       return (
@@ -50,6 +39,9 @@ export const SteamAccountListItemViewDesktop = React.memo(
           className={cn("relative flex h-[4.5rem] border border-slate-800", header && "mt-[4.5rem]")}
           ref={ref}
         >
+          {isRequiringSteamGuard && (
+            <div className="absolute left-[4.5rem] bottom-0 top-0 right-0 z-40 flex cursor-not-allowed items-center justify-center bg-black/50" />
+          )}
           {isRestoringConnection && (
             <div className="absolute inset-0 z-50 flex cursor-not-allowed items-center justify-center bg-black/80 text-white">
               <div className="flex flex-col items-center">
@@ -74,7 +66,7 @@ export const SteamAccountListItemViewDesktop = React.memo(
           <div className="flex items-center">
             {isRequiringSteamGuard ? (
               <AddSteamCodePopover>
-                <button className="group relative flex h-full items-center px-6">
+                <button className="z-50 group relative flex h-full items-center justify-center size-[4.5rem]">
                   <div className="absolute inset-0 animate-pulse bg-slate-800 group-hover:animate-none" />
                   <div className="relative z-10">
                     <span className="absolute right-0 top-0 flex h-2 w-2 -translate-y-1/2">
@@ -86,7 +78,7 @@ export const SteamAccountListItemViewDesktop = React.memo(
                 </button>
               </AddSteamCodePopover>
             ) : (
-              <div className="flex h-full items-center px-6">
+              <div className="flex h-full items-center justify-center size-[4.5rem]">
                 <IconDeviceMobile className="h-5 w-5" />
               </div>
             )}
@@ -227,7 +219,7 @@ export const SteamAccountListItemViewDesktop = React.memo(
                 "flex h-full min-w-[12.6rem] items-center justify-center bg-slate-800 px-8 text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-900",
                 isFarming && "bg-accent hover:bg-accent-500 disabled:bg-accent-700"
               )}
-              onClick={handleClickFarmButtonImpl}
+              onClick={handleClickFarmButton}
             >
               {hasUsagePlanLeft ? actionText : "Seu plano acabou"}
             </button>

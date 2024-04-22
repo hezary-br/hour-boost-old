@@ -15,7 +15,7 @@ export type SteamAccountStatusProps = {
 export type SteamAccountAppProps = SteamAccountSession
 
 export type SteamAccountListItemViewProps = {
-  handleClickFarmButton(): Promise<NSSteamAccountListItemViewProps.HandleClickFarmButton.Response>
+  handleClickFarmButton(): void
   actionText: JSX.Element
   displayUpdateInServerMessage: boolean
 }

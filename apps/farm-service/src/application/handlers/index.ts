@@ -13,10 +13,13 @@ Events.on("account_required_steam_guard", async (userId, accountName) => {
   })
 
   if (errorStoppingFarm) {
-    if (errorStoppingFarm.code === "DO-NOT-HAVE-ACCOUNTS-FARMING") {
-      return
+    switch (errorStoppingFarm.code) {
+      case "DO-NOT-HAVE-ACCOUNTS-FARMING":
+      case "TRIED-TO-STOP-FARM-ON-NON-FARMING-ACCOUNT":
+        break
+      default:
+        return notifyError(errorStoppingFarm)
     }
-    return notifyError(errorStoppingFarm)
   }
 })
 
