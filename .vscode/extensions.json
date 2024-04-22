@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "eamodio.gitlens",
+    "cardinal90.multi-cursor-case-preserve",
+    "esbenp.prettier-vscode",
+    "prisma.prisma",
+    "humao.rest-client",
+    "bradlc.vscode-tailwindcss"
+  ]
+}
