@@ -1,0 +1,6 @@
+**/.git
+**/node_modules
+**/.docker
+.git
+node_modules
+.docker

@@ -5,6 +5,7 @@
     "esbenp.prettier-vscode",
     "prisma.prisma",
     "humao.rest-client",
-    "bradlc.vscode-tailwindcss"
+    "bradlc.vscode-tailwindcss",
+    "pkief.material-icon-theme"
   ]
 }
