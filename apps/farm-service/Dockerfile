@@ -37,7 +37,7 @@ COPY --from=builder /app/out/full/apps/farm-service/prisma/schema.prisma ./apps/
 RUN npx prisma generate --schema="apps/farm-service/prisma/schema.prisma"
 
 COPY --from=builder /app/out/full/ .
-RUN npx turbo run build --filter=farm-service
+RUN npx turbo run build:prod --filter=farm-service
 
 
 CMD node ./apps/farm-service/dist/server.js
