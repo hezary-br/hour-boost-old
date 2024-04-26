@@ -9,7 +9,8 @@
   "scripts": {
     "dev": "npm run build -- --watch",
     "check": "tsc --noEmit",
-    "build": "tsup-node src/index.ts --format esm"
+    "build": "tsup-node src/index.ts --format esm --dts",
+    "build:prod": "tsup-node src/index.ts --format esm"
   },
   "keywords": [],
   "author": "",

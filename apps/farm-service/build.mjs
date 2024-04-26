@@ -50,7 +50,6 @@ async function main() {
     acc.push(dep)
     return acc
   }, [])
-  console.log({ foundJSON, nonInternalHourbostDeps, dependencies, peerDependencies })
 
   const common = {
     entryPoints: ["src/server.ts"],

@@ -9,6 +9,7 @@
     "dev:inspect": "node --import tsx/esm --inspect src/server.ts",
     "check": "tsc --noEmit",
     "build": "node build.mjs",
+    "build:prod": "node build.mjs",
     "build_debug": "npm run build --sourcemap",
     "build:check": "npm run check && tsup npm run build",
     "tx": "tsx",

@@ -1,12 +1,12 @@
 import { jest } from "@jest/globals"
 import { DiamondPlan, GuestPlan, SilverPlan } from "core"
 import {
-  type CustomInstances,
-  type MakeTestInstancesProps,
-  type PrefixKeys,
   makeTestInstances,
   password,
   validSteamAccounts,
+  type CustomInstances,
+  type MakeTestInstancesProps,
+  type PrefixKeys,
 } from "~/__tests__/instances"
 import { testUsers as s } from "~/infra/services/UserAuthenticationInMemory"
 import { StopFarmController } from "~/presentation/controllers"
@@ -47,7 +47,7 @@ test("should change user plan from guest to diamond", async () => {
   if (!user) throw "no user"
 
   const [errorChangingUserPlan] = await i.changeUserPlanUseCase.execute({
-    newPlanName: "DIAMOND",
+    newPlanName: "SILVER",
     user,
   })
   expect(errorChangingUserPlan).toBeNull()
