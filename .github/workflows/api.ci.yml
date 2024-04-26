@@ -35,5 +35,9 @@ jobs:
         cache: pnpm
         
     - run: pnpm install
+    - run: ls -la
+    - run: cat package.json
     - run: cd apps/farm-service
+    - run: ls -la
+    - run: cat package.json
     - run: npm run test
