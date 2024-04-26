@@ -10,6 +10,7 @@ const makeSteamAccountGeneric = (accountName: string, id_steamAccount: string = 
       accountName,
       password: "acc_pass",
     }),
+    isRequiringSteamGuard: false,
   })
 
 const makeSteamAccount = (accountName: string, id_steamAccount: string = "123") => {

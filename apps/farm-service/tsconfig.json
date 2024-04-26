@@ -1,32 +1,27 @@
 {
+  "extends": "tsconfig/base.json",
   "$schema": "https://json.schemastore.org/tsconfig",
   "display": "Default",
   "compilerOptions": {
-    "sourceMap": true,
-    "target": "ES2022",
-    "module": "ES2022",
-    "composite": false,
-    "declaration": true,
-    "declarationMap": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "inlineSources": false,
-    "isolatedModules": true,
-    "moduleResolution": "Bundler",
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "preserveWatchOutput": true,
-    "types": ["jest"],
-    "typeRoots": ["src/types"],
+    "types": [
+      "jest"
+    ],
+    "typeRoots": [
+      "src/types"
+    ],
     "skipLibCheck": true,
     "strict": true,
     "strictNullChecks": true,
     "outDir": "./dist",
-    "rootDir": "./",
     "baseUrl": "./",
     "paths": {
-      "~/*": ["./src/*"]
+      "~/*": [
+        "./src/*"
+      ]
     }
   },
-  "include": ["**/*.ts", "**/*.tsx"]
+  "include": [
+    "**/*.ts",
+    "**/*.tsx"
+  ]
 }
