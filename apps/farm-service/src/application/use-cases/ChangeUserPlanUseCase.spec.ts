@@ -47,7 +47,7 @@ test("should change user plan from guest to diamond", async () => {
   if (!user) throw "no user"
 
   const [errorChangingUserPlan] = await i.changeUserPlanUseCase.execute({
-    newPlanName: "SILVER",
+    newPlanName: "DIAMOND",
     user,
   })
   expect(errorChangingUserPlan).toBeNull()
