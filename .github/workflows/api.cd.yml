@@ -30,6 +30,7 @@ jobs:
 
   deploy:
     runs-on: self-hosted
+    needs: build
     steps:
       - name: Pull image from Docker Hub
         run: docker pull vitormarkis/hourboost-api:latest
