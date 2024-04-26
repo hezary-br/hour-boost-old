@@ -21,12 +21,19 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: Use Node.js ${{ matrix.node-version }}
+    
+    - name: Install pnpm
+      uses: pnpm/action-setup@v3
+      with:
+        version: 8
+        run_install: false
+        
+    - name: Install Node
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    - run: npm i pnpm -g
+        cache: pnpm
+        
+    - run: pnpm install
     - run: cd apps/farm-service
-    - run: pnpm i
     - run: pnpm run test
