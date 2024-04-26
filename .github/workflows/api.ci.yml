@@ -40,11 +40,10 @@ jobs:
     - name: Installing dependencies
       working-directory: out/
       run: pnpm install
-
       
     - name: Building packages
       working-directory: out/
-      run: pnpm run build
+      run: npx turbo build:prod
       
     - name: Running test suite
       working-directory: out/apps/farm-service
