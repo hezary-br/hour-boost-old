@@ -33,9 +33,9 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: pnpm
-        
-    - run: pnpm install
-    
-    - name: Running tests on Farm Service app
-      working-directory: apps/farm-service  
+
+    - run: npx turbo prune farm-service
+    - working-directory: out/
+      run: pnpm install
+    - working-directory: apps/farm-service
       run: pnpm run test
