@@ -1,5 +1,5 @@
 {
-  "_type": "export",
+  "_type": "exportt",
   "__export_format": 4,
   "__export_date": "2023-11-23T23:38:50.578Z",
   "__export_source": "insomnia.desktop.app:v2023.5.8",
@@ -15,7 +15,12 @@
       "method": "GET",
       "body": {},
       "parameters": [],
-      "headers": [{ "name": "User-Agent", "value": "insomnia/2023.5.8" }],
+      "headers": [
+        {
+          "name": "User-Agent",
+          "value": "insomnia/2023.5.8"
+        }
+      ],
       "authentication": {},
       "metaSortKey": -1700304609982,
       "isPrivate": false,
@@ -52,8 +57,14 @@
       },
       "parameters": [],
       "headers": [
-        { "name": "Content-Type", "value": "application/json" },
-        { "name": "User-Agent", "value": "insomnia/2023.5.8" }
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "User-Agent",
+          "value": "insomnia/2023.5.8"
+        }
       ],
       "authentication": {},
       "metaSortKey": -1700304603369.125,
@@ -81,8 +92,14 @@
       },
       "parameters": [],
       "headers": [
-        { "name": "Content-Type", "value": "application/json" },
-        { "name": "User-Agent", "value": "insomnia/2023.5.8" }
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "User-Agent",
+          "value": "insomnia/2023.5.8"
+        }
       ],
       "authentication": {},
       "metaSortKey": -1700304596756.25,
@@ -110,8 +127,14 @@
       },
       "parameters": [],
       "headers": [
-        { "name": "Content-Type", "value": "application/json" },
-        { "name": "User-Agent", "value": "insomnia/2023.5.8" }
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "User-Agent",
+          "value": "insomnia/2023.5.8"
+        }
       ],
       "authentication": {},
       "metaSortKey": -1700304583530.5,
@@ -139,8 +162,14 @@
       },
       "parameters": [],
       "headers": [
-        { "name": "Content-Type", "value": "application/json" },
-        { "name": "User-Agent", "value": "insomnia/2023.5.8" }
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "User-Agent",
+          "value": "insomnia/2023.5.8"
+        }
       ],
       "authentication": {},
       "metaSortKey": -1698744285394.25,
@@ -168,8 +197,14 @@
       },
       "parameters": [],
       "headers": [
-        { "name": "Content-Type", "value": "application/json" },
-        { "name": "User-Agent", "value": "insomnia/2023.5.8" }
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "User-Agent",
+          "value": "insomnia/2023.5.8"
+        }
       ],
       "authentication": {},
       "metaSortKey": -1697964136326.125,
@@ -197,8 +232,14 @@
       },
       "parameters": [],
       "headers": [
-        { "name": "Content-Type", "value": "application/json" },
-        { "name": "User-Agent", "value": "insomnia/2023.5.8" }
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "User-Agent",
+          "value": "insomnia/2023.5.8"
+        }
       ],
       "authentication": {},
       "metaSortKey": -1697574061692.0625,
@@ -222,7 +263,13 @@
         "root": "http://54.233.154.239:4000",
         "localbaseURL": "http://localhost:4000"
       },
-      "dataPropertyOrder": { "&": ["baseURL", "root", "localbaseURL"] },
+      "dataPropertyOrder": {
+        "&": [
+          "baseURL",
+          "root",
+          "localbaseURL"
+        ]
+      },
       "color": null,
       "isPrivate": false,
       "metaSortKey": 1700304554973,

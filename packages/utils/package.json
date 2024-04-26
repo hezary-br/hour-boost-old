@@ -8,14 +8,19 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "dev": "npm run build -- --watch",
-    "build": "tsup-node src/index.ts --format esm --dts"
+    "check": "tsc --noEmit",
+    "build": "tsup src/index.ts --format esm --dts",
+    "build:prod": "tsup src/index.ts --format esm"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "tsconfig": "workspace:*",
-    "core": "workspace:*",
-    "tsup-node": "^0.1.0"
+    "tsup": "^7.2.0",
+    "core": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.2.2"
   }
 }

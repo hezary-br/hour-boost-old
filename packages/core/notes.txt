@@ -1,3 +1,0 @@
-- user nao pode adicionar conta da steam de outra pessoa
-- adicionar contas na steam, ou fazer uso do farm serão feitos por um domain service
-- ao atribuir plano, deve ser resetado os dados relacionados as contas e serem reatribuidas um por um

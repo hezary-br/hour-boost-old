@@ -1,3 +1,5 @@
+version: "3"
+
 services:
   cache:
     image: redis/redis-stack
@@ -18,12 +20,24 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_DB: hourboost
     ports:
-      - 5432:5432
+      - 6500:5432
     volumes:
       - ./.docker/postgres16:/var/lib/postgresql/data
+  api:
+    container_name: api
+    build:
+      context: .
+      dockerfile: ./apps/farm-service/Dockerfile
+    restart: always
+    ports:
+      - 4000:4000
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    external: true
 
 volumes:
-  postgres:
   cache:
-
-
+  postgres:

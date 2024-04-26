@@ -8,18 +8,23 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "dev": "npm run build -- --watch",
-    "build": "tsup-node src/index.ts --format esm --dts"
+    "check": "tsc --noEmit",
+    "build": "tsup-node src/index.ts --format esm --dts",
+    "build:prod": "tsup-node src/index.ts --format esm"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "jsonwebtoken": "^9.0.2",
-    "@types/node": "^20",
-    "@types/jsonwebtoken": "^9.0.5",
     "@hourboost/utils": "workspace:*",
-    "tsconfig": "workspace:*",
     "core": "workspace:*",
+    "jsonwebtoken": "^9.0.2",
+    "tsconfig": "workspace:*",
     "tsup-node": "^0.1.0"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/node": "^20",
+    "typescript": "^5.2.2"
   }
 }
