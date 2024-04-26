@@ -36,4 +36,4 @@ jobs:
         
     - run: pnpm install
     - run: cd apps/farm-service
-    - run: pnpm run test
+    - run: npm run test
