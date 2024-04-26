@@ -3,6 +3,14 @@ ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
 
+# Environment Variables
+ARG TURBO_TEAM
+ARG TURBO_TOKEN
+
+ENV TURBO_TEAM=$TURBO_TEAM
+ENV TURBO_TOKEN=$TURBO_TOKEN
+
+
 FROM base AS builder
 RUN apk add --no-cache libc6-compat
 RUN apk update
@@ -23,10 +31,13 @@ WORKDIR /app
 COPY .gitignore .gitignore
 COPY --from=builder /app/out/json/ .
 COPY --from=builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
-RUN pnpm install
+# RUN pnpm install
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-lockfile
+COPY --from=builder /app/out/full/apps/farm-service/prisma/schema.prisma ./apps/farm-service/prisma/schema.prisma
+RUN npx prisma generate --schema="apps/farm-service/prisma/schema.prisma"
 
-# Build the project
 COPY --from=builder /app/out/full/ .
 RUN npx turbo run build --filter=farm-service
+
 
 CMD node ./apps/farm-service/dist/server.js

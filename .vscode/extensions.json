@@ -6,6 +6,7 @@
     "prisma.prisma",
     "humao.rest-client",
     "bradlc.vscode-tailwindcss",
-    "pkief.material-icon-theme"
+    "pkief.material-icon-theme",
+    "ms-azuretools.vscode-docker"
   ]
 }

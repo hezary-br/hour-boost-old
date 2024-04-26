@@ -25,6 +25,7 @@ yarn-error.log*
 # farm service
 apps/farm-service/logs 
 apps/farm-service/src/scripts/*
+apps/farm-service/src/generated/**
 
 # local env files
 .env

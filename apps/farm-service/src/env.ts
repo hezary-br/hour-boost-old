@@ -6,7 +6,7 @@ const makeRuntimeEnvs = () =>
     server: {
       DATABASE_URL: z.string().url(),
       CLERK_SECRET_KEY: z.string().min(1),
-      REDIS_UPSTASH_TLS: z.string().min(1).or(z.literal("local")),
+      REDIS_UPSTASH_TLS: z.string().min(1),
       EXAMPLE_ACCOUNT_NAME: z.string().nullable().default(null),
       EXAMPLE_ACCOUNT_PASSWORD: z.string().nullable().default(null),
       NODE_ENV: z.enum(["DEV", "PRODUCTION", "DEBUG", "TEST"]),
