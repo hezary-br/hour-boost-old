@@ -35,7 +35,7 @@ jobs:
         cache: pnpm
         
     - run: pnpm install
-    - name: Moving to farm service folder
-      working-directory: apps/farm-service
-      
-    - run: pnpm run test
+    
+    - name: Running tests on Farm Service app
+      working-directory: apps/farm-service  
+      run: pnpm run test
