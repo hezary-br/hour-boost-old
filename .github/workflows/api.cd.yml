@@ -39,7 +39,8 @@ jobs:
         run: docker rm -f hourboost-api-container
 
       - name: Run API container
-        run: docker run --rm \
+        run: |
+          docker run --rm \
           --env NODE_ENV=${{ secrets.NODE_ENV }} \
           --env CLERK_SECRET_KEY=${{ secrets.CLERK_SECRET_KEY }} \
           --env DATABASE_URL=${{ secrets.DATABASE_URL }} \
