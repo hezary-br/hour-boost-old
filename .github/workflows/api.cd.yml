@@ -28,12 +28,12 @@ jobs:
       - name: Publish Docker image
         run: docker push vitormarkis/hourboost-api:latest
 
-  stop_farm:
+  deploy_pre_actions:
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        node-version: [18.x, 20.x]
+        node-version: [20.x]
 
     steps:
       - name: Checkout source
@@ -58,9 +58,15 @@ jobs:
         working-directory: apps/farm-service
         run: STOP_ENDPOINT=${{ secrets.STOP_ENDPOINT }} SECRET=${{ secrets.SECRET }} node pause-all-farms.js
 
+      - name: Run database migrations
+        working-directory: apps/farm-service
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npx prisma migrate deploy
+
   deploy:
     runs-on: self-hosted
-    needs: [build, stop_farm]
+    needs: [build, deploy_pre_actions]
     steps:
       - name: Pull image from Docker Hub
         run: docker pull vitormarkis/hourboost-api:latest
