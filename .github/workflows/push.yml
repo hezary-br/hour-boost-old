@@ -138,4 +138,4 @@ jobs:
           vitormarkis/hourboost-api:latest
 
       - name: Delete all dangling images
-        run: docker image prune -a
+        run: docker image prune -a -f
