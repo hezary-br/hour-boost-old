@@ -43,7 +43,7 @@ export const GamesAvailableSection = React.forwardRef<
             São mais de
           </span>
           <span className="block text-[clamp(2rem,_14.8vw,_5.1rem)] font-black leading-none md:text-[7rem]">
-            98.808 jogos
+            98.829 jogos
           </span>
           <span className="block text-[clamp(1.1rem,_8.9vw,_3rem)] font-semibold leading-none md:text-[4rem]">
             disponíveis!
