@@ -1,24 +1,3 @@
-import { User } from "@clerk/nextjs/dist/types/server"
-
-export interface UserSession extends User {}
-
-export function extractUserSession({
-  __clerk_ssr_state: { sessionClaims, ...authSession },
-}: IBuildClerkProps) {
-  return authSession
-}
-
-export type AuthSession = ReturnType<typeof extractUserSession>
-export type AuthSessionParams = { authSession: AuthSession }
-
-export interface IBuildClerkProps {
-  __clerk_ssr_state: {
-    sessionClaims: SessionClaims
-    sessionId: string
-    userId: string
-    user: UserSession | null
-  }
-}
 
 export interface SessionClaims {
   azp: string
@@ -30,9 +9,9 @@ export interface SessionClaims {
   sub: string
 }
 
-export interface PublicMetadata {}
+export interface PublicMetadata { }
 
-export interface UnsafeMetadata {}
+export interface UnsafeMetadata { }
 
 export interface EmailAddress {
   id: string
@@ -65,7 +44,7 @@ export interface ExternalAccount {
   verification: Verification2
 }
 
-export interface PublicMetadata2 {}
+export interface PublicMetadata2 { }
 
 export interface Verification2 {
   status: string
