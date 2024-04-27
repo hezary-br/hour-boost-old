@@ -40,21 +40,21 @@ jobs:
 
       - name: Run API container
         run: docker run --rm \
-          --env NODE_ENV="${{ secrets.NODE_ENV }}" \
-          --env CLERK_SECRET_KEY="${{ secrets.CLERK_SECRET_KEY }}" \
-          --env DATABASE_URL="${{ secrets.DATABASE_URL }}" \
-          --env REDIS_UPSTASH_TLS="${{ secrets.REDIS_UPSTASH_TLS }}" \
-          --env UPSTASH_REDIS_REST_URL="${{ secrets.UPSTASH_REDIS_REST_URL }}" \
-          --env UPSTASH_REDIS_REST_TOKEN="${{ secrets.UPSTASH_REDIS_REST_TOKEN }}" \
-          --env TOKEN_IDENTIFICATION_HASH="${{ secrets.TOKEN_IDENTIFICATION_HASH }}" \
-          --env CLIENT_URL="${{ secrets.CLIENT_URL }}" \
-          --env COOKIE_DOMAIN="${{ secrets.COOKIE_DOMAIN }}" \
-          --env ACTIONS_SECRET="${{ secrets.ACTIONS_SECRET }}" \
-          --env EXAMPLE_ACCOUNT_NAME="${{ secrets.EXAMPLE_ACCOUNT_NAME }}" \
-          --env EXAMPLE_ACCOUNT_PASSWORD="${{ secrets.EXAMPLE_ACCOUNT_PASSWORD }}" \
-          --env PORT="${{ secrets.PORT }}" \
-          --env HASH_SECRET="${{ secrets.HASH_SECRET }}" \
-          --env STOP_ENDPOINT="${{ secrets.STOP_ENDPOINT }}" \
-          --env SECRET="${{ secrets.SECRET }}" \
+          --env NODE_ENV=${{ secrets.NODE_ENV }} \
+          --env CLERK_SECRET_KEY=${{ secrets.CLERK_SECRET_KEY }} \
+          --env DATABASE_URL=${{ secrets.DATABASE_URL }} \
+          --env REDIS_UPSTASH_TLS=${{ secrets.REDIS_UPSTASH_TLS }} \
+          --env UPSTASH_REDIS_REST_URL=${{ secrets.UPSTASH_REDIS_REST_URL }} \
+          --env UPSTASH_REDIS_REST_TOKEN=${{ secrets.UPSTASH_REDIS_REST_TOKEN }} \
+          --env TOKEN_IDENTIFICATION_HASH=${{ secrets.TOKEN_IDENTIFICATION_HASH }} \
+          --env CLIENT_URL=${{ secrets.CLIENT_URL }} \
+          --env COOKIE_DOMAIN=${{ secrets.COOKIE_DOMAIN }} \
+          --env ACTIONS_SECRET=${{ secrets.ACTIONS_SECRET }} \
+          --env EXAMPLE_ACCOUNT_NAME=${{ secrets.EXAMPLE_ACCOUNT_NAME }} \
+          --env EXAMPLE_ACCOUNT_PASSWORD=${{ secrets.EXAMPLE_ACCOUNT_PASSWORD }} \
+          --env PORT=${{ secrets.PORT }} \
+          --env HASH_SECRET=${{ secrets.HASH_SECRET }} \
+          --env STOP_ENDPOINT=${{ secrets.STOP_ENDPOINT }} \
+          --env SECRET=${{ secrets.SECRET }} \
           --publish 4000:${{ secrets.PORT }} \
           hourboost-api-container
