@@ -7,8 +7,12 @@ async function main() {
     body: `{"secret":"${process.env.SECRET}"}`,
   })
   if (!response.ok) {
-    console.log(response)
-    throw new Error("Failed to stop farm.")
+    if (response.statusText === "Bad Gateway") {
+      return console.log("Server is not up :)")
+    } else {
+      console.log(response)
+      throw new Error("Failed to stop farm.")
+    }
   }
   const data = await response.json()
   console.log(data)
