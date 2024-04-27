@@ -79,24 +79,15 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: 9
-          run_install: false
-
       - name: Install Node
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
           cache: pnpm
 
-      - name: Installing dependencies
-        run: pnpm install
-
       - name: Stop all users farm
         working-directory: apps/farm-service
-        run: STOP_ENDPOINT=${{ secrets.STOP_ENDPOINT }} SECRET=${{ secrets.SECRET }} node pause-all-farms.js
+        run: STOP_ENDPOINT=${{ secrets.STOP_ENDPOINT }} SECRET=${{ secrets.SECRET }} node pause-all-farms.noenv.js
 
       - name: Run database migrations
         working-directory: apps/farm-service
