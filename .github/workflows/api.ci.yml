@@ -1,17 +1,16 @@
 # This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
 
-name: Hourboost API CI
+name: Test - API - Hourboost
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
-  build:
-
+  test:
     runs-on: ubuntu-latest
 
     strategy:
@@ -20,31 +19,31 @@ jobs:
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Install pnpm
-      uses: pnpm/action-setup@v3
-      with:
-        version: 8
-        run_install: false
-        
-    - name: Install Node
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: pnpm
-        
-    - name: Filtering only essential app dependencies
-      run: npx turbo prune farm-service
-    
-    - name: Installing dependencies
-      working-directory: out/
-      run: pnpm install
-      
-    - name: Building packages
-      working-directory: out/
-      run: npx turbo build:prod
-      
-    - name: Running test suite
-      working-directory: out/apps/farm-service
-      run: pnpm run test
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+          run_install: false
+
+      - name: Install Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: pnpm
+
+      - name: Filtering only essential app dependencies
+        run: npx turbo prune farm-service
+
+      - name: Installing dependencies
+        working-directory: out/
+        run: pnpm install
+
+      - name: Building packages
+        working-directory: out/
+        run: npx turbo build:prod
+
+      - name: Running test suite
+        working-directory: out/apps/farm-service
+        run: pnpm run test

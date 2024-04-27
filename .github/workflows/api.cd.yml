@@ -28,9 +28,16 @@ jobs:
       - name: Publish Docker image
         run: docker push vitormarkis/hourboost-api:latest
 
+  stop_farm:
+    runs-on: self-hosted
+    steps:
+      - name: Stop all users farm
+        working-directory: apps/farm-service
+        run: STOP_ENDPOINT=${{ secrets.STOP_ENDPOINT }} SECRET=${{ secrets.SECRET }} node pause-all-farms.js
+
   deploy:
     runs-on: self-hosted
-    needs: build
+    needs: [build, stop_farm]
     steps:
       - name: Pull image from Docker Hub
         run: docker pull vitormarkis/hourboost-api:latest

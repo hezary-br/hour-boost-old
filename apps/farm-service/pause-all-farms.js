@@ -9,6 +9,10 @@ async function main() {
     method: "POST",
     body: `{"secret":"${process.env.SECRET}"}`,
   })
+  if (!response.ok) {
+    console.log(response)
+    throw new Error("Failed to stop farm.")
+  }
   const data = await response.json()
   console.log(data)
 }
