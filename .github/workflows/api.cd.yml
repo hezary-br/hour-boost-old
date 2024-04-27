@@ -31,6 +31,9 @@ jobs:
   stop_farm:
     runs-on: self-hosted
     steps:
+      - name: Checkout source
+        uses: actions/checkout@v3
+
       - name: Stop all users farm
         working-directory: apps/farm-service
         run: STOP_ENDPOINT=${{ secrets.STOP_ENDPOINT }} SECRET=${{ secrets.SECRET }} node pause-all-farms.js
