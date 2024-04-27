@@ -100,17 +100,17 @@ jobs:
     runs-on: self-hosted
     needs: [build, deploy_pre_actions]
     steps:
-      - name: Delete old container
-        run: docker rm -f hourboost-api-container
+      - name: Pull image from Docker Hub
+        run: docker pull vitormarkis/hourboost-api:latest
         
       # - name: Delete images
       #   run: docker rmi -f vitormarkis/hourboost-api:latest
 
-      - name: Delete all images
-        run: docker rmi $(docker images -a -q)
-
-      - name: Pull image from Docker Hub
-        run: docker pull vitormarkis/hourboost-api:latest
+      # - name: Delete all images
+      #   run: docker rmi $(docker images -a -q)
+      
+      - name: Delete old container
+        run: docker rm -f hourboost-api-container
 
       - name: Run API container
         run: |
@@ -136,3 +136,6 @@ jobs:
           --env SECRET=${{ secrets.SECRET }} \
           --publish 4000:${{ secrets.PORT }} \
           vitormarkis/hourboost-api:latest
+
+      - name: Delete all dangling images
+        run: docker image prune -a
