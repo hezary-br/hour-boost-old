@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:prod": "next build",
     "start": "next start",
     "ui:add": "pnpm dlx shadcn-ui@latest add"
   },
