@@ -12,3 +12,9 @@ start:
 		--env-file apps/farm-service/.env \
 		--publish 4000:4000 \
 		hourboost-api:latest
+
+generate:
+	cd apps/farm-service && pnpm generate
+
+db:
+	cd apps/farm-service && pnpm st
