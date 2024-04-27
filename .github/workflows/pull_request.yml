@@ -14,7 +14,6 @@ on:
 jobs:
   tests:
     runs-on: ubuntu-latest
-    if: github.repository == 'vitormarkis/hour-boost'
 
     strategy:
       matrix:
