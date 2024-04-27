@@ -83,7 +83,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-          cache: pnpm
 
       - name: Stop all users farm
         working-directory: apps/farm-service
