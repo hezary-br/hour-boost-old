@@ -40,7 +40,10 @@ jobs:
 
       - name: Run API container
         run: |
-          docker run --rm \
+          docker run \
+          --detach \
+          --rm \
+          --name hourboost-api-container \
           --env NODE_ENV=${{ secrets.NODE_ENV }} \
           --env CLERK_SECRET_KEY=${{ secrets.CLERK_SECRET_KEY }} \
           --env DATABASE_URL=${{ secrets.DATABASE_URL }} \
@@ -58,4 +61,4 @@ jobs:
           --env STOP_ENDPOINT=${{ secrets.STOP_ENDPOINT }} \
           --env SECRET=${{ secrets.SECRET }} \
           --publish 4000:${{ secrets.PORT }} \
-          hourboost-api-container
+          vitormarkis/hourboost-api:latest
