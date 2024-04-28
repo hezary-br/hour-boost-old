@@ -12,6 +12,7 @@
     "start:web": "turbo start --filter=hour-boost-web",
     "start:api": "turbo start --filter=farm-service",
     "start:api:debug": "turbo start_debug --filter=farm-service",
+    "test": "turbo test",
     "lint": "turbo run lint",
     "start": "turbo run start",
     "format": "prettier --write .",

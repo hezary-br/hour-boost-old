@@ -34,6 +34,9 @@
       "cache": false,
       "persistent": true
     },
-    "ci": {}
+    "ci": {},
+    "test": {
+      "cache": false
+    }
   }
 }

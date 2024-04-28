@@ -6,7 +6,7 @@ name: CI/CD - API - Hourboost
 on:
   push:
     paths:
-      - ".github/workflows/**"
+      - ".github/workflows/push.yml"
       - "apps/farm-service/**"
       - "packages/**"
     branches: ["main"]
@@ -47,7 +47,6 @@ jobs:
         run: npx turbo build:prod
 
       - name: Running test suite
-        working-directory: out/apps/farm-service
         run: pnpm run test
 
   build:
@@ -102,13 +101,7 @@ jobs:
     steps:
       - name: Pull image from Docker Hub
         run: docker pull vitormarkis/hourboost-api:latest
-        
-      # - name: Delete images
-      #   run: docker rmi -f vitormarkis/hourboost-api:latest
 
-      # - name: Delete all images
-      #   run: docker rmi $(docker images -a -q)
-      
       - name: Delete old container
         run: docker rm -f hourboost-api-container
 
