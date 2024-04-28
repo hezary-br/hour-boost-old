@@ -46,12 +46,12 @@ jobs:
         working-directory: out/
         run: npx turbo build:prod
 
-      - name: Running test suite on Farm Service
-        working-directory: out/apps/farm-service
-        run: pnpm run test
-
       - name: Running test suite on Core package
         working-directory: out/packages/core
+        run: pnpm run test
+
+      - name: Running test suite on Farm Service
+        working-directory: out/apps/farm-service
         run: pnpm run test
 
   build:
