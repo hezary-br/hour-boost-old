@@ -1,15 +1,12 @@
-import { api } from "@/lib/axios"
-import { DataOrMessage } from "@/util/DataOrMessage"
-import { useAuth } from "@clerk/clerk-react"
+import { StateProvider, createStater } from "@/components/molecules/ModalAddSteamAccount/stater"
+import { Form } from "@/components/ui/form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { DefaultError, useMutation } from "@tanstack/react-query"
 import React from "react"
 import { useForm } from "react-hook-form"
 import { FormType, formSchema } from "./form"
-import { httpCreateSteamAccount } from "./httpRequest"
-import { IntentionCodes, ModalAddSteamAccountView } from "./view"
+import { ModalAddSteamAccountView } from "./view"
 
-const defaultValues: FormType = {
+export const defaultValues: FormType = {
   accountName: "",
   authCode: "",
   password: "",
@@ -28,37 +25,19 @@ export const ModalAddSteamAccount = React.forwardRef<
     defaultValues,
     resolver: zodResolver(formSchema),
   })
-  const resetAllFields = () => form.reset(defaultValues)
-
-  const { getToken } = useAuth()
-  const getAPI = async () => {
-    api.defaults.headers["Authorization"] = `Bearer ${await getToken()}`
-    return api
-  }
-
-  const createSteamAccount = useMutation<
-    DataOrMessage<string, IntentionCodes>,
-    DefaultError,
-    CreateSteamAccountPayload
-  >({
-    mutationFn: async (...args) => httpCreateSteamAccount(...args, getAPI),
-  })
-
-  const clearField = (field: keyof FormType) => {
-    form.resetField(field)
-  }
+  const s = createStater(form)
 
   return (
-    <ModalAddSteamAccountView
-      {...props}
-      createSteamAccount={createSteamAccount}
-      form={form}
-      resetAllFields={resetAllFields}
-      clearField={clearField}
-      ref={ref}
-    >
-      {children}
-    </ModalAddSteamAccountView>
+    <Form {...form}>
+      <StateProvider value={s}>
+        <ModalAddSteamAccountView
+          {...props}
+          ref={ref}
+        >
+          {children}
+        </ModalAddSteamAccountView>
+      </StateProvider>
+    </Form>
   )
 })
 

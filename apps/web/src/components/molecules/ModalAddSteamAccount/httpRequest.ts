@@ -1,29 +1,38 @@
-import { DataOrMessage, MessageMaker } from "@/util/DataOrMessage"
-import { resolvePromiseToMessage } from "@/util/resolvePromiseToMessage"
-import { AxiosInstance, AxiosResponse } from "axios"
+import { Message } from "@/util/DataOrMessage"
+import { AxiosError, AxiosInstance, AxiosResponse } from "axios"
 import { AddSteamAccountHTTPResponse } from "core"
 import { CreateSteamAccountPayload } from "./controller"
-import { IntentionCodes } from "./view"
 
 export async function httpCreateSteamAccount(
   payload: CreateSteamAccountPayload,
-  getAPI: () => Promise<AxiosInstance>,
-  msg = new MessageMaker<IntentionCodes>()
-): Promise<DataOrMessage<string, IntentionCodes>> {
-  const api = await getAPI()
-  const [error, response] = await resolvePromiseToMessage(
-    api.post<any, AxiosResponse<AddSteamAccountHTTPResponse>, CreateSteamAccountPayload>(
+  getApi: () => Promise<AxiosInstance>
+): Promise<string | Message<any>> {
+  const api = await getApi()
+
+  try {
+    const response = await api.post<any, AxiosResponse<AddSteamAccountHTTPResponse>, CreateSteamAccountPayload>(
       "/steam-accounts",
-      payload
+      payload,
     )
-  )
-  if (error) return [error]
-  if (response.status === 201) {
-    return [null, response.data.steamAccountId]
+    console.log(response)
+    if (response.status === 201) {
+      return "Conta adicionada com sucesso."
+    }
+    if (response.status === 202) {
+      return new Message("Código Steam Guard requerido.", "info", "STEAM-GUARD-REQUIRED")
+    }
+
+    if (typeof response.data?.message !== "string") {
+      throw response
+    }
+
+    console.log("response data.messag")
+    return response.data.message
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      throw new Error(error.response?.data.message)
+    }
+
+    throw error
   }
-  if (response.status === 202) {
-    return [msg.new("Código Steam Guard requerido.", "info", "STEAM_GUARD_REQUIRED")]
-  }
-  console.log({ response })
-  return [msg.new("Resposta desconhecida.", "info")]
 }

@@ -1,11 +1,9 @@
-import { useRef, useState } from "react"
-import { FormType } from "./form"
+import { defaultValues } from "@/components/molecules/ModalAddSteamAccount/controller"
+import { FormType } from "@/components/molecules/ModalAddSteamAccount/form"
+import { createContext, useContext, useRef, useState } from "react"
+import { UseFormReturn } from "react-hook-form"
 
-export function useStater(
-  accountName: string,
-  resetAllFields: () => void,
-  clearField: (field: keyof FormType) => void
-) {
+export function createStater(formContext: UseFormReturn<FormType>) {
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   // const [isRequiringSteamGuard, setIsRequiringSteamGuard] = useState(false)
@@ -13,13 +11,22 @@ export function useStater(
   const [requiredSteamGuardAccounts, setRequiredSteamGuardAccounts] = useState<string[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const refInputSteamGuard = useRef<HTMLInputElement | null>(null)
-  const refInputAccountName = useRef<HTMLInputElement | null>(null)
+  const refSubmitButton = useRef<HTMLButtonElement | null>(null)
+  const focusSubmitButton = () => refSubmitButton.current?.focus()
   const requireSteamGuard = () => {
-    setFormStep("STEAM-GUARD")
+    const accountName = formContext.getValues("accountName")
     setRequiredSteamGuardAccounts(an => (an.includes(accountName) ? an : [...an, accountName]))
-    refInputSteamGuard.current?.focus()
+    setFormStep("STEAM-GUARD")
+    setTimeout(() => {
+      refInputSteamGuard.current?.focus()
+    }, 0)
   }
-  const resetFormFields = () => resetAllFields()
+  const goBackToCredentials = () => {
+    setFormStep("CREDENTIALS")
+    formContext.resetField("authCode")
+    setTimeout(() => focusSubmitButton(), 0)
+  }
+  const resetFormFields = () => formContext.reset(defaultValues)
   const resetForm = () => {
     setFormStep("CREDENTIALS")
     resetFormFields()
@@ -34,11 +41,13 @@ export function useStater(
           CREDENTIALS: {
             submit() {
               // CHECAGEM PARA SABER QUE USUARIO JA TEM UMA CONTA STEAM NO DASHBOARD COM ESSE NOME
+              const accountName = formContext.getValues("accountName")
               if (requiredSteamGuardAccounts.includes(accountName)) {
-                setFormStep("STEAM-GUARD")
-                return
+                requireSteamGuard()
+                return [false] as const
               }
               setIsSubmitting(true)
+              return [true] as const
             },
             resolveSubmit() {
               setIsSubmitting(false)
@@ -49,6 +58,7 @@ export function useStater(
           "STEAM-GUARD": {
             submit() {
               setIsSubmitting(true)
+              return [true] as const
             },
             resolveSubmit() {
               setIsSubmitting(false)
@@ -63,6 +73,9 @@ export function useStater(
 
   const { form } = useStaterForm()
 
+  const dirtyFields = formContext.formState.dirtyFields
+  const credentialsInputDirty = "accountName" in dirtyFields && "password" in dirtyFields
+
   const closeModal = () => {
     setIsModalOpen(false)
     resetForm()
@@ -71,27 +84,23 @@ export function useStater(
     setIsModalOpen(true)
   }
   const removeAccountNameFromSteamGuardCache = () =>
-    setRequiredSteamGuardAccounts(ra => ra.filter(acc => acc !== accountName))
+    setRequiredSteamGuardAccounts(ra => ra.filter(acc => acc !== formContext.getValues("accountName")))
   const completeForm = () => {
     removeAccountNameFromSteamGuardCache()
     closeModal()
   }
-  const goBackToCredentials = () => {
-    setFormStep("CREDENTIALS")
-    clearField("authCode")
-    setTimeout(() => refInputAccountName.current?.focus(), 0)
-  }
-
   return {
     isModalOpen,
     isRequiringSteamGuard,
     isSubmitting,
     refInputSteamGuard,
-    refInputAccountName,
+    refSubmitButton,
     requiredSteamGuardAccounts,
     formStep,
     form,
     requireSteamGuard,
+    focusSubmitButton,
+    credentialsInputDirty,
     resetForm,
     closeModal,
     openModal,
@@ -99,14 +108,28 @@ export function useStater(
     goBackToCredentials,
   }
 }
-
+export type State = ReturnType<typeof createStater>
 type FormStep = "CREDENTIALS" | "STEAM-GUARD"
 
 export interface IFormController {
-  submit(): void
+  submit(): [shouldContinue: boolean]
   resolveSubmit(): void
   textSubmitButton: string
   textSubmittingButton: string
 }
 
 export type IFormSteps = Record<FormStep, IFormController>
+
+type StateProviderProps = React.ComponentProps<typeof StateContext.Provider>
+
+export const StateContext = createContext<State | null>(null)
+
+export function StateProvider(props: StateProviderProps) {
+  return <StateContext.Provider {...props} />
+}
+
+export function useStater() {
+  const s = useContext(StateContext)
+  if (!s) throw new Error("OOC")
+  return s
+}
