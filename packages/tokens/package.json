@@ -9,8 +9,8 @@
   "scripts": {
     "dev": "npm run build -- --watch",
     "check": "tsc --noEmit",
-    "build": "tsup-node src/index.ts --format esm --dts",
-    "build:prod": "tsup-node src/index.ts --format esm"
+    "build": "tsup src/index.ts --format esm --dts",
+    "build:prod": "tsup src/index.ts --format esm"
   },
   "keywords": [],
   "author": "",
@@ -20,11 +20,11 @@
     "core": "workspace:*",
     "jsonwebtoken": "^9.0.2",
     "tsconfig": "workspace:*",
-    "tsup-node": "^0.1.0"
+    "tsup": "^7.2.0"
   },
   "devDependencies": {
     "@types/jsonwebtoken": "^9.0.5",
     "@types/node": "^20",
-    "typescript": "^5.2.2"
+    "typescript": "^5.3.2"
   }
 }
