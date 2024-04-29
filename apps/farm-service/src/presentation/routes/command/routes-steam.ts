@@ -40,14 +40,13 @@ export const addSteamAccount = new AddSteamAccount(usersRepository, idGenerator)
 const stopAllFarmsUseCase = new StopAllFarms(usersClusterStorage)
 export const command_routerSteam: Router = Router()
 
-type Resolved = {
-  message: string
-} & Record<string, any>
-
 command_routerSteam.post(
   "/steam-accounts",
   ClerkExpressRequireAuth(),
   async (req: WithAuthProp<Request>, res: Response) => {
+    const [limited] = await rateLimit(req)
+    if (limited) return res.status(limited.status).json(limited.json)
+
     const addSteamAccountController = new AddSteamAccountController(addSteamAccountUseCase)
 
     const { json, status } = await promiseHandler(

@@ -1,4 +1,4 @@
-import { build } from "esbuild"
+import { build, BuildOptions } from "esbuild"
 
 const ESM_REQUIRE_SHIM = `
 await (async () => {
@@ -39,10 +39,10 @@ async function main() {
   })
 
   const {
-    default: { dependencies = {}, peerDependencies = {} },
+    default: { dependencies = {} },
   } = foundJSON
 
-  const nonInternalHourbostDeps = Object.entries(dependencies).reduce((acc, [dep, version]) => {
+  const nonInternalHourbostDeps = Object.entries(dependencies).reduce((acc: string[], [dep, version]) => {
     if (version === "workspace:*") {
       console.log("Excluding: ", dep)
       return acc
@@ -56,10 +56,11 @@ async function main() {
     external: nonInternalHourbostDeps,
   }
 
-  const buildOptions = {
+  const buildOptions: BuildOptions = {
     ...common,
     format: "esm",
     target: "esnext", // <- required
+    sourcemap: true,
     platform: "node",
     banner: shimBanner,
     outfile: "dist/server.js",

@@ -1,7 +1,7 @@
 import {
+  ApplicationError,
   type AddSteamAccount,
   type AddSteamAccountHTTPResponse,
-  ApplicationError,
   type DataOrError,
   type UseCase,
   type UsersDAO,
@@ -110,16 +110,17 @@ export class AddSteamAccountUseCase
     )
     console.log("Never resolving OUT")
 
-    const failConnectingToClient = !["loggedOn", "steamGuard"].includes(eventsPromisesResolved.type)
-    if (failConnectingToClient) {
-      removeSAC()
-      // throw new Error(`removing sac, suposed to be null, ${eventsPromisesResolved.type}`)
+    switch (eventsPromisesResolved.type) {
+      case "loggedOn":
+      case "steamGuard":
+        break // should mantain sac on system for later
+      default:
+        console.log("33: removing sac")
+        removeSAC()
     }
 
     if (eventsPromisesResolved.type === "steamGuard") {
       const [domain, setCode] = eventsPromisesResolved.args
-      const sac = this.allUsersClientsStorage.getAccountClient(userId, accountName)!
-      this.allUsersClientsStorage.addSteamAccount(username, userId, sac)
       sac.setManualHandler("steamGuard", code => setCode(code))
       return [
         new ApplicationError(
@@ -148,11 +149,6 @@ export class AddSteamAccountUseCase
     }
 
     if (eventsPromisesResolved.type === "loggedOn") {
-      console.log("55: ", {
-        accountName,
-        password: hashPassword,
-        userId,
-      })
       const [error, result] = await this.addSteamAccount.execute({
         accountName,
         password: hashPassword,

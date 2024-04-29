@@ -1,6 +1,6 @@
 import {
-  type AppAccountStatusIddle,
   ApplicationError,
+  type AppAccountStatusIddle,
   type PlanRepository,
   type SteamAccountClientStateCacheRepository,
 } from "core"
@@ -30,7 +30,7 @@ export class UserClientsStorage {
     this.logger.log("Appending refreshtoken cache listener on refreshToken event.")
     // mais correto seria deixar esse handler como fixo no evento de refreshToken
     // em vez de depender de ser o ultimo handler
-    sac.emitter.on("gotRefreshToken", async ({ accountName, userId, planId, refreshToken, username }) => {
+    sac.emitter.once("gotRefreshToken", async ({ accountName, userId, planId, refreshToken, username }) => {
       await this.sacStateCacheRepository.setRefreshToken(accountName, {
         refreshToken,
         userId,
@@ -40,7 +40,7 @@ export class UserClientsStorage {
       sac.logger.log("refreshtoken set in cache.")
     })
 
-    sac.emitter.on("hasSession", async () => {
+    sac.emitter.once("hasSession", async () => {
       await this.sacStateCacheRepository.init({
         accountName: sac.accountName,
         planId: sac.planId,
