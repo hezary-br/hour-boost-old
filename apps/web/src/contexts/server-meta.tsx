@@ -17,6 +17,7 @@ const serverMetaSchema = z
         userId: z.string(),
         role: z.enum(["USER", "ADMIN"]),
         status: z.enum(["ACTIVE", "BANNED"]),
+        planName: z.enum(["GUEST", "SILVER", "GOLD", "DIAMOND"]),
       })
       .strict()
       .nullable(),
@@ -46,6 +47,7 @@ function createServerMeta(request: GetServerSidePropsContext["req"]): IServerMet
         role: token.role,
         userId: token.userId,
         status: token.status,
+        planName: token.planName
       }
     }
   }

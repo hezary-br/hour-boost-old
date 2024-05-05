@@ -9,7 +9,7 @@ import { NextResponse } from "next/server"
 
 export default authMiddleware({
   ignoredRoutes: ["/"],
-  publicRoutes: ["/home"],
+  publicRoutes: ["/home", "/plans"],
   async afterAuth(auth, req) {
     let hbIdentificationToken: string | null = null
     let hbHasId: string | null = null

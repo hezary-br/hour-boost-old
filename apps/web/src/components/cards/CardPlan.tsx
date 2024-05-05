@@ -1,10 +1,17 @@
-import React, { CSSProperties } from "react"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Slot } from "@radix-ui/react-slot"
 import { buttonPrimaryHueThemes } from "@/components/theme/button-primary"
+import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 import { cssVariables } from "@/util/units/cssVariables"
+import { Slot } from "@radix-ui/react-slot"
+import { PlanAllNames } from "core"
+import React, { createContext, useContext } from "react"
 import st from "./CardPlan.module.css"
+
+export type IUserPlanContext = {
+  planName?: PlanAllNames
+}
+
+export const UserPlanContext = createContext<IUserPlanContext | null>(null)
 
 export type CardPlanProps = React.ComponentPropsWithoutRef<typeof CardPlanRoot> & {
   children: React.ReactNode
@@ -35,25 +42,37 @@ export const CardPlanX = React.forwardRef<React.ElementRef<typeof CardPlanRoot>,
 
 // CardPlan.displayName = "CardPlan"
 
+interface ContextCardPlanRoot {
+  planName: PlanAllNames
+}
+
+export const ContextCardPlanRoot = createContext<ContextCardPlanRoot | null>(null)
+
 export type CardPlanRootProps = React.ComponentPropsWithoutRef<"article"> & {
   children: React.ReactNode
   highlight?: React.ReactNode
+  planName: PlanAllNames
 }
 
 export const CardPlanRoot = React.forwardRef<React.ElementRef<"article">, CardPlanRootProps>(
-  function CardPlanRootComponent({ highlight = null, children, className, ...props }, ref) {
+  function CardPlanRootComponent({ planName, highlight = null, children, className, ...props }, ref) {
     return (
-      <article
-        {...props}
-        className={cn(
-          "mdx:max-w-xs relative flex w-full max-w-[25rem] flex-col bg-slate-900 [&_strong]:font-semibold [&_strong]:text-white",
-          className
-        )}
-        ref={ref}
-      >
-        {highlight}
-        <div className="relative overflow-hidden p-8">{children}</div>
-      </article>
+      <ContextCardPlanRoot.Provider value={{
+        planName
+      }}>
+        <article
+          {...props}
+          className={cn(
+            "mdx:max-w-xs relative flex w-full max-w-[25rem] flex-col bg-slate-900 [&_strong]:font-semibold [&_strong]:text-white",
+            className
+          )}
+          ref={ref}
+        >
+          <CardPlanHighlightCurrentPlan />
+          {highlight}
+          <div className="relative overflow-hidden p-8">{children}</div>
+        </article>
+      </ContextCardPlanRoot.Provider>
     )
   }
 )
@@ -242,7 +261,59 @@ export const CardPlanBulletItem = React.forwardRef<React.ElementRef<"li">, CardP
   }
 )
 
+export type CardPlanRootContainerProps = React.ComponentPropsWithoutRef<"div"> & {
+  userPlan: IUserPlanContext
+}
+
+export const CardPlanRootContainerProvider = React.forwardRef<React.ElementRef<"div">, CardPlanRootContainerProps>(
+  function CardPlanRootContainerComponent({ userPlan, className, ...props }, ref) {
+    return (
+      <UserPlanContext.Provider value={userPlan ?? null}>
+        <div
+          ref={ref}
+          className={cn("flex w-full justify-center gap-16", className)}
+          {...props}
+        />
+      </UserPlanContext.Provider>
+    )
+  }
+)
+
 CardPlanBulletItem.displayName = "CardPlanBulletItem"
+
+export type CardPlanHighlightCurrentPlanProps = React.ComponentPropsWithoutRef<"div"> & {
+  colorScheme?: keyof typeof buttonPrimaryHueThemes
+}
+
+export const CardPlanHighlightCurrentPlan = React.forwardRef<
+  React.ElementRef<"div">,
+  CardPlanHighlightCurrentPlanProps
+>(function CardPlanHighlightCurrentPlanComponent(
+  { style, colorScheme = "orange-yellow", className, ...props },
+  ref
+) {
+  const cardRoot = useContext(ContextCardPlanRoot)
+  const userPlan = useContext(UserPlanContext)
+  const [appleHue, bananaHue] = buttonPrimaryHueThemes[colorScheme]
+  const hues = Object.entries({ appleHue, bananaHue })
+
+  if (userPlan?.planName !== cardRoot?.planName) return null
+
+  return (
+    <div
+      {...props}
+      className={cn(
+        "absolute left-0 top-0 z-10 -translate-x-4 translate-y-[-50%] bg-black px-4 py-1.5 text-sm leading-none text-white",
+        st.highlight,
+        className
+      )}
+      style={cssVariables(hues, style)}
+      ref={ref}
+    >
+      Seu plano atual
+    </div>
+  )
+})
 
 export type SVGCheckIconProps = React.ComponentPropsWithoutRef<"svg">
 
@@ -283,10 +354,12 @@ export function SVGCheckIcon({ ...props }: SVGCheckIconProps) {
 export const CardPlan = {
   Root: CardPlanRoot,
   Highlight: CardPlanHighlight,
+  HighlightCurrentPlan: CardPlanHighlightCurrentPlan,
   BackgroundBlob: CardPlanBackgroundBlob,
   Name: CardPlanName,
   Price: CardPlanPrice,
   FeaturesContainer: CardPlanFeaturesContainer,
   BulletItem: CardPlanBulletItem,
   Button: CardPlanButton,
+  RootContainerProvider: CardPlanRootContainerProvider,
 }
