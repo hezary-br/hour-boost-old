@@ -4,7 +4,7 @@ import { ClerkExpressWithAuth, type WithAuthProp } from "@clerk/clerk-sdk-node"
 import { GetUser } from "core"
 
 import { HBHeaders } from "@hourboost/tokens"
-import { type Request, type Response, Router } from "express"
+import { Router, type Request, type Response } from "express"
 import { CreateUserUseCase } from "~/application/use-cases"
 import { token } from "~/infra/singletons/token-factory"
 import { GetMeController } from "~/presentation/controllers"
@@ -38,6 +38,7 @@ query_routerUser.head("/me", ClerkExpressWithAuth(), async (req, res) => {
     role: user.role,
     userId,
     status: user.status,
+    planName: user.plan.name,
   })
   if (errorSigningToken) {
     return res.status(400).end()
