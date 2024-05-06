@@ -1,11 +1,13 @@
 import { CardPlan as CP, ContextCardPlanRoot, UserPlanContext } from "@/components/cards/CardPlan"
 import { usePreApprovalPlan } from "@/components/layouts/pages/plans/preapproval-plan/mutation"
 import { buttonPrimaryHueThemes, generateColorSchema } from "@/components/theme/button-primary"
+import { useUser } from "@/contexts/UserContext"
 import { useServerMeta } from "@/contexts/server-meta"
 import { cn } from "@/lib/utils"
 import { useClerk } from "@clerk/clerk-react"
 import { useRouter } from "next/router"
 import React, { useContext } from "react"
+import { toast } from "sonner"
 
 export type ButtonPreapprovalActionProps = React.ComponentPropsWithoutRef<typeof CP.Button> & {
   colorScheme?: keyof typeof buttonPrimaryHueThemes
@@ -30,11 +32,15 @@ export const ButtonPreapprovalAction = React.forwardRef<
   const clerk = useClerk()
   const preApprovalPlan = usePreApprovalPlan({ userId })
   const { plan_interested } = router.query
+  const email = useUser(user => user.email)
 
   const interestedInThisPlan = plan_interested === cardRoot.planName && "animate-ping"
   const shouldPing = interestedInThisPlan && planName !== cardRoot.planName
 
   const actionClick = () => {
+    if (email.status !== "success") {
+      return toast.info("Carregando informações do seu usuário.")
+    }
     if (!userId) {
       return clerk.redirectToSignIn(
         dontGoBackAtThisPage
@@ -48,6 +54,7 @@ export const ButtonPreapprovalAction = React.forwardRef<
       {
         planName: cardRoot.planName,
         userId,
+        email: email.data,
       },
       {
         onSuccess: console.log,
