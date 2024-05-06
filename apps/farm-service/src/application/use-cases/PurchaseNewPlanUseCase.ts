@@ -1,9 +1,10 @@
 import { DataOrFail, Fail, PlanAllNames, UsersRepository } from "core"
 import { getUser } from "~/application/use-cases/helpers/getUser"
+import { createCheckout } from "~/infra/services/checkout/create"
 import { bad, nice } from "~/utils/helpers"
 
 interface IPurchaseNewPlanUseCase {
-  execute(props: PurchaseNewPlanUseCaseDTO): Promise<DataOrFail<Fail, "SUCCESS">>
+  execute(props: PurchaseNewPlanUseCaseDTO): Promise<DataOrFail<Fail, { checkoutUrl: string }>>
 }
 
 export class PurchaseNewPlanUseCase implements IPurchaseNewPlanUseCase {
@@ -21,9 +22,13 @@ export class PurchaseNewPlanUseCase implements IPurchaseNewPlanUseCase {
       return bad(Fail.create("ATTEMPT-TO-ASSIGN-SAME-PLAN", 403, { userId, planName, userPlan: user.plan }))
     }
 
-    // gerar checkout
+    const { checkoutUrl } = await createCheckout({
+      email: user.email,
+      plan: planName,
+      username: user.username,
+    })
 
-    return nice("SUCCESS")
+    return nice({ checkoutUrl })
   }
 }
 

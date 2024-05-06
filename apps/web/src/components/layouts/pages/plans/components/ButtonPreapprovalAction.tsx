@@ -38,10 +38,10 @@ export const ButtonPreapprovalAction = React.forwardRef<
   const shouldPing = interestedInThisPlan && planName !== cardRoot.planName
 
   const actionClick = () => {
-    if (email.status !== "success") {
+    if (email.status === "pending") {
       return toast.info("Carregando informações do seu usuário.")
     }
-    if (!userId) {
+    if (!userId || !email.data) {
       return clerk.redirectToSignIn(
         dontGoBackAtThisPage
           ? undefined
@@ -57,7 +57,9 @@ export const ButtonPreapprovalAction = React.forwardRef<
         email: email.data,
       },
       {
-        onSuccess: console.log,
+        onSuccess({ checkoutUrl }) {
+          router.push(checkoutUrl)
+        },
       }
     )
   }
