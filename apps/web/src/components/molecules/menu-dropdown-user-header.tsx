@@ -42,6 +42,7 @@ export const MenuDropdownUserHeader = React.forwardRef<
           <>
             <HeaderLink to="/home">Home</HeaderLink>
             <HeaderLink to="/dashboard">Dashboard</HeaderLink>
+            <HeaderLink to="/plans">Mudar plano</HeaderLink>
             {isAdmin && (
               <>
                 <HeaderLink to="/admin">Painel Admin</HeaderLink>

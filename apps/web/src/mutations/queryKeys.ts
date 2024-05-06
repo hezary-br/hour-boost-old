@@ -4,8 +4,9 @@ export const ECacheKeys = {
   setGames: ["SET-GAMES"],
   setAccounts: ["SET-ACCOUNTS"],
   addHours: ["ADD-HOURS"],
-  banUser: (userId: string) => ["BA N-USER", userId],
+  banUser: (userId: string) => ["BAN-USER", userId],
   unbanUser: (userId: string) => ["UNBAN-USER", userId],
+  preAprovalPlan: (userId?: string) => ["PRE-APPROVAL-PLAN", userId],
   changeUserPlan: (userId: string) => ["CHANGE-USER-PLAN", userId],
   addSteamGuard: (accountName: string) => ["ADD-STEAM-GUARD", accountName],
 }

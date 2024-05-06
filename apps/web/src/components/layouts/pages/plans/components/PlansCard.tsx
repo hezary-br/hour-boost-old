@@ -1,11 +1,8 @@
 import { CardPlan as CP, CardPlanHighlight } from "@/components/cards/CardPlan"
-import { IconCrown } from "@/components/icons/IconCrown"
-import { IconDiamond } from "@/components/icons/IconDiamond"
-import { IconMedal } from "@/components/icons/IconMedal"
-import { ButtonPrimary } from "@/components/theme/button-primary"
+import { IconCrown, IconDiamond, IconMedal } from "@/components/icons"
+import { ButtonPreapprovalAction, NotAvailable } from "@/components/layouts/pages/plans/components"
 import { useServerMeta } from "@/contexts/server-meta"
 import { cn } from "@/lib/utils"
-import { ButtonPreapprovalAction } from "@/pages/plans/components/ButtonPreapprovalAction"
 import React from "react"
 
 export type PlansCardProps = React.ComponentPropsWithoutRef<"section">
@@ -26,6 +23,7 @@ export const PlansCard = React.forwardRef<React.ElementRef<"section">, PlansCard
           {...props}
         >
           <CP.Root planName="GUEST">
+            <NotAvailable />
             <CP.HighlightCurrentPlan />
             <CP.BackgroundBlob />
             <CP.Name>Grátis</CP.Name>
@@ -37,7 +35,9 @@ export const PlansCard = React.forwardRef<React.ElementRef<"section">, PlansCard
               <CP.BulletItem weight="weak">Farm 24/7</CP.BulletItem>
               <CP.BulletItem weight="weak">Auto-restart</CP.BulletItem>
             </CP.FeaturesContainer>
-            <ButtonPreapprovalAction>Assinar</ButtonPreapprovalAction>
+            <CP.ButtonContainer>
+              <ButtonPreapprovalAction dontGoBackAtThisPage={isGuest}>{isGuest ? "Testar" : "Escolher"}</ButtonPreapprovalAction>
+            </CP.ButtonContainer>
           </CP.Root>
           <CP.Root planName="SILVER">
             <CP.HighlightCurrentPlan />
@@ -63,7 +63,9 @@ export const PlansCard = React.forwardRef<React.ElementRef<"section">, PlansCard
               <CP.BulletItem>Farm 24/7</CP.BulletItem>
               <CP.BulletItem>Auto-restart</CP.BulletItem>
             </CP.FeaturesContainer>
-            <ButtonPreapprovalAction>Assinar</ButtonPreapprovalAction>
+            <CP.ButtonContainer>
+              <ButtonPreapprovalAction>Assinar</ButtonPreapprovalAction>
+            </CP.ButtonContainer>
           </CP.Root>
           <CP.Root
             planName="GOLD"
@@ -94,9 +96,11 @@ export const PlansCard = React.forwardRef<React.ElementRef<"section">, PlansCard
               <CP.BulletItem>Farm 24/7</CP.BulletItem>
               <CP.BulletItem>Auto-restart</CP.BulletItem>
             </CP.FeaturesContainer>
-            <ButtonPreapprovalAction asChild>
-              <ButtonPrimary>Assinar</ButtonPrimary>
-            </ButtonPreapprovalAction>
+            <CP.ButtonContainer>
+              <ButtonPreapprovalAction colorScheme={isGuest ? "default" : undefined}>
+                Assinar
+              </ButtonPreapprovalAction>
+            </CP.ButtonContainer>
           </CP.Root>
           <CP.Root planName="DIAMOND">
             <CP.HighlightCurrentPlan />
@@ -126,7 +130,9 @@ export const PlansCard = React.forwardRef<React.ElementRef<"section">, PlansCard
               <CP.BulletItem>Farm 24/7</CP.BulletItem>
               <CP.BulletItem>Auto-restart</CP.BulletItem>
             </CP.FeaturesContainer>
-            <ButtonPreapprovalAction>Assinar</ButtonPreapprovalAction>
+            <CP.ButtonContainer>
+              <ButtonPreapprovalAction>Assinar</ButtonPreapprovalAction>
+            </CP.ButtonContainer>
           </CP.Root>
         </section>
       </CP.RootContainerProvider>
