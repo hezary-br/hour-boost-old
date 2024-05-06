@@ -96,7 +96,7 @@ export const CardPlanHighlight = React.forwardRef<React.ElementRef<"div">, CardP
       <div
         {...props}
         className={cn(
-          "absolute right-0 top-0 z-10 translate-x-4 translate-y-[-50%] bg-black px-4 py-1.5 text-sm leading-none text-white",
+          "absolute right-0 top-0 z-30 translate-x-4 translate-y-[-50%] bg-black px-4 py-1.5 text-sm leading-none text-white",
           st.highlight,
           className
         )}
@@ -140,20 +140,33 @@ export const CardPlanButton = React.forwardRef<React.ElementRef<typeof Button>, 
     const Component = asChild ? Slot : Button
 
     return (
-      <div className="flex justify-center pt-10">
-        <Component
-          {...props}
-          className={cn("", className)}
-          ref={ref}
-        >
-          {children}
-        </Component>
-      </div>
+      <Component
+        {...props}
+        className={cn("", className)}
+        ref={ref}
+      >
+        {children}
+      </Component>
     )
   }
 )
 
 CardPlanButton.displayName = "CardPlanButton"
+
+export type CardPlanButtonContainerProps = React.ComponentPropsWithoutRef<"div">
+
+export const CardPlanButtonContainer = React.forwardRef<React.ElementRef<"div">, CardPlanButtonContainerProps>(
+  function CardPlanButtonContainerComponent({ className, ...props }, ref) {
+    return (
+      <div
+        ref={ref}
+        className={cn("flex justify-center pt-10", className)}
+        {...props}
+      />
+    )
+  }
+)
+
 
 export type CardPlanNameProps = React.ComponentPropsWithoutRef<"div"> & {
   children: React.ReactNode
@@ -303,7 +316,7 @@ export const CardPlanHighlightCurrentPlan = React.forwardRef<
     <div
       {...props}
       className={cn(
-        "absolute left-0 top-0 z-10 -translate-x-4 translate-y-[-50%] bg-black px-4 py-1.5 text-sm leading-none text-white",
+        "absolute left-0 top-0 z-30 -translate-x-4 translate-y-[-50%] bg-black px-4 py-1.5 text-sm leading-none text-white",
         st.highlight,
         className
       )}
@@ -361,5 +374,6 @@ export const CardPlan = {
   FeaturesContainer: CardPlanFeaturesContainer,
   BulletItem: CardPlanBulletItem,
   Button: CardPlanButton,
+  ButtonContainer: CardPlanButtonContainer,
   RootContainerProvider: CardPlanRootContainerProvider,
 }
