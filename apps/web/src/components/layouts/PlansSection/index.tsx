@@ -1,16 +1,23 @@
 import { TitleSection } from "@/components/atoms/TitleSection"
-import { CardPlan as CP, CardPlanHighlight } from "@/components/cards/CardPlan"
+import { CardPlan as CP, CardPlanButtonContainer, CardPlanHighlight } from "@/components/cards/CardPlan"
 import { IconCrown } from "@/components/icons/IconCrown"
 import { IconDiamond } from "@/components/icons/IconDiamond"
 import { IconMedal } from "@/components/icons/IconMedal"
 import { ButtonPrimary } from "@/components/theme/button-primary"
 import { cn } from "@/lib/utils"
+import { useRouter } from "next/router"
 import React from "react"
 
 export type PlanSectionProps = React.ComponentPropsWithoutRef<"section"> & {}
 
 export const PlanSection = React.forwardRef<React.ElementRef<"section">, PlanSectionProps>(
   function PlanSectionComponent({ className, ...props }, ref) {
+    const router = useRouter()
+    
+    const clickChoosePlan = () => {
+      router.push("/plans")
+    }
+    
     return (
       <section
         {...props}
@@ -23,7 +30,7 @@ export const PlanSection = React.forwardRef<React.ElementRef<"section">, PlanSec
           id="plans"
         >
           <div className="mdx:flex-row mx-auto flex h-full w-full max-w-7xl flex-col items-center gap-16 px-4 md:justify-evenly md:gap-8 md:px-8">
-            <CP.Root>
+            <CP.Root planName="GUEST">
               <CP.BackgroundBlob />
               <CP.Name>Grátis</CP.Name>
               <CP.Price>0</CP.Price>
@@ -34,9 +41,11 @@ export const PlanSection = React.forwardRef<React.ElementRef<"section">, PlanSec
                 <CP.BulletItem weight="weak">Farm 24/7</CP.BulletItem>
                 <CP.BulletItem weight="weak">Auto-restart</CP.BulletItem>
               </CP.FeaturesContainer>
-              <CP.Button>Testar agora</CP.Button>
+              <CardPlanButtonContainer>
+                <CP.Button onClick={clickChoosePlan}>Testar agora</CP.Button>
+              </CardPlanButtonContainer>
             </CP.Root>
-            <CP.Root>
+            <CP.Root planName="SILVER">
               <CP.BackgroundBlob className="bg-slate-400">
                 <IconMedal
                   className="mdx:translate-x-4 -translate-y-24 translate-x-4 rotate-[-7deg]"
@@ -59,9 +68,12 @@ export const PlanSection = React.forwardRef<React.ElementRef<"section">, PlanSec
                 <CP.BulletItem>Farm 24/7</CP.BulletItem>
                 <CP.BulletItem>Auto-restart</CP.BulletItem>
               </CP.FeaturesContainer>
-              <CP.Button>Assinar agora</CP.Button>
+              <CardPlanButtonContainer>
+                <CP.Button onClick={clickChoosePlan}>Assinar agora</CP.Button>
+              </CardPlanButtonContainer>
             </CP.Root>
             <CP.Root
+              planName="GOLD"
               highlight={<CardPlanHighlight className="-translate-x-4 sm:translate-x-4" />}
               className="mdx:scale-[1.1]"
             >
@@ -89,11 +101,13 @@ export const PlanSection = React.forwardRef<React.ElementRef<"section">, PlanSec
                 <CP.BulletItem>Farm 24/7</CP.BulletItem>
                 <CP.BulletItem>Auto-restart</CP.BulletItem>
               </CP.FeaturesContainer>
-              <CP.Button asChild>
-                <ButtonPrimary>Assinar agora</ButtonPrimary>
-              </CP.Button>
+              <CardPlanButtonContainer>
+                <CP.Button asChild>
+                  <ButtonPrimary>Assinar agora</ButtonPrimary>
+                </CP.Button>
+              </CardPlanButtonContainer>
             </CP.Root>
-            <CP.Root>
+            <CP.Root planName="DIAMOND">
               <CP.BackgroundBlob className="bg-sky-600">
                 <IconDiamond
                   style={{
@@ -120,7 +134,9 @@ export const PlanSection = React.forwardRef<React.ElementRef<"section">, PlanSec
                 <CP.BulletItem>Farm 24/7</CP.BulletItem>
                 <CP.BulletItem>Auto-restart</CP.BulletItem>
               </CP.FeaturesContainer>
-              <CP.Button>Assinar agora</CP.Button>
+              <CardPlanButtonContainer>
+                <CP.Button onClick={clickChoosePlan}>Assinar agora</CP.Button>
+              </CardPlanButtonContainer>
             </CP.Root>
           </div>
         </div>

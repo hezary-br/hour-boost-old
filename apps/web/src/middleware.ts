@@ -137,11 +137,6 @@ export default authMiddleware({
         }
       }
 
-      console.log({
-        "userToken?.status": userToken?.status,
-        "auth.isPublicRoute": auth.isPublicRoute,
-      })
-
       setCookiesToResponse(response, [
         [HBHeaders["hb-identification"], hbIdentificationToken],
         [HBHeaders["hb-has-user"], hbHasUser],
