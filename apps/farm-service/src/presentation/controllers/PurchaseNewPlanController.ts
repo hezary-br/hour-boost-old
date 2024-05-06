@@ -1,6 +1,6 @@
 import { PlanAllNames } from "core"
 import { PurchaseNewPlanUseCase } from "~/application/use-cases/PurchaseNewPlanUseCase"
-import { ResponseAPI, createResponse, createResponseNoJSON } from "~/types/response-api"
+import { ResponseAPI, createResponse } from "~/types/response-api"
 
 interface IPurchaseNewPlanController {
   handle(payload: PurchaseNewPlanControllerPayload): Promise<ResponseAPI>
@@ -10,7 +10,7 @@ export class PurchaseNewPlanController implements IPurchaseNewPlanController {
   constructor(private readonly purchaseNewPlanUseCase: PurchaseNewPlanUseCase) {}
 
   async handle({ planName, userId, email }: PurchaseNewPlanControllerPayload) {
-    const [error] = await this.purchaseNewPlanUseCase.execute({
+    const [error, result] = await this.purchaseNewPlanUseCase.execute({
       planName,
       userId,
       email,
@@ -29,9 +29,11 @@ export class PurchaseNewPlanController implements IPurchaseNewPlanController {
         default:
           error satisfies never
       }
+      throw error
     }
 
-    return createResponseNoJSON(200)
+    const { checkoutUrl } = result
+    return createResponse(200, { checkoutUrl })
   }
 }
 

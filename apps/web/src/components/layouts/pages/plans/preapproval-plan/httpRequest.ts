@@ -1,18 +1,24 @@
 import { AxiosError, AxiosInstance, AxiosResponse } from "axios"
 import { PreApprovalPlanPayload } from "./controller"
-// 
-type PreApprovalPlanOutput = {
-  message: string
-}
+import { UsePreApprovalPlanResult } from "./types"
 
 export type SuccessResponse = {
   message: string
 }
 
-export async function httpPreApprovalPlan(payload: PreApprovalPlanPayload, getAPI: () => Promise<AxiosInstance>) {
+export async function httpPreApprovalPlan(
+  payload: PreApprovalPlanPayload,
+  getAPI: () => Promise<AxiosInstance>
+) {
   const api = await getAPI()
   try {
-    await api.post<any, AxiosResponse<PreApprovalPlanOutput>, PreApprovalPlanPayload>("/plan/preapproval", payload)
+    const { data } = await api.post<
+      UsePreApprovalPlanResult,
+      AxiosResponse<UsePreApprovalPlanResult>,
+      PreApprovalPlanPayload
+    >("/plan/preapproval", payload)
+
+    return data
   } catch (error) {
     if (error instanceof AxiosError) {
       throw new Error(error.response?.data.message)

@@ -11,6 +11,8 @@ const makeRuntimeEnvs = () =>
         .gt(1, "Intervalo de auto restart precisa ser acima de 1 minuto.")
         .lt(1000),
       REDIS_UPSTASH_TLS: z.string().min(1),
+      MERCADO_PAGO_PUBLIC_KEY: z.string().min(1),
+      MERCADO_PAGO_ACCESS_TOKEN: z.string().min(1),
       EXAMPLE_ACCOUNT_NAME: z.string().nullable().default(null),
       EXAMPLE_ACCOUNT_PASSWORD: z.string().nullable().default(null),
       NODE_ENV: z.enum(["DEV", "PRODUCTION", "DEBUG", "TEST"]),
@@ -49,6 +51,8 @@ export const envTest: RuntimeEnvs = {
   CLERK_SECRET_KEY: "test",
   DATABASE_URL: "test",
   REDIS_UPSTASH_TLS: "test",
+  MERCADO_PAGO_ACCESS_TOKEN: "test",
+  MERCADO_PAGO_PUBLIC_KEY: "test",
   TOKEN_IDENTIFICATION_HASH: "test",
   CLIENT_URL: "http://localhost:3000",
   COOKIE_DOMAIN: ".hourboost.com.br",
