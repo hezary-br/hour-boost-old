@@ -22,6 +22,7 @@ import {
 import { AddUsageTimeToPlanUseCase } from "~/application/use-cases/AddUsageTimeToPlanUseCase"
 import { BanUserUseCase } from "~/application/use-cases/BanUserUseCase"
 import { ChangeUserPlanUseCase } from "~/application/use-cases/ChangeUserPlanUseCase"
+import { PurchaseNewPlanUseCase } from "~/application/use-cases/PurchaseNewPlanUseCase"
 import { RetrieveSessionListUseCase } from "~/application/use-cases/RetrieveSessionListUseCase"
 import { SetMaxSteamAccountsUseCase } from "~/application/use-cases/SetMaxSteamAccountsUseCase"
 import { StopFarmUseCase } from "~/application/use-cases/StopFarmUseCase"
@@ -59,6 +60,7 @@ import {
 import { ClerkAuthentication } from "~/infra/services"
 import { AddSteamGuardCodeController } from "~/presentation/controllers"
 import { CreateMeController } from "~/presentation/controllers/CreateMeController"
+import { PurchaseNewPlanController } from "~/presentation/controllers/PurchaseNewPlanController"
 import { RefreshGamesUseCase } from "~/presentation/presenters"
 import { EventEmitterBuilder, SteamAccountClientBuilder, UserClusterBuilder } from "~/utils/builders"
 import { UsageBuilder } from "~/utils/builders/UsageBuilder"
@@ -252,6 +254,8 @@ export const banUserUseCase = new BanUserUseCase(
   planRepository,
   steamAccountClientStateCacheRepository
 )
+export const purchaseNewPlanUseCase = new PurchaseNewPlanUseCase(usersRepository)
+export const purchaseNewPlanController = new PurchaseNewPlanController(purchaseNewPlanUseCase)
 export const unbanUserUseCase = new UnbanUserUseCase(usersRepository)
 export const addSteamGuardCodeController = new AddSteamGuardCodeController(allUsersClientsStorage)
 const addSteamAccount = new AddSteamAccount(usersRepository, idGenerator)
