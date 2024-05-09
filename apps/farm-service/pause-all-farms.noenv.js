@@ -9,6 +9,8 @@ async function main() {
   if (!response.ok) {
     if (response.statusText === "Bad Gateway") {
       return console.log("Server is not up :)")
+    } else if(response.statusText === "Service Temporarily Unavailable") {
+      return console.log("Server instance is probably booting :)")
     } else {
       console.log(response)
       throw new Error("Failed to stop farm.")
