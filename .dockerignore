@@ -1,6 +1,8 @@
 **/.git
 **/node_modules
 **/.docker
+**/Dockerfile
+Dockerfile
 .git
 node_modules
 .docker

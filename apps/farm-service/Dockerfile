@@ -38,6 +38,7 @@ RUN npx prisma generate --schema="apps/farm-service/prisma/schema.prisma"
 
 COPY --from=builder /app/out/full/ .
 RUN npx turbo run build:prod --filter=farm-service
+RUN npm install pm2 -g
 
 
-CMD node ./apps/farm-service/dist/server.js
+CMD ["pm2-runtime", "./apps/farm-service/dist/server.js", "--name", "api"]
