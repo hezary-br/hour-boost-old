@@ -17,7 +17,7 @@ async function main() {
         throw new Error("Failed to stop farm.")
     }
   }
-  const data = await response.json()
+  const data = response.ok ? await response.json() : "Not ok :/"
   console.log(data)
 }
 
