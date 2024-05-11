@@ -7,13 +7,14 @@ async function main() {
     body: `{"secret":"${process.env.SECRET}"}`,
   })
   if (!response.ok) {
-    if (response.statusText === "Bad Gateway") {
-      return console.log("Server is not up :)")
-    } else if(response.statusText === "Service Temporarily Unavailable") {
-      return console.log("Server instance is probably booting :)")
-    } else {
-      console.log(response)
-      throw new Error("Failed to stop farm.")
+    switch (response.statusText) {
+      case "Bad Gateway":
+      case "Service Temporarily Unavailable":
+      case "Gateway Time-out":
+        console.log("Server instance is probably booting :)")
+        break
+      default:
+        throw new Error("Failed to stop farm.")
     }
   }
   const data = await response.json()
