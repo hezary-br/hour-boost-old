@@ -25,7 +25,7 @@ export class PurchaseNewPlanUseCase implements IPurchaseNewPlanUseCase {
     const { checkoutUrl } = await createCheckout({
       email: user.email,
       plan: planName,
-      username: user.username,
+      userId,
     })
 
     return nice({ checkoutUrl })

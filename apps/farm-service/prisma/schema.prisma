@@ -20,10 +20,24 @@ model User {
   role          Role
   status        Status
   steamAccounts SteamAccount[] @relation("user_steam_accounts")
+  preapprovals  Preapproval[]  @relation("user_preapprovals")
   purchases     Purchase[]     @relation("user_purchases")
   usages        Usage[]        @relation("user_usages")
 
   @@map("users")
+}
+
+model Preapproval {
+  id_preapproval        String   @id
+  createdAt             DateTime
+  user_id               String?
+  user                  User?    @relation("user_preapprovals", fields: [user_id], references: [id_user], onDelete: Cascade)
+  planName              String
+  status                String
+  previousPreapprovalId String?
+  payerId               Int?
+
+  @@map("preapprovals")
 }
 
 model SteamAccount {

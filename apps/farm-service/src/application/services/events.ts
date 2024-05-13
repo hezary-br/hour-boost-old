@@ -13,6 +13,8 @@ type ResolversMapping<Events extends EventsTuple> = {
 type GlobalEvents = {
   account_logged_in: [userId: string, accountName: string, wasRequiring: boolean]
   account_required_steam_guard: [userId: string, accountName: string]
+
+  gateway_preapproval_status_changed: [email: string]
 }
 
 export class Events {
