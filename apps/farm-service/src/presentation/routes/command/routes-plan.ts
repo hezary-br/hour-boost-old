@@ -59,21 +59,3 @@ command_routerPlan.delete("/usage", async (req, res) => {
 
   return res.status(status).json(json)
 })
-
-command_routerPlan.post("/plan/preapproval", ClerkExpressRequireAuth(), async (req, res) => {
-  const [invalidBody, body] = validateBody(
-    req.body,
-    z.object({
-      userId: z.string().min(1, "Informe o ID do usuário."),
-      email: z.string().email("Informe um e-mail válido."),
-      planName: z.enum(["DIAMOND", "GOLD", "GUEST", "SILVER"], {
-        message: "Tipo de plano inválido.",
-      }),
-    })
-  )
-  if (invalidBody) return res.status(invalidBody.status).json(invalidBody.json)
-  const { planName, userId, email } = body
-
-  const presentation = await purchaseNewPlanController.handle({ planName, userId, email })
-  return RequestHandlerPresenter.handle(presentation, res)
-})

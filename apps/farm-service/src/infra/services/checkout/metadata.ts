@@ -1,6 +1,9 @@
+import { PlanAllNames, PlanInfinityName } from "core"
+
 export type PlanPayloadJSON = {
-  planName: string
+  planName: PlanInfinityName
   userId: string
+  userEmail: string
 }
 
 export class PlanPayload {

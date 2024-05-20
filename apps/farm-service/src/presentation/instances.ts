@@ -47,6 +47,7 @@ import { FlushUpdateSteamAccountUseCase } from "~/features/flush-update-steam-ac
 import { RemoveSteamAccount } from "~/features/remove-steam-account/domain"
 import { StopFarmDomain } from "~/features/stop-farm/domain"
 import { UsersDAODatabase } from "~/infra/dao"
+import { PreapprovalDAODatabase } from "~/infra/dao/PreapprovalDAODatabase"
 import { SteamAccountsDAODatabase } from "~/infra/dao/SteamAccountsDAODatabase"
 import { prisma } from "~/infra/libs"
 import { redis } from "~/infra/libs/redis"
@@ -57,6 +58,7 @@ import {
   SteamAccountsRepositoryDatabase,
   UsersRepositoryDatabase,
 } from "~/infra/repository"
+import { PreapprovalRepositoryDatabase } from "~/infra/repository/PreapprovalRepositoryDatabase"
 import { ClerkAuthentication } from "~/infra/services"
 import { AddSteamGuardCodeController } from "~/presentation/controllers"
 import { CreateMeController } from "~/presentation/controllers/CreateMeController"
@@ -95,6 +97,8 @@ export const steamAccountsRepository = new SteamAccountsRepositoryDatabase(prism
 export const steamAccountClientStateCacheRepository = new SteamAccountClientStateCacheRedis(redis)
 export const userAuthentication = new ClerkAuthentication(clerkClient)
 export const usersRepository = new UsersRepositoryDatabase(prisma)
+export const preapprovalRepository = new PreapprovalRepositoryDatabase(prisma)
+export const preapprovalDAO = new PreapprovalDAODatabase(prisma)
 export const idGenerator = new IDGeneratorUUID()
 
 export const sacBuilder = new SteamAccountClientBuilder(emitterBuilder, publisher, steamUserBuilder)

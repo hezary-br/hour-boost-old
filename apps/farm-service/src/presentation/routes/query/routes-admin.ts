@@ -215,6 +215,7 @@ query_routerAdmin.post("/unban-user", async (req, res) => {
 
 query_routerAdmin.post("/change-user-plan", async (req, res) => {
   const [_, isAdmin] = await ensureAdmin(req, res)
+  console.log({ secret: req.body, env: process.env.ACTIONS_SECRET })
   const authorized = isAdmin || req.body.secret === process.env.ACTIONS_SECRET
   if (!authorized) {
     return res.status(500).json({ message: "Unauthorized. :)" })

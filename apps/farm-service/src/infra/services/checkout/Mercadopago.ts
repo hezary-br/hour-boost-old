@@ -1,4 +1,4 @@
-import { MercadoPagoConfig, PreApproval } from "mercadopago"
+import { MercadoPagoConfig, PreApproval, PreApprovalPlan } from "mercadopago"
 import { env } from "~/env"
 
 const client = new MercadoPagoConfig({
@@ -7,4 +7,5 @@ const client = new MercadoPagoConfig({
 
 console.log(env.MERCADO_PAGO_ACCESS_TOKEN)
 
-export const preApproval = new PreApproval(client)
+export const gatewayPreApprovalGateway = new PreApproval(client)
+export const preApprovalPlan = new PreApprovalPlan(client)

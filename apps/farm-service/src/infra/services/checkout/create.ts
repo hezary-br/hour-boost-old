@@ -1,10 +1,10 @@
 import { PlanInfinityName } from "core"
-import { preApproval } from "~/infra/services/checkout/Mercadopago"
+import { gatewayPreApprovalGateway, preApprovalPlan } from "~/infra/services/checkout/Mercadopago"
 import { plans } from "~/infra/services/checkout/plans"
 
 type CreateCheckoutProps = {
   plan: PlanInfinityName
-  username: string
+  userId: string
   email: string
 }
 
@@ -14,15 +14,15 @@ type CreateCheckoutReturn = {
 
 export async function createCheckout({
   plan,
-  username,
+  userId,
   email,
 }: CreateCheckoutProps): Promise<CreateCheckoutReturn> {
   const makePlanBody = plans[plan]
   if (!makePlanBody) throw makePlanBody
-  const body = makePlanBody(username, email)
+  const body = makePlanBody(userId, email)
 
   try {
-    const response = await preApproval.create({
+    const response = await gatewayPreApprovalGateway.create({
       body,
     })
     return {
