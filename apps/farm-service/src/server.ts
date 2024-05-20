@@ -26,6 +26,7 @@ import {
 } from "~/presentation/routes/query"
 import { query_routerAdmin } from "~/presentation/routes/query/routes-admin"
 import { env } from "./env"
+import { router_checkout } from "~/presentation/routes/checkout"
 
 // prefix(console, {
 //   format: ":date(yyyy/mm/dd HH:MM:ss.l)",
@@ -54,6 +55,7 @@ app.use(query_routerPlan)
 app.use(query_routerGeneral)
 app.use(command_routerSteam)
 app.use(command_routerPlan)
+app.use(router_checkout)
 
 app.get("/recovering-accounts", (req, res) => {
   res.json({

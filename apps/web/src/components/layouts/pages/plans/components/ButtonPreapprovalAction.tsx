@@ -36,9 +36,10 @@ export const ButtonPreapprovalAction = React.forwardRef<
 
   const interestedInThisPlan = plan_interested === cardRoot.planName && "animate-ping"
   const shouldPing = interestedInThisPlan && planName !== cardRoot.planName
+  const loadingUserEmail = email.status === "pending"
 
   const actionClick = () => {
-    if (email.status === "pending") {
+    if (loadingUserEmail) {
       return toast.info("Carregando informações do seu usuário.")
     }
     if (!userId || !email.data) {
@@ -73,7 +74,8 @@ export const ButtonPreapprovalAction = React.forwardRef<
         <CP.Button
           ref={ref}
           onClick={actionClick}
-          disabled={userPlan?.planName === cardRoot.planName}
+          aria-busy={loadingUserEmail}
+          disabled={userPlan?.planName === cardRoot.planName || loadingUserEmail}
           className={cn("relative z-10", cs?.className, className)}
           style={{ ...style, ...cs?.style }}
           {...props}
