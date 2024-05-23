@@ -1,4 +1,4 @@
-import { createWebhookId } from "~/presentation/routes/checkout.utils"
+import { createWebhookId } from "~/presentation/routes/mercado-pago/checkout.utils"
 
 /**
  * webhookPreapprovalId = MAYBE OLD ID?

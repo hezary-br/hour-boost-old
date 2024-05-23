@@ -1,4 +1,4 @@
-import { checkShouldPersist } from "~/presentation/routes/checkout.utils"
+import { checkShouldPersist } from "~/presentation/routes/mercado-pago/checkout.utils"
 
 test("should save new preapproval", async () => {
   const shouldPersist = checkShouldPersist({

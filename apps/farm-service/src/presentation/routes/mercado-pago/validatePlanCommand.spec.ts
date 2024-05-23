@@ -1,4 +1,4 @@
-import { validatePlanCommand } from "~/presentation/routes/checkout.utils"
+import { validatePlanCommand } from "~/presentation/routes/mercado-pago/checkout.utils"
 
 test("should cancel only if the current preapprovalid matches the gateway preapproval id", async () => {
   expect(
