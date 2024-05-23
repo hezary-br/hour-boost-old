@@ -1,0 +1,43 @@
+FROM node:18-alpine AS base
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
+
+# Environment Variables
+ARG TURBO_TEAM
+ARG TURBO_TOKEN
+
+ENV TURBO_TEAM=$TURBO_TEAM
+ENV TURBO_TOKEN=$TURBO_TOKEN
+
+
+FROM base AS builder
+RUN apk add --no-cache libc6-compat
+RUN apk update
+
+# Set working directory
+WORKDIR /app
+RUN npm install turbo -g
+COPY . .
+RUN turbo prune farm-service --docker
+
+# Add lockfile and package.json's of isolated subworkspace
+FROM base AS installer
+RUN apk add --no-cache libc6-compat
+RUN apk update
+WORKDIR /app
+
+# First install the dependencies (as they change less often)
+COPY .gitignore .gitignore
+COPY --from=builder /app/out/json/ .
+COPY --from=builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
+# RUN pnpm install
+RUN pnpm install --prod --frozen-lockfile
+COPY --from=builder /app/out/full/apps/farm-service/prisma/schema.prisma ./apps/farm-service/prisma/schema.prisma
+RUN npx prisma generate --schema="apps/farm-service/prisma/schema.prisma"
+
+COPY --from=builder /app/out/full/ .
+RUN npx turbo run build:prod --filter=farm-service
+RUN npm install pm2@4.4.0 -g
+
+CMD ["pm2-runtime", "./apps/farm-service/dist/server.js", "--name", "api"]
