@@ -6,6 +6,7 @@ RUN corepack enable
 # Environment Variables
 ARG TURBO_TEAM
 ARG TURBO_TOKEN
+ARG RAILWAY_SERVICE_ID
 
 ENV TURBO_TEAM=$TURBO_TEAM
 ENV TURBO_TOKEN=$TURBO_TOKEN
@@ -32,7 +33,8 @@ COPY .gitignore .gitignore
 COPY --from=builder /app/out/json/ .
 COPY --from=builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
 # RUN pnpm install
-RUN pnpm install --prod --frozen-lockfile
+# RUN --mount=type=cache,id=pnpm-cache,target=/pnpm/store pnpm install --prod --frozen-lockfile
+RUN --mount=type=cache,id=s/${RAILWAY_SERVICE_ID}-/pnpm/store,target=/pnpm/store pnpm install --prod --frozen-lockfile
 COPY --from=builder /app/out/full/apps/farm-service/prisma/schema.prisma ./apps/farm-service/prisma/schema.prisma
 RUN npx prisma generate --schema="apps/farm-service/prisma/schema.prisma"
 
