@@ -23,7 +23,6 @@ RUN turbo prune farm-service --docker
 
 # Add lockfile and package.json's of isolated subworkspace
 FROM base AS installer
-ARG RAILWAY_SERVICE_ID
 RUN apk add --no-cache libc6-compat
 RUN apk update
 WORKDIR /app
@@ -34,7 +33,7 @@ COPY --from=builder /app/out/json/ .
 COPY --from=builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
 # RUN pnpm install
 # RUN --mount=type=cache,id=pnpm-cache,target=/pnpm/store pnpm install --prod --frozen-lockfile
-RUN --mount=type=cache,id=s/${RAILWAY_SERVICE_ID}-/pnpm/store,target=/pnpm/store pnpm install --prod --frozen-lockfile
+RUN --mount=type=cache,id=s/121442db-1ff4-4099-b3d6-0c5fd4b92a19-/pnpm/store,target=/pnpm/store pnpm install --prod --frozen-lockfile
 COPY --from=builder /app/out/full/apps/farm-service/prisma/schema.prisma ./apps/farm-service/prisma/schema.prisma
 RUN npx prisma generate --schema="apps/farm-service/prisma/schema.prisma"
 
