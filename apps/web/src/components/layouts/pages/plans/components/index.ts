@@ -1,3 +1,3 @@
-export * from './ButtonPreapprovalAction'
-export * from './NotAvailable'
-export * from './PlansCard'
+export * from "./ButtonPreapprovalAction.view"
+export * from "./NotAvailable"
+export * from "./PlansCard"

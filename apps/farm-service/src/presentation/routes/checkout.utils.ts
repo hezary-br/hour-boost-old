@@ -212,10 +212,10 @@ export async function cancelAllPreapprovalsButCurrent({
   preservingPreapprovalId,
   payerId,
 }: CancelAllPreapprovalsButCurrentProps) {
-  const allPreapprovals = await getAllGatewayPrepprovals(payerId)
-  const nonCancelledPreapprovals = excludeCancelledPreapprovals(allPreapprovals)
-  const preapprovalIds = extractPreapprovalIds(nonCancelledPreapprovals)
-  const cancellingIds = excludePreapprovalById({
+  const allPreapprovals: PreApprovalResults[] = await getAllGatewayPrepprovals(payerId)
+  const nonCancelledPreapprovals: PreApprovalResults[] = excludeCancelledPreapprovals(allPreapprovals)
+  const preapprovalIds: string[] = extractPreapprovalIds(nonCancelledPreapprovals)
+  const cancellingIds: string[] = excludePreapprovalById({
     allPreapprovalsId: preapprovalIds,
     preapprovalId: preservingPreapprovalId,
   })
