@@ -1,7 +1,6 @@
 import { ClerkExpressRequireAuth } from "@clerk/clerk-sdk-node"
 import { Fail, PlanAllNames, User, bad } from "core"
 import { Router } from "express"
-import { appendFile } from "fs"
 import { PreApprovalResponse } from "mercadopago/dist/clients/preApproval/commonTypes"
 import z from "zod"
 import { Preapproval } from "~/infra/repository/PreapprovalRepository"
@@ -32,11 +31,7 @@ import {
   validatePlanCommand,
   cancelAllPreapprovalsButCurrent,
   checkShouldPersist,
-} from "~/presentation/routes/checkout.utils"
-import {
-  cancelPendingPreapprovalsOnGateway,
-  cancelRunningPreapprovalsOnGateway,
-} from "~/presentation/routes/gateway.utils"
+} from "~/presentation/routes/mercado-pago/checkout.utils"
 import { nice } from "~/utils/helpers"
 
 export const router_checkout: Router = Router()

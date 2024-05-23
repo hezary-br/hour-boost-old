@@ -1,4 +1,4 @@
-import { calculatePreviousPreapprovalId } from "~/presentation/routes/checkout.utils"
+import { calculatePreviousPreapprovalId } from "~/presentation/routes/mercado-pago/checkout.utils"
 
 test("should sjdfids", async () => {
   const prevId = calculatePreviousPreapprovalId({

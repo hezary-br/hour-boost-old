@@ -51,6 +51,7 @@
     "mercadopago": "^2.0.9",
     "secure-encrypt": "^1.0.12",
     "steam-user": "5.0.9",
+    "stripe": "^15.7.0",
     "tsconfig": "workspace:*",
     "tsconfig-paths": "^4.2.0",
     "tsup": "^7.2.0",

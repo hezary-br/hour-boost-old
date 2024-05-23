@@ -26,7 +26,7 @@ import {
 } from "~/presentation/routes/query"
 import { query_routerAdmin } from "~/presentation/routes/query/routes-admin"
 import { env } from "./env"
-import { router_checkout } from "~/presentation/routes/checkout"
+import { router_checkout } from "~/presentation/routes/mercado-pago/checkout"
 
 // prefix(console, {
 //   format: ":date(yyyy/mm/dd HH:MM:ss.l)",
