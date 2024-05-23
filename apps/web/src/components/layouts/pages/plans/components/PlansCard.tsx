@@ -36,7 +36,9 @@ export const PlansCard = React.forwardRef<React.ElementRef<"section">, PlansCard
               <CP.BulletItem weight="weak">Auto-restart</CP.BulletItem>
             </CP.FeaturesContainer>
             <CP.ButtonContainer>
-              <ButtonPreapprovalAction dontGoBackAtThisPage={isGuest}>{isGuest ? "Testar" : "Escolher"}</ButtonPreapprovalAction>
+              <ButtonPreapprovalAction dontGoBackAtThisPage={isGuest}>
+                {isGuest ? "Testar" : "Escolher"}
+              </ButtonPreapprovalAction>
             </CP.ButtonContainer>
           </CP.Root>
           <CP.Root planName="SILVER">

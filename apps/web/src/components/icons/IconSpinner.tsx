@@ -11,7 +11,8 @@ export function IconSpinner({ color = twc.slate["800"], className, ...props }: I
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 200 200"
       {...props}
-      className={cn("animate-spin-r", className)}
+      className={cn("", className)}
+      // className={cn("animate-spin-r", className)}
     >
       <radialGradient
         id="a10"
@@ -28,7 +29,7 @@ export function IconSpinner({ color = twc.slate["800"], className, ...props }: I
         <stop
           offset=".3"
           stopColor={color}
-          stopOpacity=".9"
+          stopOpacity="1"
         />
         <stop
           offset=".6"
@@ -38,7 +39,7 @@ export function IconSpinner({ color = twc.slate["800"], className, ...props }: I
         <stop
           offset=".8"
           stopColor={color}
-          stopOpacity=".3"
+          stopOpacity=".1"
         />
         <stop
           offset={1}

@@ -26,6 +26,8 @@ export class PurchaseNewPlanController implements IPurchaseNewPlanController {
           return createResponse(error.httpStatus, { message: "Você não pode assinar o plano convidado." })
         case "ATTEMPT-TO-ASSIGN-SAME-PLAN":
           return createResponse(error.httpStatus, { message: `Você não pode assinar o mesmo plano.` })
+        case "FAILED-TO-CREATE-CHECKOUT-SESSION":
+          return createResponse(error.httpStatus, { message: error.payload.errorMessage })
         default:
           error satisfies never
       }

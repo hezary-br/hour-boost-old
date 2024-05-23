@@ -6,18 +6,14 @@ import { PreApprovalPlanPayloadAll } from "./controller"
 import { httpPreApprovalPlan } from "./httpRequest"
 import { UsePreApprovalPlanResult } from "./types"
 
-type UsePreApprovalPlanProps = {
-  userId?: string
-}
-
-export function usePreApprovalPlan({ userId }: UsePreApprovalPlanProps) {
+export function usePreApprovalPlan(planName: string, userId?: string) {
   const queryClient = useQueryClient()
   const { getAPI } = useGetAPI()
 
   return useMutation<UsePreApprovalPlanResult, DefaultError, PreApprovalPlanPayloadAll>({
-    mutationKey: ECacheKeys.preAprovalPlan(userId),
+    mutationKey: ECacheKeys.preAprovalPlan(planName, userId),
     mutationFn: async (...args) => httpPreApprovalPlan(...args, getAPI),
-    onSuccess() {
+    onSettled() {
       queryClient.invalidateQueries()
     },
   })
