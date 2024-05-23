@@ -6,7 +6,6 @@ RUN corepack enable
 # Environment Variables
 ARG TURBO_TEAM
 ARG TURBO_TOKEN
-ARG RAILWAY_SERVICE_ID
 
 ENV TURBO_TEAM=$TURBO_TEAM
 ENV TURBO_TOKEN=$TURBO_TOKEN
@@ -24,6 +23,7 @@ RUN turbo prune farm-service --docker
 
 # Add lockfile and package.json's of isolated subworkspace
 FROM base AS installer
+ARG RAILWAY_SERVICE_ID
 RUN apk add --no-cache libc6-compat
 RUN apk update
 WORKDIR /app
