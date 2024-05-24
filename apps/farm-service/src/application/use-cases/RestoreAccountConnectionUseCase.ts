@@ -9,6 +9,7 @@ import SteamUser from "steam-user"
 import type { AllUsersClientsStorage, UsersSACsFarmingClusterStorage } from "~/application/services"
 import { HashService } from "~/application/services/HashService"
 import type { SteamAccountClient } from "~/application/services/steam"
+import { ctxLog } from "~/application/use-cases/RestoreAccountManySessionsUseCase"
 import type { EventParameters } from "~/infra/services"
 import { __recoveringAccounts } from "~/momentarily"
 import {
@@ -72,7 +73,8 @@ export class RestoreAccountConnectionUseCase implements IRestorAccountConnection
 
     let sac = this.allUsersClientsStorage.getAccountClient(userId, accountName)
     if (sac && sac.logged) {
-      this.logger.log(`[${accountName}] sac is logged already`)
+      ctxLog("sac is logged already")
+      // this.logger.log(`[${accountName}] `)
 
       __recoveringAccounts.delete(steamAccount.accountName)
       return nice(
@@ -85,7 +87,8 @@ export class RestoreAccountConnectionUseCase implements IRestorAccountConnection
     }
 
     if (!sac) {
-      this.logger.log(`[${accountName}] sac wasn't found, adding one`)
+      // this.logger.log(`[${accountName}] `)
+      ctxLog("sac wasn't found, adding one")
       sac = this.allUsersClientsStorage.addSteamAccountFrom0({
         accountName,
         planId: plan.id_plan,
@@ -99,7 +102,8 @@ export class RestoreAccountConnectionUseCase implements IRestorAccountConnection
     const foundSessionOnCache = await this.steamAccountClientStateCacheRepository.getRefreshToken(accountName)
 
     if (foundSessionOnCache) {
-      this.logger.log(`session found, loggin with token`)
+      // this.logger.log(`session found, loggin with token`)
+      ctxLog("session found, loggin with token")
       /**
        * Primeiro logar com refreshToken, se der erro, logar com credenciais
        */
@@ -120,10 +124,12 @@ export class RestoreAccountConnectionUseCase implements IRestorAccountConnection
           })
         )
       }
-      this.logger.log(`error while loggin with token: [${errorLogginWithToken.code}]`)
+      // this.logger.log(`error while loggin with token: [${errorLogginWithToken.code}]`)
+      ctxLog(`error while loggin with token: [${errorLogginWithToken.code}]`)
     }
 
-    this.logger.log(`session wasn't found or failed, trying with credentials`)
+    // this.logger.log(`session wasn't found or failed, trying with credentials`)
+    ctxLog(`session wasn't found or failed, trying with credentials`)
     const [, decryptedPassword] = this.hashService.decrypt(password)
 
     const loginSteamWithCredentialsResult = await this.loginSteamWithCredentials.execute({
@@ -137,7 +143,8 @@ export class RestoreAccountConnectionUseCase implements IRestorAccountConnection
       loginSteamWithCredentialsResult
     )
     if (errorLogginWithCredentials) {
-      this.logger.log(`error while loggin with credentials: [${errorLogginWithCredentials.code}]`)
+      // this.logger.log(`error while loggin with credentials: [${errorLogginWithCredentials.code}]`)
+      ctxLog(`error while loggin with credentials: [${errorLogginWithCredentials.code}]`)
       return bad(errorLogginWithCredentials)
     }
 
@@ -224,7 +231,7 @@ const handleSACClientError = (
   return nice()
 }
 
-export type SACGenericError = Error & {
+export type SACGenericError = {
   eresult: SteamUser.EResult
 }
 

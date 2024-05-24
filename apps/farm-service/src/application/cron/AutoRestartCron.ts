@@ -1,3 +1,4 @@
+import { AsyncLocalStorage } from "node:async_hooks"
 import type {
   DataOrFail,
   PlanRepository,
@@ -12,6 +13,7 @@ import {
   type RestoreAccountConnectionUseCase,
   type RestoreAccountSessionUseCase,
 } from "~/application/use-cases"
+import { ALS_username } from "~/application/use-cases/RestoreAccountManySessionsUseCase"
 import type { FailGeneric } from "~/types/EventsApp.types"
 import { bad, nice } from "~/utils/helpers"
 
@@ -77,62 +79,63 @@ export class AutoRestartCron implements IAutoRestartCron {
     let sac = this.allUsersClientsStorage.getAccountClient(steamAccount.ownerId, accountName)
 
     /** garante um SAC truthy  */
-    if (!sac || !sac.logged) {
-      const [errorRestoringConnection, result] = await this.restoreAccountConnectionUseCase.execute({
-        steamAccount: {
-          accountName,
-          password: steamAccount.credentials.password,
-          autoRestart: steamAccount.autoRelogin,
-          isRequiringSteamGuard: steamAccount.isRequiringSteamGuard,
-        },
-        user: {
-          id: user.id,
-          username: user.username,
-          plan,
-        },
-      })
+    return await ALS_username.run(user.username, async () => {
+      if (!sac || !sac.logged) {
+        const [errorRestoringConnection, result] = await this.restoreAccountConnectionUseCase.execute({
+          steamAccount: {
+            accountName,
+            password: steamAccount.credentials.password,
+            autoRestart: steamAccount.autoRelogin,
+            isRequiringSteamGuard: steamAccount.isRequiringSteamGuard,
+          },
+          user: {
+            id: user.id,
+            username: user.username,
+            plan,
+          },
+        })
 
-      if (errorRestoringConnection) {
-        return nice(
-          new AutoRestartResult("ERROR_RESTORING_CONNECTION", true, {
-            error: errorRestoringConnection,
-          })
-        )
-      }
-
-      const { sac: newSteamAccountClient } = result
-      sac = newSteamAccountClient
-    }
-
-    const state = await this.steamAccountClientStateCacheRepository.get(sac.accountName)
-
-    const [errorRestoringSession] = await this.restoreAccountSessionUseCase.execute({
-      state,
-      plan,
-      sac,
-      username: user.username,
-    })
-
-    if (errorRestoringSession) {
-      if (errorRestoringSession.payload) {
-        if ("fatal" in errorRestoringSession.payload) {
+        if (errorRestoringConnection) {
           return nice(
-            new AutoRestartResult("ERROR_RESTORING_SESSION", errorRestoringSession.payload.fatal, {
-              error: errorRestoringSession,
+            new AutoRestartResult("ERROR_RESTORING_CONNECTION", true, {
+              error: errorRestoringConnection,
             })
           )
         }
-      }
-      return bad(
-        new Fail({
-          code: errorRestoringSession.code,
-          httpStatus: errorRestoringSession.httpStatus,
-          payload: errorRestoringSession.payload,
-        })
-      )
-    }
 
-    return nice(new AutoRestartResult("RESTORED-SESSION", true, { success: true }))
+        const { sac: newSteamAccountClient } = result
+        sac = newSteamAccountClient
+      }
+
+      const state = await this.steamAccountClientStateCacheRepository.get(sac.accountName)
+
+      const [errorRestoringSession] = await this.restoreAccountSessionUseCase.execute({
+        state,
+        plan,
+        sac,
+        username: user.username,
+      })
+
+      if (errorRestoringSession) {
+        if (errorRestoringSession.payload) {
+          if ("fatal" in errorRestoringSession.payload) {
+            return nice(
+              new AutoRestartResult("ERROR_RESTORING_SESSION", errorRestoringSession.payload.fatal, {
+                error: errorRestoringSession,
+              })
+            )
+          }
+        }
+
+        if(errorRestoringSession.code === "cluster.farmWithAccount()::UNKNOWN-CLIENT-ERROR") {
+          errorRestoringSession.payload.eresult
+        }
+
+        return bad(errorRestoringSession)
+      }
+
+      return nice(new AutoRestartResult("RESTORED-SESSION", true, { success: true }))
+    })
   }
 }
 

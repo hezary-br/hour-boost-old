@@ -69,15 +69,12 @@ export class RestoreAccountSessionUseCase implements IRestoreAccountSessionUseCa
         return bad(errorRestoringOnApplication)
       }
       if (errorRestoringOnApplication.code === "cluster.farmWithAccount()::UNKNOWN-CLIENT-ERROR") {
-        const fail = new Fail({
-          code: errorRestoringOnApplication.code,
-          httpStatus: 400,
-          payload: errorRestoringOnApplication.payload,
-        })
-        if (fail.code === "cluster.farmWithAccount()::UNKNOWN-CLIENT-ERROR") {
-          fail.payload
-        }
-        return bad(fail)
+        return bad(errorRestoringOnApplication)
+        // const fail = new Fail({
+        //   code: errorRestoringOnApplication.code,
+        //   httpStatus: 400,
+        //   payload: errorRestoringOnApplication.payload,
+        // })
       }
       return bad(
         new Fail({

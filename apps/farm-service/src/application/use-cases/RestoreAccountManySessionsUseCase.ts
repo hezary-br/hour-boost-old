@@ -1,4 +1,6 @@
+import { AsyncLocalStorage } from "node:async_hooks"
 import type { SteamAccountsDAO } from "core"
+import SteamUser from "steam-user"
 import type { AutoRestartCron } from "~/application/cron/AutoRestartCron"
 import { __recoveringAccounts } from "~/momentarily"
 import { Logger } from "~/utils/Logger"
@@ -50,22 +52,52 @@ export class RestoreAccountManySessionsUseCase {
   }
 }
 
-const getSessionRestart = (autoRestartCron: AutoRestartCron, accountNameList: string[]) => {
-  return accountNameList.map(accountName => ({
-    accountName,
-    getPromise: async () => {
-      const [errorAutoRestart, reslt] = await autoRestartCron.run({
-        accountName,
-        forceRestoreSessionOnApplication: true,
-      })
+export const ALS_accountName = new AsyncLocalStorage<string>()
+export const ALS_username = new AsyncLocalStorage<string>()
+export const ALS_moduleName = new AsyncLocalStorage<string>()
 
-      if (errorAutoRestart) {
-        console.log({ errorAutoRestart })
-        return bad(errorAutoRestart)
-      }
-      return nice(reslt)
-    },
-  }))
+export const ctxLog = (...args: any[]) => {
+  let prefix = []
+  const username = ALS_username.getStore()
+  if (username) prefix.push(`[${username}]`)
+  const accountName = ALS_accountName.getStore()
+  if (accountName) prefix.push(`[${accountName}]`)
+  const moduleName = ALS_moduleName.getStore()
+  if (moduleName) prefix.push(`[${moduleName}]`)
+  console.log(prefix.join(" ").concat(" -"), ...args)
+}
+
+const getSessionRestart = (autoRestartCron: AutoRestartCron, accountNameList: string[]) => {
+  return accountNameList.map(accountName => {
+    // ALS_accountName.
+    return {
+      accountName,
+      getPromise: async () => {
+        // return new Promise(resolve => {
+        return await ALS_accountName.run(accountName, async () => {
+          const [errorAutoRestart, reslt] = await autoRestartCron.run({
+            accountName,
+            forceRestoreSessionOnApplication: true,
+          })
+
+          if (errorAutoRestart) {
+            switch (errorAutoRestart.code) {
+              case "cluster.farmWithAccount()::UNKNOWN-CLIENT-ERROR":
+                if (errorAutoRestart.payload.eresult === SteamUser.EResult.LoggedInElsewhere) {
+                  ctxLog("Light client error: Está com sessão ativa em outro dispositivo.")
+                  break
+                }
+              default:
+                console.log({ code: errorAutoRestart.payload, payload: errorAutoRestart.payload })
+                return bad(errorAutoRestart)
+            }
+          }
+          return nice(reslt)
+        })
+        // })
+      },
+    }
+  })
 }
 
 export type SessionRestart = ReturnType<typeof getSessionRestart>[number]

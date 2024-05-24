@@ -66,7 +66,7 @@ query_routerUser.get("/me", ClerkExpressWithAuth({}), async (req: WithAuthProp<R
       case "ERROR-SIGNING-IDENTIFICATION-TOKEN":
         return res.status(500).json({
           message: `Aconteceu um erro ao pegar dados do usuário de ID [${userId}]`,
-          errorMessage: error.message,
+          errorCode: error.code,
         })
       default:
         error satisfies never

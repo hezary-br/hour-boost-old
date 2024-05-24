@@ -27,9 +27,9 @@ import {
 import { query_routerAdmin } from "~/presentation/routes/query/routes-admin"
 import { env } from "./env"
 
-prefix(console, {
-  format: ":date(yyyy/mm/dd HH:MM:ss.l)",
-})
+// prefix(console, {
+//   format: ":date(yyyy/mm/dd HH:MM:ss.l)",
+// })
 
 declare global {
   namespace Express {

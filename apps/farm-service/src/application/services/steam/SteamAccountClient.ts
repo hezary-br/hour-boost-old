@@ -18,6 +18,7 @@ import { connection } from "~/__tests__/connection"
 import type { EventEmitter } from "~/application/services"
 import { Events } from "~/application/services/events"
 import { LastHandler } from "~/application/services/steam"
+import { ctxLog } from "~/application/use-cases/RestoreAccountManySessionsUseCase"
 import { getHeaderImageByGameId } from "~/consts"
 import { env } from "~/env"
 import type { Publisher } from "~/infra/queue"
@@ -77,13 +78,13 @@ export class SteamAccountClient extends LastHandler {
       this.getLastHandler("loggedOn")(...args)
       this.setLastArguments("loggedOn", args)
       this.logged = true
-      this.logger.log("logged in.")
+      ctxLog("logged in.")
       this.client.setPersona(SteamUser.EPersonaState.Online)
       this.client.gamesPlayed([])
     })
 
     this.client.on("ownershipCached", (...args) => {
-      this.logger.log(`ownershipCached!`)
+      ctxLog(`ownershipCached!`)
       this.ownershipCached = true
       this.getLastHandler("ownershipCached")(...args)
       this.setLastArguments("ownershipCached", args)
@@ -99,7 +100,7 @@ export class SteamAccountClient extends LastHandler {
         accountName: this.accountName,
         planId: this.planId,
       })
-      this.logger.log(`got refreshToken.`)
+      ctxLog(`got refreshToken.`)
       this.getLastHandler("refreshToken")(...args)
       this.setLastArguments("refreshToken", args)
     })
@@ -114,11 +115,11 @@ export class SteamAccountClient extends LastHandler {
         `${new Date().toISOString()} [${this.accountName}] - ${JSON.stringify(args)} \r\n`,
         () => {}
       )
-      this.logger.log("steam guard required.")
+      ctxLog("steam guard required.")
       this.getLastHandler("steamGuard")(...args)
       this.setLastArguments("steamGuard", args)
       this.changeInnerStatusToNotLogged()
-      this.logger.log(
+      ctxLog(
         domain
           ? `Steam Guard code needed from email ending in ${domain}`
           : `requesting Steam Guard on your device.`
@@ -133,8 +134,7 @@ export class SteamAccountClient extends LastHandler {
         () => {}
       )
       const validEResult = !!error.eresult
-      this.logger.log("22 error.", { error })
-      this.logger.log("error.", { eresult: error.eresult })
+      ctxLog("Client error: ", { eresult: error.eresult })
       if (validEResult) {
         this.changeInnerStatusToNotLogged()
         this.emitter.emit("interrupt", this.getCache().toDTO(), error)
@@ -152,7 +152,7 @@ export class SteamAccountClient extends LastHandler {
 
     this.client.on("playingState", (...args) => {
       const [blocked, appId, ...rest] = args
-      this.logger.log("44: playingState >>", {
+      ctxLog("44: playingState >>", {
         blocked,
         appId,
         ...rest,
@@ -168,14 +168,14 @@ export class SteamAccountClient extends LastHandler {
       )
       this.changeInnerStatusToNotLogged()
       this.emitter.emit("interrupt", this.getCache().toDTO(), { eresult: error })
-      this.logger.log("disconnected.", ...args)
+      ctxLog("disconnected.", ...args)
       this.getLastHandler("disconnected")(...args)
       this.setLastArguments("disconnected", args)
     })
 
     if (env.NODE_ENV === "TEST") {
       connection.on("break", ({ relog = true, replaceRefreshToken = false } = {}) => {
-        this.logger.log(`Emitting noConnection error of user ${this.accountName} for the cluster.`)
+        ctxLog(`Emitting noConnection error of user ${this.accountName} for the cluster.`)
         this.client.emit("error", { eresult: SteamUser.EResult.NoConnection })
         if (replaceRefreshToken) {
           this.emitter.emit("gotRefreshToken", {
@@ -201,7 +201,7 @@ export class SteamAccountClient extends LastHandler {
         () => {}
       )
       this.emitter.emit("hasSession")
-      this.logger.log(`Got webSession.`)
+      ctxLog(`Got webSession.`)
       this.getLastHandler("webSession")(...args)
       this.setLastArguments("webSession", args)
     })
@@ -244,7 +244,7 @@ export class SteamAccountClient extends LastHandler {
       return bad(Fail.create("DIDNT-ADD-GAMES", 203, { accountName: this.accountName }))
 
     this.cache.farmGames(gamesID)
-    this.logger.log(`Calling the client with `, gamesID)
+    ctxLog(`Calling the client with `, gamesID)
     this.client.gamesPlayed(gamesID)
     return nice()
   }
@@ -303,7 +303,7 @@ export class SteamAccountClient extends LastHandler {
   }
 
   logoff() {
-    this.logger.log(`${this.accountName} logged off.`)
+    ctxLog(`${this.accountName} logged off.`)
     this.emitter.emit("user-logged-off")
     this.client.logOff()
   }

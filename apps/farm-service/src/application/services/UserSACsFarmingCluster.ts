@@ -21,8 +21,8 @@ import {
 } from "~/application/services"
 import type { SteamAccountClient } from "~/application/services/steam"
 import { EAppResults, type SACGenericError } from "~/application/use-cases"
+import { ctxLog } from "~/application/use-cases/RestoreAccountManySessionsUseCase"
 import type { Publisher } from "~/infra/queue"
-import { Logger } from "~/utils/Logger"
 import type { UsageBuilder } from "~/utils/builders/UsageBuilder"
 import { bad, nice } from "~/utils/helpers"
 import { thisErrorShouldScheduleAutoRestarter } from "~/utils/shouldScheduleAutoRestater"
@@ -42,7 +42,7 @@ export class UserSACsFarmingCluster implements IUserSACsFarmingCluster {
   private readonly planRepository: PlanRepository
   private readonly farmServiceFactory: FarmServiceBuilder
   private readonly planId: string
-  private readonly logger: Logger
+  // private readonly logger: Logger
   private shouldPersistSession = true
   readonly emitter: EventEmitter<UserClusterEvents>
   readonly steamAccountsRepository: SteamAccountsRepository
@@ -57,7 +57,7 @@ export class UserSACsFarmingCluster implements IUserSACsFarmingCluster {
     this.emitter = props.emitter
     this.publisher = props.publisher
     this.steamAccountsRepository = props.steamAccountsRepository
-    this.logger = new Logger(`Cluster ~ ${this.username}`)
+    // this.logger = new Logger(`Cluster ~ ${this.username}`)
   }
 
   addSAC(sac: SteamAccountClient) {
@@ -72,10 +72,10 @@ export class UserSACsFarmingCluster implements IUserSACsFarmingCluster {
       )
     this.sacList.set(sac.accountName, sac)
 
-    this.logger.log(`Appending interrupt async listener on ${sac.accountName}'s sac!`)
+    ctxLog(`Appending interrupt async listener on ${sac.accountName}'s sac!`)
 
     sac.emitter.on("user-logged-off", () => {
-      this.logger.log(`${sac.accountName} logged off.`)
+      ctxLog(`${sac.accountName} logged off.`)
       this.shouldPersistSession = false
     })
 
@@ -93,7 +93,7 @@ export class UserSACsFarmingCluster implements IUserSACsFarmingCluster {
       }
       if (this.shouldPersistSession) {
         await this.sacStateCacheRepository.save(sac.getCache())
-        this.logger.log(`${sac.accountName} set cache: `, sac.getCache().toDTO())
+        ctxLog(`${sac.accountName} set cache: `, sac.getCache().toDTO())
       }
 
       this.pauseFarmOnAccount({
@@ -157,7 +157,7 @@ export class UserSACsFarmingCluster implements IUserSACsFarmingCluster {
     if (!sac) return bad(Fail.create(EAppResults["SAC-NOT-FOUND"], 404))
 
     if (!this.farmService.hasAccountsFarming()) {
-      this.logger.log("SETANDO PRIMEIRO FARM")
+      ctxLog("SETANDO PRIMEIRO FARM")
       plan ??= await this.planRepository.getById(planId)
       if (!plan) {
         return bad(Fail.create(EAppResults["PLAN-NOT-FOUND"], 404, { planId }))
@@ -174,7 +174,7 @@ export class UserSACsFarmingCluster implements IUserSACsFarmingCluster {
   }
 
   private async farmWithAccountImpl(sac: SteamAccountClient, accountName: string, gamesId: number[]) {
-    this.logger.log(`Appending account to farm on service: `, accountName)
+    ctxLog(`Appending account to farm on service: `, accountName)
     if (!this.isAccountFarmingOnService(accountName)) {
       const [cantFarm] = this.farmService.checkIfCanFarm()
       if (cantFarm) {
@@ -184,7 +184,7 @@ export class UserSACsFarmingCluster implements IUserSACsFarmingCluster {
     }
 
     const [error] = sac.farmGames(gamesId)
-    if(error) return bad(error)
+    if (error) return bad(error)
     // const errorTryingToFarm = false
     const errorTryingToFarm = await Promise.race([
       new Promise<SACGenericError>(res => sac.client.once("error", res)),

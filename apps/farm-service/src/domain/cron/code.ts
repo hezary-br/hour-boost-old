@@ -8,6 +8,7 @@ import {
   RestoreAccountSessionUseCase,
   ScheduleAutoRestartUseCase,
 } from "~/application/use-cases"
+import { ctxLog } from "~/application/use-cases/RestoreAccountManySessionsUseCase"
 import { AutoRestarterScheduler } from "~/domain/cron/AutoRestarterScheduler"
 import { testUsers as s } from "~/infra/services/UserAuthenticationInMemory"
 
@@ -72,7 +73,7 @@ async function main() {
     intervalInSeconds: 15,
   })
   if (errorScheduling) {
-    console.log({ msg: errorScheduling.message, code: errorScheduling.code })
+    ctxLog({ code: errorScheduling.code })
     return
   }
   const sac2 = i.allUsersClientsStorage.getAccountClientOrThrow(s.me.userId, s.me.accountName)
