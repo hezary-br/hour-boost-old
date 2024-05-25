@@ -25,7 +25,7 @@ import {
   query_routerUser,
 } from "~/presentation/routes/query"
 import { query_routerAdmin } from "~/presentation/routes/query/routes-admin"
-import { router_checkout } from "~/presentation/routes/stripe"
+import { router_checkout, router_webhook } from "~/presentation/routes/stripe"
 import { env } from "./env"
 
 // prefix(console, {
@@ -45,8 +45,9 @@ app.use(
   })
 )
 
-app.use(express.json())
 app.use(cookieParser())
+app.use(router_webhook)
+app.use(express.json())
 
 app.use(query_routerUser)
 app.use("/admin", query_routerAdmin)

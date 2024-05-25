@@ -1,9 +1,10 @@
 import { ClerkExpressRequireAuth } from "@clerk/clerk-sdk-node"
 import { PlanAllNames } from "core"
 import { Router } from "express"
+import express from "express"
 import { Stripe } from "stripe"
 import { z } from "zod"
-import { ctxLog } from "~/application/use-cases/RestoreAccountManySessionsUseCase"
+import { ALS_username, ctxLog } from "~/application/use-cases/RestoreAccountManySessionsUseCase"
 import { env } from "~/env"
 import { prisma } from "~/infra/libs"
 import { validateBody } from "~/inline-middlewares/validate-payload"
@@ -19,8 +20,83 @@ export const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
 })
 
 export const router_checkout: Router = Router()
+export const router_webhook: Router = Router()
 
 export type StripeSubscriptions = Stripe.Response<Stripe.ApiList<Stripe.Subscription>>
+
+router_webhook.post("/stripe/webhook", express.raw({ type: "application/json" }), async (req, res) => {
+  const body = req.body
+  const signature = req.headers["stripe-signature"] as string
+
+  let event: Stripe.Event
+
+  try {
+    event = stripe.webhooks.constructEvent(body, signature, env.STRIPE_SECRET_WEBHOOK)
+  } catch (error: any) {
+    ctxLog(`Webhook Error: ${error.message}`)
+    return res.status(400).send(`Webhook Error: ${error.message}`)
+  }
+
+  switch (event.type) {
+    case "customer.subscription.created":
+    case "customer.subscription.updated":
+      console.log("Handling webhook event: ", event.type)
+      const stripeCustomerId = event.data.object.customer as string
+      const id_subscription = event.data.object.id as string
+      const stripeStatus = event.data.object.status
+      const stripePriceId = event.data.object.items.data[0].price.id
+      let { user_email } = event.data.object.metadata
+
+      ctxLog({ metadata: event.data.object.metadata })
+      if (!user_email) {
+        const customer = await getStripeCustomerById(stripeCustomerId)
+        if (!customer?.email) {
+          console.log("NSTH: There is no user email, neither on the customer Id, and the metadata.")
+          return res.sendStatus(500)
+        }
+        user_email = customer.email
+        ctxLog({ customerEmail: customer.email })
+      }
+
+      const actualSubscription = await prisma.subscriptionStripe.upsert({
+        where: { user_email },
+        create: {
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          id_subscription,
+          stripeCustomerId,
+          stripePriceId,
+          stripeStatus,
+          user_email,
+        },
+        update: {
+          id_subscription,
+          stripeCustomerId,
+          stripePriceId,
+          stripeStatus,
+          updatedAt: new Date(),
+        },
+        include: { user: { select: { username: true } } },
+      })
+      if (!actualSubscription.user) {
+        console.log(
+          "NSTH: Webhook received and tried to update user subscription of a user that was not found.",
+          {
+            actualSubscription,
+          }
+        )
+        return res.sendStatus(404)
+      }
+
+      ALS_username.run(actualSubscription.user.username, () => {
+        ctxLog({ actualSubscription })
+      })
+      break
+    default:
+  }
+
+  return res.sendStatus(200)
+})
 
 router_checkout.get("/subscription/notification/:subscriptionNotificationId", async (req, res) => {
   const { subscriptionNotificationId } = req.params
@@ -68,6 +144,7 @@ export async function createSubscriptionCheckoutSessionByEmail({
     customerId: customer.id,
     planName,
     userId,
+    email,
   })
 }
 
@@ -108,6 +185,12 @@ async function getStripeCustomerByEmail({ email }: GetStripeCustomerByEmailProps
   }
 
   return { ...foundCustomer, email: foundCustomer.email }
+}
+
+async function getStripeCustomerById(customerId: string) {
+  const customer = await stripe.customers.retrieve(customerId)
+  if (customer.deleted) return null
+  return customer
 }
 
 type CreateCustomerProps = {
@@ -224,6 +307,7 @@ export function makeStringId() {
 type CreateSubscriptionCheckoutSessionProps = {
   customerId: string
   userId: string
+  email: string
   planName: PlanAllNames
 }
 
@@ -231,6 +315,7 @@ export async function createSubscriptionCheckoutSession({
   customerId,
   userId,
   planName,
+  email,
 }: CreateSubscriptionCheckoutSessionProps): Promise<{ url: string }> {
   const { priceId } = appStripePlans[planName]
 
@@ -256,6 +341,7 @@ export async function createSubscriptionCheckoutSession({
       subscriptionIdNotification,
       priceId,
       userId,
+      email,
     })
 
     url = session.url
@@ -333,6 +419,7 @@ type CreateCheckoutSubscriptionSessionProps = {
   customerId: string
   subscriptionIdNotification: string
   priceId: string
+  email: string
 }
 
 async function createCheckoutSubscriptionSession({
@@ -340,10 +427,12 @@ async function createCheckoutSubscriptionSession({
   customerId,
   subscriptionIdNotification,
   priceId,
+  email,
 }: CreateCheckoutSubscriptionSessionProps) {
   return stripe.checkout.sessions.create({
     payment_method_types: ["card"],
     mode: "subscription",
+    metadata: { user_email: email },
     customer: customerId,
     client_reference_id: JSON.stringify({ userId, subscriptionIdNotification }),
     success_url: "".concat(env.CLIENT_URL).concat(`/dashboard?plan_subscribed=${subscriptionIdNotification}`),
