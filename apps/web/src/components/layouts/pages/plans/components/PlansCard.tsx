@@ -4,6 +4,7 @@ import { ButtonPreapprovalAction, NotAvailable } from "@/components/layouts/page
 import { useServerMeta } from "@/contexts/server-meta"
 import { cn } from "@/lib/utils"
 import React from "react"
+import twc from "tailwindcss/colors"
 
 export type PlansCardProps = React.ComponentPropsWithoutRef<"section">
 
@@ -25,7 +26,7 @@ export const PlansCard = React.forwardRef<React.ElementRef<"section">, PlansCard
           <CP.Root planName="GUEST">
             <NotAvailable />
             <CP.HighlightCurrentPlan />
-            <CP.BackgroundBlob />
+            <CP.BackgroundBlob bgColor="hsl(222.22deg, 18.37%, 18.18%)" />
             <CP.Name>Grátis</CP.Name>
             <CP.Price>0</CP.Price>
             <CP.FeaturesContainer className="pt-20">
@@ -43,7 +44,7 @@ export const PlansCard = React.forwardRef<React.ElementRef<"section">, PlansCard
           </CP.Root>
           <CP.Root planName="SILVER">
             <CP.HighlightCurrentPlan />
-            <CP.BackgroundBlob className="bg-slate-400">
+            <CP.BackgroundBlob bgColor={twc["slate"]["400"]}>
               <IconMedal
                 className="mdx:translate-x-4 -translate-y-24 translate-x-4 rotate-[-7deg]"
                 style={{
@@ -74,7 +75,7 @@ export const PlansCard = React.forwardRef<React.ElementRef<"section">, PlansCard
             className={cn(isGuest && "mdx:scale-[1.1]")}
             highlight={isGuest && <CardPlanHighlight className="-translate-x-4 sm:translate-x-4" />}
           >
-            <CP.BackgroundBlob className="bg-amber-500">
+            <CP.BackgroundBlob bgColor={twc["amber"]["500"]}>
               <IconCrown
                 className="mdx:translate-x-[-1.7rem] translate-x-[0.9rem] translate-y-[-6.5rem] rotate-[28deg] scale-[1.8]"
                 style={{
@@ -106,7 +107,7 @@ export const PlansCard = React.forwardRef<React.ElementRef<"section">, PlansCard
           </CP.Root>
           <CP.Root planName="DIAMOND">
             <CP.HighlightCurrentPlan />
-            <CP.BackgroundBlob className="bg-sky-600">
+            <CP.BackgroundBlob bgColor={twc["sky"]["600"]}>
               <IconDiamond
                 style={{
                   position: "absolute",

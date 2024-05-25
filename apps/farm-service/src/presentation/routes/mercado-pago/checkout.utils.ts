@@ -15,7 +15,7 @@ import {
   excludePreapprovalById,
   extractPreapprovalIds,
   getAllGatewayPrepprovals,
-} from "~/presentation/routes/gateway.utils"
+} from "~/presentation/routes/mercado-pago/gateway.utils"
 import { bad, nice, only } from "~/utils/helpers"
 
 type SaveNewPreapprovalProps = {
