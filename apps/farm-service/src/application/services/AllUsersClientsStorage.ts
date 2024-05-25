@@ -147,7 +147,14 @@ export class AllUsersClientsStorage {
     autoRestart,
     isRequiringSteamGuard,
   }: AddUserProps): SteamAccountClient {
-    const sac = this.sacBuilder.create({ accountName, userId, username, planId, autoRestart, isRequiringSteamGuard })
+    const sac = this.sacBuilder.create({
+      accountName,
+      userId,
+      username,
+      planId,
+      autoRestart,
+      isRequiringSteamGuard,
+    })
     this.addSteamAccount(username, userId, sac)
     return sac
   }

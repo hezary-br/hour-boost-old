@@ -25,8 +25,8 @@ import {
   query_routerUser,
 } from "~/presentation/routes/query"
 import { query_routerAdmin } from "~/presentation/routes/query/routes-admin"
-import { env } from "./env"
 import { router_checkout } from "~/presentation/routes/stripe"
+import { env } from "./env"
 
 // prefix(console, {
 //   format: ":date(yyyy/mm/dd HH:MM:ss.l)",

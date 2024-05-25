@@ -5,7 +5,7 @@ import { token } from "~/infra/singletons/token-factory"
 import { Header, ResponseAPI, createResponse, createResponseNoJSON } from "~/types/response-api"
 
 export class CreateMeController {
-  constructor(private readonly createUserUseCase: CreateUserUseCase) { }
+  constructor(private readonly createUserUseCase: CreateUserUseCase) {}
 
   async handle({ userId }: CreateMeControllerProps): Promise<ResponseAPI> {
     if (!userId) {

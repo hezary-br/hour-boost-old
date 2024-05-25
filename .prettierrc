@@ -1,11 +1,9 @@
 {
-  "semi": false,
-  "arrowParens": "avoid",
-  "printWidth": 110,
-  "tabWidth": 2,
-  "singleAttributePerLine": true,
-  "trailingComma": "es5",
-  "plugins": [
-    "prettier-plugin-tailwindcss"
-  ]
+    "semi": false,
+    "arrowParens": "avoid",
+    "printWidth": 110,
+    "tabWidth": 2,
+    "singleAttributePerLine": true,
+    "trailingComma": "es5",
+    "plugins": ["prettier-plugin-tailwindcss"]
 }

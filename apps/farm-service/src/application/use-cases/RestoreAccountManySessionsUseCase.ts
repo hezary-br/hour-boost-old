@@ -59,11 +59,11 @@ export const ALS_moduleName = new AsyncLocalStorage<string>()
 export const ctxLog = (...args: any[]) => {
   let prefix = []
   const username = ALS_username.getStore()
-  if (username) prefix.push(`[${username}]`)
+  if (username) prefix.push(`$[${username}]`)
   const accountName = ALS_accountName.getStore()
   if (accountName) prefix.push(`[${accountName}]`)
   const moduleName = ALS_moduleName.getStore()
-  if (moduleName) prefix.push(`[${moduleName}]`)
+  if (moduleName) prefix.push(`+[${moduleName}]`)
   console.log(prefix.join(" ").concat(" -"), ...args)
 }
 
@@ -88,7 +88,10 @@ const getSessionRestart = (autoRestartCron: AutoRestartCron, accountNameList: st
                   break
                 }
               default:
-                console.log({ code: errorAutoRestart.payload, payload: errorAutoRestart.payload })
+                console.log({
+                  code: errorAutoRestart.payload,
+                  payload: errorAutoRestart.payload,
+                })
                 return bad(errorAutoRestart)
             }
           }

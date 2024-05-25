@@ -20,7 +20,7 @@ export class SteamAccountClientStateCacheInMemory implements SteamAccountClientS
 
   async setRefreshTokenPlanId(accountName: string, planId: string): Promise<void> {
     const refreshToken = this.data.refreshTokens.get(accountName)
-    if(!refreshToken) throw new Error("Refresh token not found.")
+    if (!refreshToken) throw new Error("Refresh token not found.")
     refreshToken.planId = planId
   }
 

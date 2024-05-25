@@ -34,7 +34,7 @@ test("should trim all games list to new plan requirements", async () => {
 
   const newStates = updateCacheStates({
     currentSACStates: currentStates,
-    plan: newPlan
+    plan: newPlan,
   })
 
   expect(newStates[0].gamesPlaying.length).toBe(1)

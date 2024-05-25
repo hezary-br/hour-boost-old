@@ -1,9 +1,4 @@
-import type {
-  AccountSteamGamesList,
-  CacheState,
-  IRefreshToken,
-  SteamAccountPersonaState,
-} from "core"
+import type { AccountSteamGamesList, CacheState, IRefreshToken, SteamAccountPersonaState } from "core"
 
 export class SACCacheInMemory {
   readonly state: Map<string, CacheState> = new Map()
