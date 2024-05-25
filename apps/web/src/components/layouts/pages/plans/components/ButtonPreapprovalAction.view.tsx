@@ -25,9 +25,10 @@ export const ButtonPreapprovalAction = React.forwardRef<
         {controller.shouldPing && (
           <span className="absolute bottom-0.5 left-2.5 right-2.5 top-0.5 animate-ping bg-white/30" />
         )}
+        <pre>{JSON.stringify({ transitioning: controller.transitioning }, null, 2)}</pre>
         <CP.Button
           ref={ref}
-          onClick={controller.actionClick}
+          onMouseDown={controller.actionClick}
           aria-busy={controller.pending}
           disabled={controller.disabled}
           className={cn("relative z-10", cs?.className, className)}
@@ -35,14 +36,14 @@ export const ButtonPreapprovalAction = React.forwardRef<
           {...props}
         >
           <span className="relative z-30">{children}</span>
-          {/* {controller.pendingHard && ( */}
-          <div className="-scale-x-100">
-            <IconSpinner
-              color={cs ? twc.slate["500"] : undefined}
-              className={cn("size-6 fill-white text-white")}
-            />
-          </div>
-          {/* )} */}
+          {controller.pendingHard && (
+            <div className="-scale-x-100">
+              <IconSpinner
+                color={cs ? twc.slate["500"] : undefined}
+                className="animate-spin-r size-6 fill-white text-white"
+              />
+            </div>
+          )}
         </CP.Button>
       </div>
     </>

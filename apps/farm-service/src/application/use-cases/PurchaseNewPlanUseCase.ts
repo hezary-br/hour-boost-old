@@ -1,7 +1,8 @@
+import { saferAsync } from "@hourboost/utils"
 import { DataOrFail, Fail, PlanAllNames, UsersRepository } from "core"
 import { getUser } from "~/application/use-cases/helpers/getUser"
-import { createCheckout } from "~/infra/services/checkout/create"
-import { bad } from "~/utils/helpers"
+import { createSubscriptionCheckoutSessionByEmail } from "~/presentation/routes/stripe"
+import { bad, nice } from "~/utils/helpers"
 
 interface IPurchaseNewPlanUseCase {
   execute(props: PurchaseNewPlanUseCaseDTO): Promise<DataOrFail<Fail, { checkoutUrl: string }>>
@@ -22,13 +23,19 @@ export class PurchaseNewPlanUseCase implements IPurchaseNewPlanUseCase {
       return bad(Fail.create("ATTEMPT-TO-ASSIGN-SAME-PLAN", 403, { userId, planName, userPlan: user.plan }))
     }
 
-    const checkout = await createCheckout({
-      email: user.email,
-      plan: planName,
-      userId,
-    })
+    const [errorCreatingCheckout, checkout] = await saferAsync(() =>
+      createSubscriptionCheckoutSessionByEmail({
+        email: user.email,
+        planName,
+        userId,
+      })
+    )
 
-    return checkout
+    if (errorCreatingCheckout) {
+      return bad(Fail.create("ERROR-CREATING-CHECKOUT", 400, { errorCreatingCheckout }))
+    }
+
+    return nice({ checkoutUrl: checkout.url })
   }
 }
 

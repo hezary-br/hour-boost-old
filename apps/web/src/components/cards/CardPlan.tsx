@@ -4,8 +4,9 @@ import { cn } from "@/lib/utils"
 import { cssVariables } from "@/util/units/cssVariables"
 import { Slot } from "@radix-ui/react-slot"
 import { PlanAllNames } from "core"
-import React, { createContext, useContext } from "react"
+import React, { CSSProperties, createContext, useContext } from "react"
 import st from "./CardPlan.module.css"
+import twc from "tailwindcss/colors"
 
 export type IUserPlanContext = {
   planName?: PlanAllNames
@@ -24,7 +25,7 @@ export const CardPlanX = React.forwardRef<React.ElementRef<typeof CardPlanRoot>,
         {...props}
         ref={ref}
       >
-        <CardPlan.BackgroundBlob />
+        {/* <CardPlan.BackgroundBlob /> */}
         <CardPlan.Name>Premium</CardPlan.Name>
         <CardPlan.Price>12</CardPlan.Price>
         <CardPlan.FeaturesContainer className="pt-20">
@@ -57,9 +58,11 @@ export type CardPlanRootProps = React.ComponentPropsWithoutRef<"article"> & {
 export const CardPlanRoot = React.forwardRef<React.ElementRef<"article">, CardPlanRootProps>(
   function CardPlanRootComponent({ planName, highlight = null, children, className, ...props }, ref) {
     return (
-      <ContextCardPlanRoot.Provider value={{
-        planName
-      }}>
+      <ContextCardPlanRoot.Provider
+        value={{
+          planName,
+        }}
+      >
         <article
           {...props}
           className={cn(
@@ -111,17 +114,20 @@ export const CardPlanHighlight = React.forwardRef<React.ElementRef<"div">, CardP
 
 CardPlanHighlight.displayName = "CardPlanHighlight"
 
-export type CardPlanBackgroundBlobProps = React.ComponentPropsWithoutRef<"div"> & {}
+export type CardPlanBackgroundBlobProps = React.ComponentPropsWithoutRef<"div"> & {
+  bgColor: string
+}
 
 export const CardPlanBackgroundBlob = React.forwardRef<React.ElementRef<"div">, CardPlanBackgroundBlobProps>(
-  function CardPlanBackgroundBlobComponent({ className, ...props }, ref) {
+  function CardPlanBackgroundBlobComponent({ bgColor, style, className, ...props }, ref) {
     return (
       <div
         {...props}
         className={cn(
-          "absolute aspect-square h-[80rem] w-[80rem] translate-x-[-29rem] translate-y-[-69.7rem] rounded-full bg-[hsl(222.22deg_18.37%_18.18%)]",
+          "absolute aspect-square h-[80rem] w-[80rem] translate-x-[-29rem] translate-y-[-69.7rem] rounded-full bg-[var(--bg-color)]",
           className
         )}
+        style={{ "--bg-color": bgColor, ...style } as CSSProperties}
         ref={ref}
       />
     )
@@ -155,18 +161,18 @@ CardPlanButton.displayName = "CardPlanButton"
 
 export type CardPlanButtonContainerProps = React.ComponentPropsWithoutRef<"div">
 
-export const CardPlanButtonContainer = React.forwardRef<React.ElementRef<"div">, CardPlanButtonContainerProps>(
-  function CardPlanButtonContainerComponent({ className, ...props }, ref) {
-    return (
-      <div
-        ref={ref}
-        className={cn("flex justify-center pt-10", className)}
-        {...props}
-      />
-    )
-  }
-)
-
+export const CardPlanButtonContainer = React.forwardRef<
+  React.ElementRef<"div">,
+  CardPlanButtonContainerProps
+>(function CardPlanButtonContainerComponent({ className, ...props }, ref) {
+  return (
+    <div
+      ref={ref}
+      className={cn("flex justify-center pt-10", className)}
+      {...props}
+    />
+  )
+})
 
 export type CardPlanNameProps = React.ComponentPropsWithoutRef<"div"> & {
   children: React.ReactNode
@@ -278,19 +284,20 @@ export type CardPlanRootContainerProps = React.ComponentPropsWithoutRef<"div"> &
   userPlan: IUserPlanContext
 }
 
-export const CardPlanRootContainerProvider = React.forwardRef<React.ElementRef<"div">, CardPlanRootContainerProps>(
-  function CardPlanRootContainerComponent({ userPlan, className, ...props }, ref) {
-    return (
-      <UserPlanContext.Provider value={userPlan ?? null}>
-        <div
-          ref={ref}
-          className={cn("flex w-full justify-center gap-16", className)}
-          {...props}
-        />
-      </UserPlanContext.Provider>
-    )
-  }
-)
+export const CardPlanRootContainerProvider = React.forwardRef<
+  React.ElementRef<"div">,
+  CardPlanRootContainerProps
+>(function CardPlanRootContainerComponent({ userPlan, className, ...props }, ref) {
+  return (
+    <UserPlanContext.Provider value={userPlan ?? null}>
+      <div
+        ref={ref}
+        className={cn("flex w-full justify-center gap-16", className)}
+        {...props}
+      />
+    </UserPlanContext.Provider>
+  )
+})
 
 CardPlanBulletItem.displayName = "CardPlanBulletItem"
 
