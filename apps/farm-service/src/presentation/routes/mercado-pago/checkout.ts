@@ -19,8 +19,10 @@ import { RequestHandlerPresenter } from "~/presentation/presenters/RequestHandle
 import {
   MakePlanCommandProps,
   assignNewPlan,
-  createWebhookId,
   calculatePreviousPreapprovalId,
+  cancelAllPreapprovalsButCurrent,
+  checkShouldPersist,
+  createWebhookId,
   getApplicationPreapprovalById,
   getCurrentPreapprovalGatewayByPayerId,
   getCurrentPreapprovalRepo,
@@ -29,8 +31,6 @@ import {
   saveNewPreapproval,
   updatePreapproval,
   validatePlanCommand,
-  cancelAllPreapprovalsButCurrent,
-  checkShouldPersist,
 } from "~/presentation/routes/mercado-pago/checkout.utils"
 import { nice } from "~/utils/helpers"
 

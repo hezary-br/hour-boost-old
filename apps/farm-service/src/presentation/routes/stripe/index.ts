@@ -3,6 +3,7 @@ import { PlanAllNames } from "core"
 import { Router } from "express"
 import { Stripe } from "stripe"
 import { z } from "zod"
+import { ctxLog } from "~/application/use-cases/RestoreAccountManySessionsUseCase"
 import { env } from "~/env"
 import { prisma } from "~/infra/libs"
 import { validateBody } from "~/inline-middlewares/validate-payload"
@@ -12,13 +13,14 @@ import { Subscription } from "~/presentation/routes/stripe/Subscription"
 import { appStripePlans } from "~/presentation/routes/stripe/plans"
 import { only } from "~/utils/helpers"
 
-console.log({ STRIPE_PUBLISHABLE_KEY: env.STRIPE_PUBLISHABLE_KEY })
 export const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
   apiVersion: "2024-04-10",
   httpClient: Stripe.createFetchHttpClient(),
 })
 
 export const router_checkout: Router = Router()
+
+export type StripeSubscriptions = Stripe.Response<Stripe.ApiList<Stripe.Subscription>>
 
 router_checkout.get("/subscription/notification/:subscriptionNotificationId", async (req, res) => {
   const { subscriptionNotificationId } = req.params
@@ -48,12 +50,33 @@ router_checkout.post("/plan/preapproval", ClerkExpressRequireAuth(), async (req,
   return RequestHandlerPresenter.handle(presentation, res)
 })
 
+type CreateSubscriptionCheckoutSessionByEmailProps = {
+  email: string
+  userId: string
+  planName: PlanAllNames
+}
+
+export async function createSubscriptionCheckoutSessionByEmail({
+  email,
+  planName,
+  userId,
+}: CreateSubscriptionCheckoutSessionByEmailProps) {
+  const customer = await getStripeCustomerByEmail({ email })
+  if (!customer) throw new Error(`No customer found with email ${email}`)
+
+  return createSubscriptionCheckoutSession({
+    customerId: customer.id,
+    planName,
+    userId,
+  })
+}
+
 type CreateStripeCustomerProps = {
   email: string
   name: string
 }
 
-export async function createStripeCustomer({ email, name }: CreateStripeCustomerProps) {
+async function createStripeCustomer({ email, name }: CreateStripeCustomerProps) {
   return stripe.customers.create({
     email,
     name,
@@ -65,7 +88,7 @@ type GetStripeCustomerByEmailProps = {
   email: string
 }
 
-export async function getStripeCustomerByEmail({ email }: GetStripeCustomerByEmailProps) {
+async function getStripeCustomerByEmail({ email }: GetStripeCustomerByEmailProps) {
   const customersWithThisEmail = await stripe.customers.list({
     email,
   })
@@ -167,6 +190,21 @@ export async function getStripeSubscriptions(customerId: string) {
   })
 }
 
+export async function getStripeCurrentSubscription(customerId: string) {
+  const subs = await stripe.subscriptions.list({
+    customer: customerId,
+    limit: 1,
+  })
+
+  return subs.data[0] ?? null
+}
+
+function extractCurrentSubscriptionOrNull(subscriptions: StripeSubscriptions) {
+  const foundSubscription = subscriptions.data.at(0)
+  if (!foundSubscription) return null
+  return foundSubscription
+}
+
 export async function createStripeSubcriptionIfDontExists(customer: StripeCustomer) {
   const currentSubscription = await getStripeSubscriptions(customer.id)
   const foundSubscription = currentSubscription.data.at(0)
@@ -177,27 +215,6 @@ export async function createStripeSubcriptionIfDontExists(customer: StripeCustom
     })
   const subscription = await makeStripeSubcription(customer)
   return only({ code: "CREATED", subscription })
-}
-
-type CreateSubscriptionCheckoutSessionByEmailProps = {
-  email: string
-  userId: string
-  planName: PlanAllNames
-}
-
-export async function createSubscriptionCheckoutSessionByEmail({
-  email,
-  planName,
-  userId,
-}: CreateSubscriptionCheckoutSessionByEmailProps) {
-  const customer = await getStripeCustomerByEmail({ email })
-  if (!customer) throw new Error(`No customer found with email ${email}`)
-
-  return createSubscriptionCheckoutSession({
-    customerId: customer.id,
-    planName,
-    userId,
-  })
 }
 
 export function makeStringId() {
@@ -214,25 +231,122 @@ export async function createSubscriptionCheckoutSession({
   customerId,
   userId,
   planName,
-}: CreateSubscriptionCheckoutSessionProps) {
+}: CreateSubscriptionCheckoutSessionProps): Promise<{ url: string }> {
   const { priceId } = appStripePlans[planName]
 
-  const { id_subscription } = await prisma.subscriptionApprovedNotification.create({
-    data: {
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      id_subscription: makeStringId(),
-      user_id: userId,
-      planName,
+  const { id_subscription: subscriptionIdNotification } =
+    await prisma.subscriptionApprovedNotification.create({
+      data: {
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        id_subscription: makeStringId(),
+        user_id: userId,
+        planName,
+      },
+    })
+
+  const subscription = await getStripeCurrentSubscription(customerId)
+  const currentSubscriptionId = extractId(subscription)
+
+  let url
+  if (!currentSubscriptionId) {
+    ctxLog("NSTH: Tried to update a subscription, but didn't find any to this user, had to create one.")
+    const session = await createCheckoutSubscriptionSession({
+      customerId,
+      subscriptionIdNotification,
+      priceId,
+      userId,
+    })
+
+    url = session.url
+  } else {
+    const currentSubscription = await stripe.subscriptionItems.list({
+      subscription: subscription.id,
+      limit: 1,
+    })
+
+    const session = await createBillingPortalSession({
+      customerId,
+      subscriptionIdNotification,
+      priceId,
+      subscriptionId: currentSubscriptionId,
+      subscriptionItemId: currentSubscription.data[0].id,
+    })
+    url = session.url
+  }
+
+  if (!url) {
+    throw new Error("No URL for this session.")
+  }
+
+  return { url }
+}
+
+function extractId(subscription: Stripe.Subscription | undefined | null) {
+  return subscription?.id ?? null
+}
+
+type CreateBillingPortalSessionProps = {
+  customerId: string
+  priceId: string
+  subscriptionId: string
+  subscriptionIdNotification: string
+  subscriptionItemId: string
+}
+
+async function createBillingPortalSession({
+  customerId,
+  subscriptionIdNotification,
+  priceId,
+  subscriptionId,
+  subscriptionItemId,
+}: CreateBillingPortalSessionProps) {
+  return stripe.billingPortal.sessions.create({
+    customer: customerId,
+    return_url: "".concat(env.CLIENT_URL).concat("/dashboard"),
+    flow_data: {
+      type: "subscription_update_confirm",
+      after_completion: {
+        type: "redirect",
+        redirect: {
+          return_url: ""
+            .concat(env.CLIENT_URL)
+            .concat(`/dashboard?plan_subscribed=${subscriptionIdNotification}`),
+        },
+      },
+      subscription_update_confirm: {
+        subscription: subscriptionId,
+        items: [
+          {
+            id: subscriptionItemId,
+            price: priceId,
+            quantity: 1,
+          },
+        ],
+      },
     },
   })
+}
 
-  const session = await stripe.checkout.sessions.create({
+type CreateCheckoutSubscriptionSessionProps = {
+  userId: string
+  customerId: string
+  subscriptionIdNotification: string
+  priceId: string
+}
+
+async function createCheckoutSubscriptionSession({
+  userId,
+  customerId,
+  subscriptionIdNotification,
+  priceId,
+}: CreateCheckoutSubscriptionSessionProps) {
+  return stripe.checkout.sessions.create({
     payment_method_types: ["card"],
     mode: "subscription",
     customer: customerId,
-    client_reference_id: JSON.stringify({ userId, id_subscription }),
-    success_url: "".concat(env.CLIENT_URL).concat(`/dashboard?plan_subscribed=${id_subscription}`),
+    client_reference_id: JSON.stringify({ userId, subscriptionIdNotification }),
+    success_url: "".concat(env.CLIENT_URL).concat(`/dashboard?plan_subscribed=${subscriptionIdNotification}`),
     cancel_url: "".concat(env.CLIENT_URL).concat("/plans?fail=true"),
     line_items: [
       {
@@ -241,12 +355,4 @@ export async function createSubscriptionCheckoutSession({
       },
     ],
   })
-
-  if (!session.url) {
-    throw new Error("No URL for this session.")
-  }
-
-  return {
-    url: session.url,
-  }
 }

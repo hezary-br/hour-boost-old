@@ -127,7 +127,7 @@ export class AutoRestartCron implements IAutoRestartCron {
           }
         }
 
-        if(errorRestoringSession.code === "cluster.farmWithAccount()::UNKNOWN-CLIENT-ERROR") {
+        if (errorRestoringSession.code === "cluster.farmWithAccount()::UNKNOWN-CLIENT-ERROR") {
           errorRestoringSession.payload.eresult
         }
 

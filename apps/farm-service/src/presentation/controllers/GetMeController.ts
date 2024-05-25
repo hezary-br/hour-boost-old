@@ -20,7 +20,7 @@ export class GetMeController implements IGetMeController {
         await this.createUserUseCase.execute(userId)
         created = true
       }
-    const userSession = await this.usersDAO.getByID(userId)
+      const userSession = await this.usersDAO.getByID(userId)
       if (!userSession)
         return bad(
           Fail.create("USER-SESSION-NOT-FOUND", 404, {

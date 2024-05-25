@@ -19,7 +19,7 @@ export class AddUsageTimeToPlanUseCase implements IAddUsageTimeToPlanUseCase {
     private readonly usersRepository: UsersRepository,
     private readonly flushUpdateSteamAccountDomain: FlushUpdateSteamAccountDomain,
     private readonly steamAccountClientStateCacheRepository: SteamAccountClientStateCacheRepository,
-    private readonly planRepository: PlanRepository,
+    private readonly planRepository: PlanRepository
   ) {}
 
   async execute({ mutatingUserId, usageTimeInSeconds }: AddUsageTimeToPlanUseCasePayload) {
