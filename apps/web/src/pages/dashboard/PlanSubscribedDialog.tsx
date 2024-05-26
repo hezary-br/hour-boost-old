@@ -174,6 +174,16 @@ export const PlanSubscribedDialog = React.forwardRef<React.ElementRef<"div">, Pl
       },
     })
 
+    const deleteNotification = useMutation({
+      async mutationFn() {
+        await api.delete(`/subscription/notification/${planSubscribedId}`, {
+          headers: {
+            Authorization: `Bearer ${await getToken()}`,
+          },
+        })
+      },
+    })
+
     const q = useQuery({
       queryKey: ["PLAN_SUBSCRIBED", planSubscribedId],
       enabled: gotPlan,
@@ -201,6 +211,7 @@ export const PlanSubscribedDialog = React.forwardRef<React.ElementRef<"div">, Pl
 
     function proceed() {
       const cleanUrl = cleanSubscribedParam(router.asPath)
+      deleteNotification.mutate()
       router.replace(...cleanUrl)
       setMounted(false)
     }
