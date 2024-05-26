@@ -108,6 +108,16 @@ router_webhook.post("/stripe/webhook", express.raw({ type: "application/json" })
   return res.sendStatus(200)
 })
 
+router_checkout.delete("/subscription/notification/:subscriptionNotificationId", async (req, res) => {
+  const { subscriptionNotificationId } = req.params
+
+  await prisma.subscriptionApprovedNotification.delete({
+    where: { id_subscription: subscriptionNotificationId },
+  })
+
+  return res.status(200).json({ code: "DELETED-SUCCESSFULLY" })
+})
+
 router_checkout.get("/subscription/notification/:subscriptionNotificationId", async (req, res) => {
   const { subscriptionNotificationId } = req.params
 
