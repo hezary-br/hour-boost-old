@@ -22,7 +22,12 @@ const i = makeTestInstances(
 )
 
 const autoRestarterScheduler = new AutoRestarterScheduler()
-const createUser = new CreateUserUseCase(i.usersRepository, i.userAuthentication, i.usersClusterStorage)
+const createUser = new CreateUserUseCase(
+  i.usersRepository,
+  i.userAuthentication,
+  i.usersClusterStorage,
+  i.initUserGateway
+)
 
 const addSteamAccount = new AddSteamAccount(i.usersRepository, i.idGenerator)
 const addSteamAccountUseCase = new AddSteamAccountUseCase(

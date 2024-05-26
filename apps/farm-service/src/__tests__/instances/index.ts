@@ -29,6 +29,7 @@ import { FarmGamesUseCase } from "~/application/use-cases/FarmGamesUseCase"
 import { SetMaxSteamAccountsUseCase } from "~/application/use-cases/SetMaxSteamAccountsUseCase"
 import { StopFarmUseCase } from "~/application/use-cases/StopFarmUseCase"
 import { makeFarmGames } from "~/application/use-cases/__tests_helpers"
+import { InitUserGatewayMemory } from "~/contracts/InitUserGatewayMemory"
 import { AutoRestarterScheduler } from "~/domain/cron"
 import { PlanService } from "~/domain/services/PlanService"
 import { UserService } from "~/domain/services/UserService"
@@ -139,8 +140,14 @@ export function makeTestInstances(props?: MakeTestInstancesProps, ci?: CustomIns
     publisher
   )
   const userAuthentication = new UserAuthenticationInMemory()
+  const initUserGateway = new InitUserGatewayMemory()
   const sacFactory = makeSACFactory(validSteamAccounts, publisher)
-  const createUserUseCase = new CreateUserUseCase(usersRepository, userAuthentication, usersClusterStorage)
+  const createUserUseCase = new CreateUserUseCase(
+    usersRepository,
+    userAuthentication,
+    usersClusterStorage,
+    initUserGateway
+  )
   const removeSteamAccount = new RemoveSteamAccount(
     allUsersClientsStorage,
     usersClusterStorage,
@@ -337,6 +344,7 @@ export function makeTestInstances(props?: MakeTestInstancesProps, ci?: CustomIns
     checkSteamAccountOwnerStatusUseCase,
     restoreAccountSessionUseCase,
     addUsageTimeToPlanUseCase,
+    initUserGateway,
     changeUserPlanUseCase,
     redis,
     planService,

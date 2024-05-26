@@ -10,6 +10,7 @@ import { token } from "~/infra/singletons/token-factory"
 import { GetMeController } from "~/presentation/controllers"
 import {
   createMeController,
+  initUserGateway,
   tokenService,
   userAuthentication,
   usersClusterStorage,
@@ -18,7 +19,12 @@ import {
 } from "~/presentation/instances"
 
 export const query_routerUser: Router = Router()
-export const createUser = new CreateUserUseCase(usersRepository, userAuthentication, usersClusterStorage)
+export const createUser = new CreateUserUseCase(
+  usersRepository,
+  userAuthentication,
+  usersClusterStorage,
+  initUserGateway
+)
 export const getUser = new GetUser(usersDAO)
 
 query_routerUser.head("/me", ClerkExpressWithAuth(), async (req, res) => {
