@@ -26,7 +26,12 @@ let i = makeTestInstances({
 
 async function setupInstances(props?: MakeTestInstancesProps, customInstances?: CustomInstances) {
   i = makeTestInstances(props, customInstances)
-  const createUser = new CreateUserUseCase(i.usersRepository, i.userAuthentication, i.usersClusterStorage)
+  const createUser = new CreateUserUseCase(
+    i.usersRepository,
+    i.userAuthentication,
+    i.usersClusterStorage,
+    i.initUserGateway
+  )
   await createUser.execute(s.me.userId)
   await i.addSteamAccountInternally(s.me.userId, s.me.accountName, password)
   const restoreAccountConnectionUseCase = new RestoreAccountConnectionUseCase(

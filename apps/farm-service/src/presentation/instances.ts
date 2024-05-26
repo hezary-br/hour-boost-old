@@ -27,6 +27,7 @@ import { RetrieveSessionListUseCase } from "~/application/use-cases/RetrieveSess
 import { SetMaxSteamAccountsUseCase } from "~/application/use-cases/SetMaxSteamAccountsUseCase"
 import { StopFarmUseCase } from "~/application/use-cases/StopFarmUseCase"
 import { UnbanUserUseCase } from "~/application/use-cases/UnbanUserUseCase"
+import { InitUserGatewayStripe } from "~/contracts/InitUserGatewayStripe"
 import type { SteamBuilder } from "~/contracts/SteamBuilder"
 import { AutoRestarterScheduler } from "~/domain/cron"
 import {
@@ -100,6 +101,7 @@ export const usersRepository = new UsersRepositoryDatabase(prisma)
 export const preapprovalRepository = new PreapprovalRepositoryDatabase(prisma)
 export const preapprovalDAO = new PreapprovalDAODatabase(prisma)
 export const idGenerator = new IDGeneratorUUID()
+export const initUserGateway = new InitUserGatewayStripe()
 
 export const sacBuilder = new SteamAccountClientBuilder(emitterBuilder, publisher, steamUserBuilder)
 
@@ -117,6 +119,7 @@ export const userClusterBuilder = new UserClusterBuilder(
   steamAccountsRepository
 )
 export const usersClusterStorage = new UsersSACsFarmingClusterStorage(userClusterBuilder)
+console.log({ FarmGamesUseCase })
 export const farmGamesUseCase = new FarmGamesUseCase(usersClusterStorage)
 export const allUsersClientsStorage = new AllUsersClientsStorage(
   sacBuilder,
@@ -237,7 +240,8 @@ export const scheduleAutoRestartUseCase = new ScheduleAutoRestartUseCase(
 export const createUserUseCase = new CreateUserUseCase(
   usersRepository,
   userAuthentication,
-  usersClusterStorage
+  usersClusterStorage,
+  initUserGateway
 )
 export const retrieveSessionAccountsUseCase = new RetrieveSessionListUseCase(
   steamAccountClientStateCacheRepository

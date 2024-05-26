@@ -1,32 +1,28 @@
 import { ClerkExpressRequireAuth } from "@clerk/clerk-sdk-node"
 import { PlanAllNames } from "core"
-import { Router } from "express"
-import express from "express"
+import express, { Router } from "express"
 import { Stripe } from "stripe"
 import { z } from "zod"
 import { ALS_username, ctxLog } from "~/application/use-cases/RestoreAccountManySessionsUseCase"
 import { env } from "~/env"
 import { prisma } from "~/infra/libs"
+import { stripe } from "~/infra/services/stripe"
 import { validateBody } from "~/inline-middlewares/validate-payload"
-import {
-  changeUserPlanUseCase,
-  purchaseNewPlanController,
-  usersDAO,
-  usersRepository,
-} from "~/presentation/instances"
+import { changeUserPlanUseCase, purchaseNewPlanController, usersRepository } from "~/presentation/instances"
 import { RequestHandlerPresenter } from "~/presentation/presenters/RequestHandlerPresenter"
 import { Subscription } from "~/presentation/routes/stripe/Subscription"
+import {
+  createStripeCustomer,
+  createSubscriptionStripe,
+  getStripeCustomerByEmail,
+  getStripeSubscriptions,
+} from "~/presentation/routes/stripe/methods"
 import {
   appStripePlansPlanNameKey,
   appStripePlansPriceIdKey as mapPlanNameByStripePriceIdKey,
 } from "~/presentation/routes/stripe/plans"
 import { upsertActualSubscription } from "~/presentation/routes/stripe/utils"
-import { only } from "~/utils/helpers"
-
-export const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
-  apiVersion: "2024-04-10",
-  httpClient: Stripe.createFetchHttpClient(),
-})
+import { bad, only } from "~/utils/helpers"
 
 export const router_checkout: Router = Router()
 export const router_webhook: Router = Router()
@@ -56,7 +52,6 @@ router_webhook.post("/stripe/webhook", express.raw({ type: "application/json" })
       const stripePriceId = event.data.object.items.data[0].price.id
       let { user_email } = event.data.object.metadata
 
-      ctxLog({ metadata: event.data.object.metadata })
       if (!user_email) {
         const customer = await getStripeCustomerById(stripeCustomerId)
         if (!customer?.email) {
@@ -64,7 +59,6 @@ router_webhook.post("/stripe/webhook", express.raw({ type: "application/json" })
           return res.sendStatus(500)
         }
         user_email = customer.email
-        ctxLog({ customerEmail: customer.email })
       }
 
       const user = await usersRepository.getByEmail(user_email)
@@ -106,8 +100,6 @@ router_webhook.post("/stripe/webhook", express.raw({ type: "application/json" })
           )
           return res.sendStatus(404)
         }
-
-        ctxLog({ actualSubscription })
       })
       break
     default:
@@ -166,45 +158,6 @@ export async function createSubscriptionCheckoutSessionByEmail({
   })
 }
 
-type CreateStripeCustomerProps = {
-  email: string
-  name: string
-}
-
-async function createStripeCustomer({ email, name }: CreateStripeCustomerProps) {
-  return stripe.customers.create({
-    email,
-    name,
-    metadata: { email },
-  })
-}
-
-type GetStripeCustomerByEmailProps = {
-  email: string
-}
-
-async function getStripeCustomerByEmail({ email }: GetStripeCustomerByEmailProps) {
-  const customersWithThisEmail = await stripe.customers.list({
-    email,
-  })
-
-  if (customersWithThisEmail.data.length > 1) {
-    throw new Error("Two customers with the same email.")
-  }
-
-  const foundCustomer = customersWithThisEmail.data.at(0)
-
-  if (!foundCustomer) {
-    return null
-  }
-
-  if (!foundCustomer.email) {
-    throw new Error("Customer with no email.")
-  }
-
-  return { ...foundCustomer, email: foundCustomer.email }
-}
-
 async function getStripeCustomerById(customerId: string) {
   const customer = await stripe.customers.retrieve(customerId)
   if (customer.deleted) return null
@@ -216,7 +169,7 @@ type CreateCustomerProps = {
   name: string
 }
 
-export async function getOrCreateCustomer({ email, name }: CreateCustomerProps) {
+async function getOrCreateCustomer({ email, name }: CreateCustomerProps) {
   const customersWithThisEmail = await getStripeCustomerByEmail({ email })
   if (customersWithThisEmail) return customersWithThisEmail
 
@@ -226,19 +179,6 @@ export async function getOrCreateCustomer({ email, name }: CreateCustomerProps) 
 }
 
 export type StripeCustomer = Awaited<ReturnType<typeof getOrCreateCustomer>>
-
-type CreateSubscriptionProps = {
-  customerId: string
-  planName: PlanAllNames
-}
-
-export async function createSubscriptionStripe({ customerId, planName }: CreateSubscriptionProps) {
-  const { priceId } = appStripePlansPlanNameKey[planName]
-  return await stripe.subscriptions.create({
-    customer: customerId,
-    items: [{ price: priceId }],
-  })
-}
 
 export async function updateUserDatabaseSubscription(subscription: Subscription) {
   return await prisma.subscriptionStripe.upsert({
@@ -265,10 +205,11 @@ export async function updateUserDatabaseSubscription(subscription: Subscription)
 }
 
 export async function makeStripeSubcription(customer: StripeCustomer) {
-  const subscriptionStripe = await createSubscriptionStripe({
+  const [error, subscriptionStripe] = await createSubscriptionStripe({
     customerId: customer.id,
     planName: "GUEST",
   })
+  if (error) return bad(error)
 
   const subscription = new Subscription({
     id: subscriptionStripe.id,
@@ -283,12 +224,6 @@ export async function makeStripeSubcription(customer: StripeCustomer) {
     subscriptionStripe: subscriptionStripe,
     subscription,
   }
-}
-
-export async function getStripeSubscriptions(customerId: string) {
-  return await stripe.subscriptions.list({
-    customer: customerId,
-  })
 }
 
 export async function getStripeCurrentSubscription(customerId: string) {
@@ -306,8 +241,9 @@ function extractCurrentSubscriptionOrNull(subscriptions: StripeSubscriptions) {
   return foundSubscription
 }
 
-export async function createStripeSubcriptionIfDontExists(customer: StripeCustomer) {
-  const currentSubscription = await getStripeSubscriptions(customer.id)
+async function createStripeSubcriptionIfDontExists(customer: StripeCustomer) {
+  const [error, currentSubscription] = await getStripeSubscriptions(customer.id)
+  if (error) return bad(error)
   const foundSubscription = currentSubscription.data.at(0)
   if (!!foundSubscription)
     return only({
