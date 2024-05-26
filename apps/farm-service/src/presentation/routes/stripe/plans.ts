@@ -6,7 +6,7 @@ export type AppStripePlan<TName extends PlanAllNames = PlanAllNames> = {
   name: TName
 }
 
-export const appStripePlans: {
+export const appStripePlansPlanNameKey: {
   [K in PlanAllNames]: AppStripePlan<K>
 } = {
   GUEST: {
@@ -25,4 +25,13 @@ export const appStripePlans: {
     priceId: env.STRIPE_SUBSCRIPTIONS_PLAN_ID_DIAMOND,
     name: "DIAMOND",
   },
+}
+
+export const appStripePlansPriceIdKey: {
+  [K: string]: PlanAllNames
+} = {
+  [env.STRIPE_SUBSCRIPTIONS_PLAN_ID_GUEST]: "GUEST",
+  [env.STRIPE_SUBSCRIPTIONS_PLAN_ID_SILVER]: "SILVER",
+  [env.STRIPE_SUBSCRIPTIONS_PLAN_ID_GOLD]: "GOLD",
+  [env.STRIPE_SUBSCRIPTIONS_PLAN_ID_DIAMOND]: "DIAMOND",
 }
