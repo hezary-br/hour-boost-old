@@ -8,10 +8,19 @@ import { ALS_username, ctxLog } from "~/application/use-cases/RestoreAccountMany
 import { env } from "~/env"
 import { prisma } from "~/infra/libs"
 import { validateBody } from "~/inline-middlewares/validate-payload"
-import { purchaseNewPlanController } from "~/presentation/instances"
+import {
+  changeUserPlanUseCase,
+  purchaseNewPlanController,
+  usersDAO,
+  usersRepository,
+} from "~/presentation/instances"
 import { RequestHandlerPresenter } from "~/presentation/presenters/RequestHandlerPresenter"
 import { Subscription } from "~/presentation/routes/stripe/Subscription"
-import { appStripePlans } from "~/presentation/routes/stripe/plans"
+import {
+  appStripePlansPlanNameKey,
+  appStripePlansPriceIdKey as mapPlanNameByStripePriceIdKey,
+} from "~/presentation/routes/stripe/plans"
+import { upsertActualSubscription } from "~/presentation/routes/stripe/utils"
 import { only } from "~/utils/helpers"
 
 export const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
@@ -58,37 +67,46 @@ router_webhook.post("/stripe/webhook", express.raw({ type: "application/json" })
         ctxLog({ customerEmail: customer.email })
       }
 
-      const actualSubscription = await prisma.subscriptionStripe.upsert({
-        where: { user_email },
-        create: {
-          createdAt: new Date(),
-          updatedAt: new Date(),
+      const user = await usersRepository.getByEmail(user_email)
+      if (!user) return res.sendStatus(404)
+      await ALS_username.run(user.username, async () => {
+        const [errorUpserting, actualSubscription] = await upsertActualSubscription({
           id_subscription,
           stripeCustomerId,
           stripePriceId,
           stripeStatus,
           user_email,
-        },
-        update: {
-          id_subscription,
-          stripeCustomerId,
-          stripePriceId,
-          stripeStatus,
-          updatedAt: new Date(),
-        },
-        include: { user: { select: { username: true } } },
-      })
-      if (!actualSubscription.user) {
-        console.log(
-          "NSTH: Webhook received and tried to update user subscription of a user that was not found.",
-          {
-            actualSubscription,
-          }
-        )
-        return res.sendStatus(404)
-      }
+        })
 
-      ALS_username.run(actualSubscription.user.username, () => {
+        if (errorUpserting) {
+          ctxLog(errorUpserting)
+          return res.sendStatus(errorUpserting.httpStatus)
+        }
+
+        const newPlanName = mapPlanNameByStripePriceIdKey[stripePriceId]
+
+        const [errorChangingPlan] = await changeUserPlanUseCase.execute({
+          newPlanName,
+          user,
+        })
+
+        if (errorChangingPlan) {
+          ctxLog(errorChangingPlan)
+          return res.sendStatus(errorChangingPlan.httpStatus)
+        }
+
+        if (!actualSubscription.user) {
+          console.log(
+            "NSTH: Webhook received and tried to update user subscription of a user that was not found.",
+            {
+              user_email,
+              actualSubscription,
+              user,
+            }
+          )
+          return res.sendStatus(404)
+        }
+
         ctxLog({ actualSubscription })
       })
       break
@@ -215,7 +233,7 @@ type CreateSubscriptionProps = {
 }
 
 export async function createSubscriptionStripe({ customerId, planName }: CreateSubscriptionProps) {
-  const { priceId } = appStripePlans[planName]
+  const { priceId } = appStripePlansPlanNameKey[planName]
   return await stripe.subscriptions.create({
     customer: customerId,
     items: [{ price: priceId }],
@@ -317,7 +335,7 @@ export async function createSubscriptionCheckoutSession({
   planName,
   email,
 }: CreateSubscriptionCheckoutSessionProps): Promise<{ url: string }> {
-  const { priceId } = appStripePlans[planName]
+  const { priceId } = appStripePlansPlanNameKey[planName]
 
   const { id_subscription: subscriptionIdNotification } =
     await prisma.subscriptionApprovedNotification.create({

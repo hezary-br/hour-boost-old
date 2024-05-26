@@ -21,6 +21,11 @@ import { toPostgreSQL, toSQLDate } from "~/utils/toSQL"
 export class UsersRepositoryDatabase implements UsersRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
+  async getByEmail(email: string): Promise<User | null> {
+    const dbUser = await prismaGetUser(this.prisma, { email })
+    return dbUser ? prismaUserToDomain(dbUser) : null
+  }
+
   async findMany(): Promise<User[]> {
     const users = await prismaFindMany(this.prisma)
     const usersDomain = prismaUserListToDomain(users)
@@ -199,7 +204,7 @@ export function prismaUserToDomain(dbUser: PrismaGetUser) {
   })
 }
 
-export type IGetUserProps = { userId: string } | { username: string }
+export type IGetUserProps = { userId: string } | { username: string } | { email: string }
 export type PrismaFindMany = Awaited<ReturnType<typeof prismaFindMany>>
 export type PrismaGetUser = Awaited<ReturnType<typeof prismaGetUser>>
 export type PrismaPlan = NonNullable<PrismaGetUser>["plan"]
@@ -210,9 +215,13 @@ export function prismaGetUser(prisma: PrismaClient, props: IGetUserProps) {
         ? {
             username: props.username,
           }
-        : {
-            id_user: props.userId,
-          },
+        : "userId" in props
+          ? {
+              id_user: props.userId,
+            }
+          : {
+              email: props.email,
+            },
     include: {
       plan: { include: { usages: true, customPlan: true } },
       purchases: true,
