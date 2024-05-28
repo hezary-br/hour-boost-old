@@ -1,6 +1,6 @@
 import { saferAsync } from "@hourboost/utils"
 import { Fail, PlanAllNames, User } from "core"
-import { stripe } from "~/infra/services/stripe"
+import Stripe from "stripe"
 import { appStripePlansPlanNameKey } from "~/presentation/routes/stripe/plans"
 import { bad, nice } from "~/utils/helpers"
 
@@ -9,7 +9,10 @@ type CreateSubscriptionProps = {
   planName: PlanAllNames
 }
 
-export async function createSubscriptionStripe({ customerId, planName }: CreateSubscriptionProps) {
+export async function createSubscriptionStripe(
+  stripe: Stripe,
+  { customerId, planName }: CreateSubscriptionProps
+) {
   const { priceId } = appStripePlansPlanNameKey[planName]
   const [error, result] = await saferAsync(() =>
     stripe.subscriptions.create({
@@ -21,24 +24,11 @@ export async function createSubscriptionStripe({ customerId, planName }: CreateS
   return nice(result)
 }
 
-type CreateStripeCustomerProps = {
-  email: string
-  name: string
-}
-
-export async function createStripeCustomer({ email, name }: CreateStripeCustomerProps) {
-  return await stripe.customers.create({
-    email,
-    name,
-    metadata: { email },
-  })
-}
-
 type GetStripeCustomerByEmailProps = {
   email: string
 }
 
-export async function getStripeCustomerByEmail({ email }: GetStripeCustomerByEmailProps) {
+export async function getStripeCustomerByEmail(stripe: Stripe, { email }: GetStripeCustomerByEmailProps) {
   const customersWithThisEmail = await stripe.customers.list({
     email,
   })
@@ -60,7 +50,7 @@ export async function getStripeCustomerByEmail({ email }: GetStripeCustomerByEma
   return { ...foundCustomer, email: foundCustomer.email }
 }
 
-export async function getStripeSubscriptions(customerId: string) {
+export async function getStripeSubscriptions(stripe: Stripe, customerId: string) {
   const [error, subscriptions] = await saferAsync(() =>
     stripe.subscriptions.list({
       customer: customerId,

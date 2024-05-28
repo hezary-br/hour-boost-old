@@ -25,17 +25,14 @@ export class PurchaseNewPlanUseCase implements IPurchaseNewPlanUseCase {
         return bad(Fail.create("ATTEMPT-TO-ASSIGN-SAME-PLAN", 403, { userId, planName, userPlan: user.plan }))
       }
 
-      const [errorCreatingCheckout, checkout] = await saferAsync(() =>
-        createSubscriptionCheckoutSessionByEmail({
-          email: user.email,
-          planName,
-          userId,
-        })
-      )
-
+      const [errorCreatingCheckout, checkout] = await createSubscriptionCheckoutSessionByEmail({
+        email: user.email,
+        planName,
+        userId,
+        name: user.username,
+      })
       if (errorCreatingCheckout) {
-        console.log({ errorCreatingCheckout })
-        return bad(Fail.create("ERROR-CREATING-CHECKOUT", 400, { errorCreatingCheckout }))
+        return bad(errorCreatingCheckout)
       }
 
       return nice({ checkoutUrl: checkout.url })

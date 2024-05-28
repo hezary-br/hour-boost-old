@@ -1,8 +1,9 @@
 import { ClerkExpressRequireAuth } from "@clerk/clerk-sdk-node"
-import { PlanAllNames } from "core"
+import { saferAsync } from "@hourboost/utils"
+import { Fail, GetResult, PlanAllNames } from "core"
 import express, { Router } from "express"
 import { Stripe } from "stripe"
-import { z } from "zod"
+import { custom, z } from "zod"
 import { ALS_username, ctxLog } from "~/application/use-cases/RestoreAccountManySessionsUseCase"
 import { env } from "~/env"
 import { prisma } from "~/infra/libs"
@@ -12,7 +13,6 @@ import { changeUserPlanUseCase, purchaseNewPlanController, usersRepository } fro
 import { RequestHandlerPresenter } from "~/presentation/presenters/RequestHandlerPresenter"
 import { Subscription } from "~/presentation/routes/stripe/Subscription"
 import {
-  createStripeCustomer,
   createSubscriptionStripe,
   getStripeCustomerByEmail,
   getStripeSubscriptions,
@@ -22,7 +22,7 @@ import {
   appStripePlansPriceIdKey as mapPlanNameByStripePriceIdKey,
 } from "~/presentation/routes/stripe/plans"
 import { upsertActualSubscription } from "~/presentation/routes/stripe/utils"
-import { bad, only } from "~/utils/helpers"
+import { bad, nice, only } from "~/utils/helpers"
 
 export const router_checkout: Router = Router()
 export const router_webhook: Router = Router()
@@ -149,6 +149,7 @@ router_checkout.post("/plan/preapproval", ClerkExpressRequireAuth(), async (req,
 type CreateSubscriptionCheckoutSessionByEmailProps = {
   email: string
   userId: string
+  name: string
   planName: PlanAllNames
 }
 
@@ -156,16 +157,26 @@ export async function createSubscriptionCheckoutSessionByEmail({
   email,
   planName,
   userId,
+  name,
 }: CreateSubscriptionCheckoutSessionByEmailProps) {
-  const customer = await getStripeCustomerByEmail({ email })
-  if (!customer) throw new Error(`No customer found with email ${email}`)
+  let customerId
+  const customer = await getStripeCustomerByEmail(stripe, { email })
+  if (!customer) {
+    const [error, customerCreated] = await createStripeCustomer(stripe, { email, name })
+    if (error) return bad(error)
+    customerId = customerCreated.id
+  } else {
+    customerId = customer.id
+  }
 
-  return createSubscriptionCheckoutSession({
-    customerId: customer.id,
+  const { url } = await createSubscriptionCheckoutSession({
+    customerId,
     planName,
     userId,
     email,
   })
+
+  return nice({ url })
 }
 
 async function getStripeCustomerById(customerId: string) {
@@ -179,16 +190,36 @@ type CreateCustomerProps = {
   name: string
 }
 
-async function getOrCreateCustomer({ email, name }: CreateCustomerProps) {
-  const customersWithThisEmail = await getStripeCustomerByEmail({ email })
-  if (customersWithThisEmail) return customersWithThisEmail
+export async function getOrCreateCustomer({ email, name }: CreateCustomerProps) {
+  const customersWithThisEmail = await getStripeCustomerByEmail(stripe, { email })
+  if (customersWithThisEmail) return nice(customersWithThisEmail)
 
-  const customerCreated = await createStripeCustomer({ email, name })
+  const [error, customerCreated] = await createStripeCustomer(stripe, { email, name })
+  if (error) return bad(error)
   if (!customerCreated.email) throw new Error("Customer with no email.")
-  return { ...customerCreated, email: customerCreated.email }
+  return nice({ ...customerCreated, email: customerCreated.email })
 }
 
-export type StripeCustomer = Awaited<ReturnType<typeof getOrCreateCustomer>>
+type CreateStripeCustomerProps = {
+  email: string
+  name: string
+}
+
+async function createStripeCustomer(stripe: Stripe, { email, name }: CreateStripeCustomerProps) {
+  const [error, result] = await saferAsync(() =>
+    stripe.customers.create({
+      email,
+      name,
+      metadata: { email },
+    })
+  )
+  if (error) {
+    return bad(Fail.create("ERROR-CREATING-USER", 400, { error }))
+  }
+  return nice(result)
+}
+
+export type StripeCustomer = GetResult<typeof getOrCreateCustomer>
 
 export async function updateUserDatabaseSubscription(subscription: Subscription) {
   return await prisma.subscriptionStripe.upsert({
@@ -215,7 +246,7 @@ export async function updateUserDatabaseSubscription(subscription: Subscription)
 }
 
 export async function makeStripeSubcription(customer: StripeCustomer) {
-  const [error, subscriptionStripe] = await createSubscriptionStripe({
+  const [error, subscriptionStripe] = await createSubscriptionStripe(stripe, {
     customerId: customer.id,
     planName: "GUEST",
   })
@@ -252,7 +283,7 @@ function extractCurrentSubscriptionOrNull(subscriptions: StripeSubscriptions) {
 }
 
 async function createStripeSubcriptionIfDontExists(customer: StripeCustomer) {
-  const [error, currentSubscription] = await getStripeSubscriptions(customer.id)
+  const [error, currentSubscription] = await getStripeSubscriptions(stripe, customer.id)
   if (error) return bad(error)
   const foundSubscription = currentSubscription.data.at(0)
   if (!!foundSubscription)
