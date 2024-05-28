@@ -61,6 +61,7 @@ import {
 } from "~/infra/repository"
 import { PreapprovalRepositoryDatabase } from "~/infra/repository/PreapprovalRepositoryDatabase"
 import { ClerkAuthentication } from "~/infra/services"
+import { stripe } from "~/infra/services/stripe"
 import { AddSteamGuardCodeController } from "~/presentation/controllers"
 import { CreateMeController } from "~/presentation/controllers/CreateMeController"
 import { PurchaseNewPlanController } from "~/presentation/controllers/PurchaseNewPlanController"
@@ -100,8 +101,8 @@ export const userAuthentication = new ClerkAuthentication(clerkClient)
 export const usersRepository = new UsersRepositoryDatabase(prisma)
 export const preapprovalRepository = new PreapprovalRepositoryDatabase(prisma)
 export const preapprovalDAO = new PreapprovalDAODatabase(prisma)
+export const initUserGateway = new InitUserGatewayStripe(stripe)
 export const idGenerator = new IDGeneratorUUID()
-export const initUserGateway = new InitUserGatewayStripe()
 
 export const sacBuilder = new SteamAccountClientBuilder(emitterBuilder, publisher, steamUserBuilder)
 

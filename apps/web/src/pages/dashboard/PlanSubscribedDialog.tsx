@@ -4,146 +4,16 @@ import { Button } from "@/components/ui/button"
 import { api } from "@/lib/axios"
 import { cn } from "@/lib/utils"
 import { NewPlanSlate } from "@/pages/dashboard/NewPlanSlate"
+import { cards } from "@/pages/dashboard/cards"
 import { getPlanName } from "@/util/getPlanName"
 import { useAuth } from "@clerk/clerk-react"
 import { useMutation, useQuery } from "@tanstack/react-query"
-import { PlanAllNames, only } from "core"
+import { only } from "core"
 import { useRouter } from "next/router"
 import React, { useEffect, useState } from "react"
 import { toast } from "sonner"
-import twc from "tailwindcss/colors"
 
 export type PlanSubscribedDialogProps = React.ComponentPropsWithoutRef<"div">
-
-type Benefit = {
-  weight: "strong" | "normal" | "weak"
-  text_benefit: React.ReactNode
-}
-
-type Card = {
-  blobBackgroundColor: string
-  planName: PlanAllNames
-  benefits: Benefit[]
-}
-
-export const cards: Record<PlanAllNames, Card> = {
-  SILVER: {
-    planName: "SILVER",
-    blobBackgroundColor: twc["slate"]["400"],
-    benefits: [
-      {
-        text_benefit: "24 horas",
-        weight: "strong",
-      },
-      {
-        text_benefit: "1 contas da Steam",
-        weight: "normal",
-      },
-      {
-        text_benefit: "1 jogo por conta",
-        weight: "normal",
-      },
-      {
-        text_benefit: "Farm 24/7",
-        weight: "normal",
-      },
-      {
-        text_benefit: "Auto-restart",
-        weight: "normal",
-      },
-    ],
-  },
-  GOLD: {
-    planName: "GOLD",
-    blobBackgroundColor: twc["amber"]["500"],
-    benefits: [
-      {
-        text_benefit: "24 horas",
-        weight: "strong",
-      },
-      {
-        text_benefit: <>1 contas da Steam</>,
-        weight: "normal",
-      },
-      {
-        text_benefit: (
-          <>
-            <strong>32</strong> jogos por conta
-          </>
-        ),
-        weight: "normal",
-      },
-      {
-        text_benefit: "Farm 24/7",
-        weight: "normal",
-      },
-      {
-        text_benefit: "Auto-restart",
-        weight: "normal",
-      },
-    ],
-  },
-  DIAMOND: {
-    planName: "DIAMOND",
-    blobBackgroundColor: twc["sky"]["600"],
-    benefits: [
-      {
-        text_benefit: "24 horas",
-        weight: "strong",
-      },
-      {
-        text_benefit: (
-          <>
-            <strong>2</strong> contas da Steam
-          </>
-        ),
-        weight: "normal",
-      },
-      {
-        text_benefit: (
-          <>
-            <strong>32</strong> jogos por conta
-          </>
-        ),
-        weight: "normal",
-      },
-      {
-        text_benefit: "Farm 24/7",
-        weight: "normal",
-      },
-      {
-        text_benefit: "Auto-restart",
-        weight: "normal",
-      },
-    ],
-  },
-  GUEST: {
-    planName: "GUEST",
-    blobBackgroundColor: "hsl(222.22deg, 18.37%, 18.18%)",
-    benefits: [
-      {
-        text_benefit: "6 horas",
-        weight: "strong",
-      },
-      {
-        text_benefit: "1 conta da Steam",
-        weight: "normal",
-      },
-      {
-        text_benefit: "1 jogo por conta",
-        weight: "normal",
-      },
-      {
-        text_benefit: "Farm 24/7",
-        weight: "weak",
-      },
-      {
-        text_benefit: "Auto-restart",
-        weight: "weak",
-      },
-    ],
-  },
-}
 
 type SubscriptionNotification = {
   id_subscription: string
@@ -154,7 +24,7 @@ type SubscriptionNotification = {
 }
 type API_GET_SubscriptionNotification = SubscriptionNotification | null
 
-export function cleanSubscribedParam(asPath: string) {
+export function clearSubscribedParam(asPath: string) {
   const url = new URL(window.location.href + asPath)
   url.searchParams.delete("plan_subscribed")
   return only([url, undefined, { shallow: false }])
@@ -167,14 +37,9 @@ export const PlanSubscribedDialog = React.forwardRef<React.ElementRef<"div">, Pl
     const gotPlan = !!planSubscribedId
     const [mounted, setMounted] = useState(false)
     const { getToken } = useAuth()
-    const ijsdf = useMutation({
-      mutationKey: ["CLEAR_SUBSCRIPTION_NOTIFICATION", planSubscribedId],
-      async mutationFn() {
-        // TODO
-      },
-    })
 
     const deleteNotification = useMutation({
+      mutationKey: ["CLEAR_SUBSCRIPTION_NOTIFICATION", planSubscribedId],
       async mutationFn() {
         await api.delete(`/subscription/notification/${planSubscribedId}`, {
           headers: {
@@ -199,7 +64,7 @@ export const PlanSubscribedDialog = React.forwardRef<React.ElementRef<"div">, Pl
         )
 
         if (!subscriptionNotification) {
-          const cleanUrl = cleanSubscribedParam(router.asPath)
+          const cleanUrl = clearSubscribedParam(router.asPath)
           router.replace(...cleanUrl)
 
           toast.error("Nenhuma notificação de assinatura com esse ID.")
@@ -210,7 +75,7 @@ export const PlanSubscribedDialog = React.forwardRef<React.ElementRef<"div">, Pl
     })
 
     function proceed() {
-      const cleanUrl = cleanSubscribedParam(router.asPath)
+      const cleanUrl = clearSubscribedParam(router.asPath)
       deleteNotification.mutate()
       router.replace(...cleanUrl)
       setMounted(false)
