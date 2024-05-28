@@ -1,6 +1,6 @@
 import type { ErrorOccuredOnSteamClientCommand } from "~/application/commands"
 import type { ScheduleAutoRestartUseCase } from "~/application/use-cases"
-import { AUTO_RESTARTER_INTERVAL_IN_SECONDS } from "~/consts"
+import { env } from "~/env"
 import type { EventNames, Observer } from "~/infra/queue"
 import { thisErrorShouldScheduleAutoRestarter } from "~/utils/shouldScheduleAutoRestater"
 
@@ -13,7 +13,7 @@ export class ScheduleAutoRestartHandler implements Observer {
     if (!thisErrorShouldScheduleAutoRestarter(errorEResult)) return
     const [failSchedulingAutoRestart] = await this.scheduleAutoRestartUseCase.execute({
       accountName,
-      intervalInSeconds: AUTO_RESTARTER_INTERVAL_IN_SECONDS,
+      intervalInSeconds: env.AUTO_RESTARTER_INTERVAL_IN_MINUTES * 60,
     })
     if (failSchedulingAutoRestart) console.log({ failSchedulingAutoRestart })
   }

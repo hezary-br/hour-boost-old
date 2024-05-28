@@ -6,6 +6,10 @@ const makeRuntimeEnvs = () =>
     server: {
       DATABASE_URL: z.string().url(),
       CLERK_SECRET_KEY: z.string().min(1),
+      AUTO_RESTARTER_INTERVAL_IN_MINUTES: z.coerce
+        .number()
+        .gt(1, "Intervalo de auto restart precisa ser acima de 1 minuto.")
+        .lt(1000),
       REDIS_UPSTASH_TLS: z.string().min(1),
       EXAMPLE_ACCOUNT_NAME: z.string().nullable().default(null),
       EXAMPLE_ACCOUNT_PASSWORD: z.string().nullable().default(null),
@@ -41,6 +45,7 @@ const makeRuntimeEnvs = () =>
 type RuntimeEnvs = ReturnType<typeof makeRuntimeEnvs>
 export const envTest: RuntimeEnvs = {
   NODE_ENV: "TEST",
+  AUTO_RESTARTER_INTERVAL_IN_MINUTES: 1,
   CLERK_SECRET_KEY: "test",
   DATABASE_URL: "test",
   REDIS_UPSTASH_TLS: "test",
