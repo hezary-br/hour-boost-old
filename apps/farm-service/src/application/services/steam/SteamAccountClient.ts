@@ -1,4 +1,5 @@
 import { appendFile } from "fs"
+import { safer } from "@hourboost/utils"
 import {
   AccountGames,
   AccountSteamGamesList,
@@ -260,42 +261,46 @@ export class SteamAccountClient extends LastHandler {
     this.client.gamesPlayed([])
   }
 
+  isLoggedToSteam() {
+    return !!this.client.steamID
+  }
+
   login(accountName: string, password: string, authCode?: string) {
-    try {
+    if (this.isLoggedToSteam()) {
+      console.log("Temp: ERROR_TRYING_TO_LOGIN_IN_STEAM_CLIENT::CREDENTIALS::ALREADY_LOGGED_IN")
+      return bad(
+        Fail.create("ERROR_TRYING_TO_LOGIN_IN_STEAM_CLIENT::CREDENTIALS::ALREADY_LOGGED_IN", 400, {})
+      )
+    }
+    const [error] = safer(() =>
       this.client.logOn({
         accountName,
         password,
         authCode,
       })
-      return nice()
-    } catch (e) {
-      console.log("ERROR_TRYING_TO_LOGIN_IN_STEAM_CLIENT::CREDENTIALS", e)
-      return bad(
-        new Fail({
-          code: "ERROR_TRYING_TO_LOGIN_IN_STEAM_CLIENT::CREDENTIALS",
-          httpStatus: 400,
-          payload: e as Error,
-        })
-      )
+    )
+    if (error) {
+      console.log("ERROR_TRYING_TO_LOGIN_IN_STEAM_CLIENT::CREDENTIALS", error)
+      return bad(Fail.create("ERROR_TRYING_TO_LOGIN_IN_STEAM_CLIENT::CREDENTIALS", 400, { error }))
     }
+    return nice()
   }
 
   loginWithToken(refreshToken: string) {
-    try {
+    if (this.isLoggedToSteam()) {
+      console.log("Temp: ERROR_TRYING_TO_LOGIN_IN_STEAM_CLIENT::TOKEN::ALREADY_LOGGED_IN")
+      return bad(Fail.create("ERROR_TRYING_TO_LOGIN_IN_STEAM_CLIENT::TOKEN::ALREADY_LOGGED_IN", 400, {}))
+    }
+    const [error] = safer(() =>
       this.client.logOn({
         refreshToken,
       })
-      return nice()
-    } catch (e) {
-      console.log("ERROR_TRYING_TO_LOGIN_IN_STEAM_CLIENT::TOKEN", e)
-      return bad(
-        new Fail({
-          code: "ERROR_TRYING_TO_LOGIN_IN_STEAM_CLIENT::TOKEN",
-          httpStatus: 400,
-          payload: e as Error,
-        })
-      )
+    )
+    if (error) {
+      console.log("ERROR_TRYING_TO_LOGIN_IN_STEAM_CLIENT::TOKEN", error)
+      return bad(Fail.create("ERROR_TRYING_TO_LOGIN_IN_STEAM_CLIENT::TOKEN", 400, { error }))
     }
+    return nice()
   }
 
   changeInnerStatusToNotLogged() {
