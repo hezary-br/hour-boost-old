@@ -13,6 +13,7 @@ import { changeUserPlanUseCase, purchaseNewPlanController, usersRepository } fro
 import { RequestHandlerPresenter } from "~/presentation/presenters/RequestHandlerPresenter"
 import { Subscription } from "~/presentation/routes/stripe/Subscription"
 import {
+  createStripeCustomer,
   createSubscriptionStripe,
   getStripeCustomerByEmail,
   getStripeSubscriptions,
@@ -159,18 +160,11 @@ export async function createSubscriptionCheckoutSessionByEmail({
   userId,
   name,
 }: CreateSubscriptionCheckoutSessionByEmailProps) {
-  let customerId
-  const customer = await getStripeCustomerByEmail(stripe, { email })
-  if (!customer) {
-    const [error, customerCreated] = await createStripeCustomer(stripe, { email, name })
-    if (error) return bad(error)
-    customerId = customerCreated.id
-  } else {
-    customerId = customer.id
-  }
+  const [error, customer] = await getOrCreateCustomer({ email, name })
+  if(error) return bad(error)
 
   const { url } = await createSubscriptionCheckoutSession({
-    customerId,
+    customerId: customer.id,
     planName,
     userId,
     email,
@@ -198,25 +192,6 @@ export async function getOrCreateCustomer({ email, name }: CreateCustomerProps) 
   if (error) return bad(error)
   if (!customerCreated.email) throw new Error("Customer with no email.")
   return nice({ ...customerCreated, email: customerCreated.email })
-}
-
-type CreateStripeCustomerProps = {
-  email: string
-  name: string
-}
-
-async function createStripeCustomer(stripe: Stripe, { email, name }: CreateStripeCustomerProps) {
-  const [error, result] = await saferAsync(() =>
-    stripe.customers.create({
-      email,
-      name,
-      metadata: { email },
-    })
-  )
-  if (error) {
-    return bad(Fail.create("ERROR-CREATING-USER", 400, { error }))
-  }
-  return nice(result)
 }
 
 export type StripeCustomer = GetResult<typeof getOrCreateCustomer>

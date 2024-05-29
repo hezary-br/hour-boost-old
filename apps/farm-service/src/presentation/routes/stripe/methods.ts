@@ -59,3 +59,22 @@ export async function getStripeSubscriptions(stripe: Stripe, customerId: string)
   if (error) return bad(Fail.create("FAILED-TO-LIST-STRIPE-SUBSCRIPTIONS", 400, { error }))
   return nice(subscriptions)
 }
+
+type CreateStripeCustomerProps = {
+  email: string
+  name: string
+}
+
+export async function createStripeCustomer(stripe: Stripe, { email, name }: CreateStripeCustomerProps) {
+  const [error, result] = await saferAsync(() =>
+    stripe.customers.create({
+      email,
+      name,
+      metadata: { email },
+    })
+  )
+  if (error) {
+    return bad(Fail.create("ERROR-CREATING-USER", 400, { error }))
+  }
+  return nice(result)
+}

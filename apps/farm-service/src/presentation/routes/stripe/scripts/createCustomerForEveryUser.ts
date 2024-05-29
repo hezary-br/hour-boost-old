@@ -15,9 +15,10 @@ export async function main() {
         if (error) {
           switch (error.code) {
             case "FAILED-TO-CREATE-STRIPE-CUSTOMER":
+            case "ERROR-CREATING-USER":
               return void console.log(error)
             default:
-              error.code satisfies never
+              error satisfies never
           }
         }
         ctxLog(result)
