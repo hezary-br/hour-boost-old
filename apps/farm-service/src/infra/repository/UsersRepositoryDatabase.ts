@@ -1,5 +1,5 @@
 import type { PrismaClient } from "@prisma/client"
-import type { Role, RoleName, Status, StatusName, UsersRepository } from "core"
+import type { PrettifySoft, Role, RoleName, Status, StatusName, UsersRepository } from "core"
 import {
   ActiveStatus,
   AdminRole,
@@ -13,7 +13,7 @@ import {
   User,
   UserRole,
 } from "core"
-import { databasePlanToDomain } from "~/infra/mappers/databasePlanToDomain"
+import { mapDatabasePlanToDomainWithUsages } from "~/infra/mappers/databasePlanToDomain"
 import { databaseUsageToDomain } from "~/infra/mappers/databaseUsageToDomain"
 import { getPlanCreation, updateUser } from "~/infra/repository/UsersRepositoryUpdateMethod"
 import { toPostgreSQL, toSQLDate } from "~/utils/toSQL"
@@ -124,7 +124,7 @@ export function statusFactory(status: StatusName): Status {
 }
 
 function prismaUserFindManyToUserDomain(user: PrismaFindMany[number]): User {
-  const userPlan = databasePlanToDomain(user.plan)
+  const userPlan = mapDatabasePlanToDomainWithUsages(user.plan)
 
   const steamAccounts: SteamAccountList = new SteamAccountList({
     data: user.steamAccounts.map(sa =>
@@ -182,7 +182,7 @@ export function prismaUserToDomain(dbUser: PrismaGetUser) {
     ),
   })
 
-  const userPlan = databasePlanToDomain(dbUser.plan)
+  const userPlan = mapDatabasePlanToDomainWithUsages(dbUser.plan)
 
   return User.restore({
     email: dbUser.email,
@@ -207,7 +207,8 @@ export function prismaUserToDomain(dbUser: PrismaGetUser) {
 export type IGetUserProps = { userId: string } | { username: string } | { email: string }
 export type PrismaFindMany = Awaited<ReturnType<typeof prismaFindMany>>
 export type PrismaGetUser = Awaited<ReturnType<typeof prismaGetUser>>
-export type PrismaPlan = NonNullable<PrismaGetUser>["plan"]
+export type PrismaPlanWithUsages = NonNullable<PrismaGetUser>["plan"]
+export type PrismaPlan = Omit<NonNullable<PrismaPlanWithUsages>, "usages"> | null
 export function prismaGetUser(prisma: PrismaClient, props: IGetUserProps) {
   return prisma.user.findUnique({
     where:

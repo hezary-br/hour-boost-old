@@ -46,7 +46,7 @@ test("should change user plan from guest to diamond", async () => {
   expect(user?.plan).toBeInstanceOf(GuestPlan)
   if (!user) throw "no user"
 
-  const [errorChangingUserPlan] = await i.changeUserPlanUseCase.execute({
+  const [errorChangingUserPlan] = await i.changeUserPlanUseCase.execute_creatingByPlanName({
     newPlanName: "DIAMOND",
     user,
   })
@@ -63,7 +63,7 @@ test("should change user plan from silver to diamond", async () => {
   expect(user?.plan).toBeInstanceOf(SilverPlan)
   if (!user) throw "no user"
 
-  const [errorChangingUserPlan] = await i.changeUserPlanUseCase.execute({
+  const [errorChangingUserPlan] = await i.changeUserPlanUseCase.execute_creatingByPlanName({
     newPlanName: "DIAMOND",
     user,
   })
@@ -96,7 +96,7 @@ describe("user is farming test suite", () => {
     expect(user?.plan).toBeInstanceOf(DiamondPlan)
     if (!user) throw "no user"
 
-    const [errorChangingUserPlan] = await i.changeUserPlanUseCase.execute({
+    const [errorChangingUserPlan] = await i.changeUserPlanUseCase.execute_creatingByPlanName({
       newPlanName: "GUEST",
       user,
     })
@@ -140,7 +140,7 @@ describe("user is farming test suite", () => {
     expect(user?.plan).toBeInstanceOf(DiamondPlan)
     if (!user) throw "no user"
 
-    const [errorChangingUserPlan] = await i.changeUserPlanUseCase.execute({
+    const [errorChangingUserPlan] = await i.changeUserPlanUseCase.execute_creatingByPlanName({
       newPlanName: "GUEST",
       user,
     })
@@ -167,7 +167,7 @@ describe("user is farming test suite", () => {
     expect(user?.plan).toBeInstanceOf(DiamondPlan)
     if (!user) throw "no user"
 
-    const [errorChangingUserPlan] = await i.changeUserPlanUseCase.execute({
+    const [errorChangingUserPlan] = await i.changeUserPlanUseCase.execute_creatingByPlanName({
       newPlanName: "GUEST",
       user,
     })
@@ -220,7 +220,7 @@ describe("user is farming test suite", () => {
       [s.me.accountName2]: "FARMING",
     })
     // corta conta adicional e persiste usages dessa conta cortada
-    const [errorChangingUserPlan] = await i.changeUserPlanUseCase.execute({
+    const [errorChangingUserPlan] = await i.changeUserPlanUseCase.execute_creatingByPlanName({
       newPlanName: "GUEST",
       user,
     })

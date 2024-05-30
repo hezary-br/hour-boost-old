@@ -225,7 +225,7 @@ async function changeUserPlanDuePreapprovalCancelment({
   planName,
   user,
 }: ChangeUserPlanDuePreapprovalProps) {
-  const [error] = await changeUserPlanUseCase.execute({
+  const [error] = await changeUserPlanUseCase.execute_creatingByPlanName({
     newPlanName: "GUEST",
     user,
   })

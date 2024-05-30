@@ -241,7 +241,7 @@ query_routerAdmin.post("/change-user-plan", async (req, res) => {
       .status(errorGettingUser.httpStatus)
       .json({ code: errorGettingUser.code, message: "Usuário não encontrado." })
   }
-  const [error] = await changeUserPlanUseCase.execute({
+  const [error] = await changeUserPlanUseCase.execute_creatingByPlanName({
     newPlanName,
     user: user!,
   })

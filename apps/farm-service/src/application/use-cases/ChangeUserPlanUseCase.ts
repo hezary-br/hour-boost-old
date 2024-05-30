@@ -1,9 +1,10 @@
 import {
-  type DataOrFail,
   Fail,
-  type GetError,
-  type PlanAllNames,
+  PlanInfinity,
   PlanRepository,
+  PlanUsage,
+  type DataOrFail,
+  type PlanAllNames,
   type SteamAccountClientStateCacheRepository,
   type User,
   type UsersRepository,
@@ -18,7 +19,7 @@ import { Publisher } from "~/infra/queue"
 import { getUserSACs_OnStorage_ByUser } from "~/utils/getUser"
 import { bad, nice } from "~/utils/helpers"
 import { nonNullable } from "~/utils/nonNullable"
-import type { RestoreAccountSessionUseCase } from "."
+import { EAppResults, type RestoreAccountSessionUseCase } from "."
 import type { AllUsersClientsStorage, FarmSession } from "../services"
 
 export class ChangeUserPlanUseCase implements IChangeUserPlanUseCase {
@@ -35,10 +36,21 @@ export class ChangeUserPlanUseCase implements IChangeUserPlanUseCase {
     private readonly flushUpdateSteamAccountDomain: FlushUpdateSteamAccountDomain
   ) {}
 
-  private async executeImpl({ user, newPlanName }: ChangeUserPlanUseCasePayload) {
+  async execute_creatingByPlanName({ newPlanName, user }: ChangeUserPlanUseCaseCreatingByPlanNamePayload) {
     const [errorChangingPlan, newPlan] = this.planService.createPlan({ currentPlan: user.plan, newPlanName })
     if (errorChangingPlan) return bad(errorChangingPlan)
 
+    return this.execute({ plan: newPlan, user })
+  }
+
+  async execute_toPlanId({ planId, user }: ChangeUserPlanUseCaseToByPlanIdPayload) {
+    const plan = await this.planRepository.getById(planId)
+    if (!plan) return bad(Fail.create(EAppResults["PLAN-NOT-FOUND"], 404, { givenPlanId: planId }))
+
+    return this.execute({ plan, user })
+  }
+
+  async execute({ plan, user }: ChangeUserPlanUseCasePayload) {
     const [errorGettingUserSACList, userSacList = []] = getUserSACs_OnStorage_ByUser(
       user,
       this.allUsersClientsStorage
@@ -49,14 +61,14 @@ export class ChangeUserPlanUseCase implements IChangeUserPlanUseCase {
 
     const [errorTrimmingSteamAccounts, trimSteamAccountsInfo] = this.trimSteamAccounts.execute({
       user,
-      plan: newPlan,
+      plan,
     })
     if (errorTrimmingSteamAccounts) return bad(errorTrimmingSteamAccounts)
 
-    user.assignPlan(newPlan)
+    user.assignPlan(plan)
     const [errorFlushUpdatingFarm, result] = await this.flushUpdateSteamAccountDomain.execute({
       user,
-      plan: newPlan,
+      plan,
     })
     if (errorFlushUpdatingFarm) return bad(errorFlushUpdatingFarm)
     const { resetFarmResultList, updatedCacheStates } = result
@@ -84,7 +96,7 @@ export class ChangeUserPlanUseCase implements IChangeUserPlanUseCase {
     for (const state of updatedCacheStatesFiltered) {
       await this.steamAccountClientStateCacheRepository.save(state)
       const [error] = await this.restoreAccountSessionUseCase.execute({
-        plan: newPlan,
+        plan,
         sac: userSacList.find(sac => sac.accountName === state.accountName)!,
         username: user.username,
         state,
@@ -123,32 +135,23 @@ export class ChangeUserPlanUseCase implements IChangeUserPlanUseCase {
     }
     return nice()
   }
-
-  async execute(props: ChangeUserPlanUseCasePayload) {
-    const [error, result] = await this.executeImpl(props)
-    if (error) {
-      return this.handleFail(error, props)
-    }
-    return nice(result)
-  }
-
-  handleFail(error: GetError<ChangeUserPlanUseCase["executeImpl"]>, props: ChangeUserPlanUseCasePayload) {
-    switch (error.code) {
-      case "LIST::TRIMMING-ACCOUNTS":
-      case "LIST::UPDATING-CACHE":
-      case "LIST::COULD-NOT-RESET-FARM":
-      case "COULD-NOT-PERSIST-ACCOUNT-USAGE":
-        return bad(error)
-    }
-  }
 }
 
-export type ChangeUserPlanUseCasePayload = {
+export type ChangeUserPlanUseCaseCreatingByPlanNamePayload = {
   user: User
   newPlanName: PlanAllNames
 }
 
+export type ChangeUserPlanUseCaseToByPlanIdPayload = {
+  user: User
+  planId: string
+}
+
+export type ChangeUserPlanUseCasePayload = {
+  user: User
+  plan: PlanInfinity | PlanUsage
+}
+
 interface IChangeUserPlanUseCase {
-  execute(...args: any[]): Promise<DataOrFail<Fail>>
-  handleFail(...args: any[]): DataOrFail<any>
+  execute_creatingByPlanName(...args: any[]): Promise<DataOrFail<Fail>>
 }

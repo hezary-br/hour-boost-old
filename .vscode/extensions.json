@@ -8,6 +8,7 @@
     "bradlc.vscode-tailwindcss",
     "pkief.material-icon-theme",
     "ms-azuretools.vscode-docker",
-    "github.vscode-github-actions"
+    "github.vscode-github-actions",
+    "yoavbls.pretty-ts-errors"
   ]
 }

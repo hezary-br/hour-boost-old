@@ -1,5 +1,6 @@
 import { DataOrFail, Fail } from "core"
 import Stripe from "stripe"
+import { RollbackToGuestPlanUseCase } from "~/application/use-cases/RollbackToGuestPlanUseCase"
 import {
   cancelStripeSubscription,
   getLastSubscription,
@@ -12,7 +13,10 @@ interface ICancelUserSubscriptionUseCase {
 }
 
 export class CancelUserSubscriptionUseCase implements ICancelUserSubscriptionUseCase {
-  constructor(private readonly stripe: Stripe) {}
+  constructor(
+    private readonly stripe: Stripe,
+    private readonly rollbackToGuestPlanUseCase: RollbackToGuestPlanUseCase
+  ) {}
 
   async execute({ email }: CancelUserSubscriptionUseCaseDTO) {
     const [error$1, customer] = await getStripeCustomerByEmailOrFail(this.stripe, email)
@@ -20,6 +24,8 @@ export class CancelUserSubscriptionUseCase implements ICancelUserSubscriptionUse
     const [error$2, subscription] = await getLastSubscription(this.stripe, customer.id)
     if (error$2) return bad(error$2)
     if (!subscription) {
+      const [error] = await this.rollbackToGuestPlanUseCase.execute({ user })
+      if (error) return bad(error)
       return bad(
         Fail.create("SUBSCRIPTION-NOT-FOUND", 404, {
           hintMessage: "Customer's subscription list is empty.",
@@ -29,6 +35,8 @@ export class CancelUserSubscriptionUseCase implements ICancelUserSubscriptionUse
     }
     const [error$3, result] = await cancelStripeSubscription(this.stripe, subscription.id)
     if (error$3) return bad(error$3)
+    const [error$4] = await this.rollbackToGuestPlanUseCase.execute()
+    if (error$4) return bad(error$4)
     return nice(result)
   }
 }
