@@ -94,7 +94,7 @@ router_webhook.post("/stripe/webhook", express.raw({ type: "application/json" })
 
         const newPlanName = mapPlanNameByStripePriceIdKey[stripePriceId]!
 
-        const [errorChangingPlan] = await changeUserPlanUseCase.execute({
+        const [errorChangingPlan] = await changeUserPlanUseCase.execute_creatingByPlanName({
           newPlanName,
           user,
         })

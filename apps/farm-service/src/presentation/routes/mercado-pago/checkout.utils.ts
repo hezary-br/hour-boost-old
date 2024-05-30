@@ -115,7 +115,7 @@ type AssignPlanPropsCurry = {
 
 export function assignPlanCurry({ user, changeUserPlanUseCase }: AssignPlanPropsCurry) {
   return async (planName: PlanAllNames) => {
-    const [errorAssigning] = await changeUserPlanUseCase.execute({
+    const [errorAssigning] = await changeUserPlanUseCase.execute_creatingByPlanName({
       newPlanName: planName,
       user,
     })

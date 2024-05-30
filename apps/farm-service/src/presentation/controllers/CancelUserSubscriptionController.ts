@@ -21,6 +21,7 @@ export class CancelUserSubscriptionController implements ICancelUserSubscription
         case "ERROR-GETTING-LAST-SUBSCRIPTION":
         case "FAILED-TO-CANCEL-STRIPE-SUBSCRIPTION":
         case "SUBSCRIPTION-NOT-FOUND":
+          console.log(error)
           return createResponse(error.httpStatus, { message: `Erro ao cancelar a assinatura.` })
         default:
           assertNever(error)

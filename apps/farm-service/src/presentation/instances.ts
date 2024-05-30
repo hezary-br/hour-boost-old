@@ -25,6 +25,7 @@ import { CancelUserSubscriptionUseCase } from "~/application/use-cases/CancelUse
 import { ChangeUserPlanUseCase } from "~/application/use-cases/ChangeUserPlanUseCase"
 import { PurchaseNewPlanUseCase } from "~/application/use-cases/PurchaseNewPlanUseCase"
 import { RetrieveSessionListUseCase } from "~/application/use-cases/RetrieveSessionListUseCase"
+import { RollbackToGuestPlanUseCase } from "~/application/use-cases/RollbackToGuestPlanUseCase"
 import { SetMaxSteamAccountsUseCase } from "~/application/use-cases/SetMaxSteamAccountsUseCase"
 import { StopFarmUseCase } from "~/application/use-cases/StopFarmUseCase"
 import { UnbanUserUseCase } from "~/application/use-cases/UnbanUserUseCase"
@@ -49,6 +50,7 @@ import { FlushUpdateSteamAccountUseCase } from "~/features/flush-update-steam-ac
 import { RemoveSteamAccount } from "~/features/remove-steam-account/domain"
 import { StopFarmDomain } from "~/features/stop-farm/domain"
 import { UsersDAODatabase } from "~/infra/dao"
+import { PlanDAODatabase } from "~/infra/dao/PlanDAODatabase"
 import { PreapprovalDAODatabase } from "~/infra/dao/PreapprovalDAODatabase"
 import { SteamAccountsDAODatabase } from "~/infra/dao/SteamAccountsDAODatabase"
 import { prisma } from "~/infra/libs"
@@ -103,6 +105,7 @@ export const userAuthentication = new ClerkAuthentication(clerkClient)
 export const usersRepository = new UsersRepositoryDatabase(prisma)
 export const preapprovalRepository = new PreapprovalRepositoryDatabase(prisma)
 export const preapprovalDAO = new PreapprovalDAODatabase(prisma)
+export const planDAO = new PlanDAODatabase(prisma)
 export const initUserGateway = new InitUserGatewayStripe(stripe)
 export const idGenerator = new IDGeneratorUUID()
 
@@ -259,7 +262,11 @@ export const addUsageTimeToPlanUseCase = new AddUsageTimeToPlanUseCase(
   steamAccountClientStateCacheRepository,
   planRepository
 )
-export const cancelUserSubscriptionUseCase = new CancelUserSubscriptionUseCase(stripe)
+export const rollbackToGuestPlanUseCase = new RollbackToGuestPlanUseCase(planDAO, changeUserPlanUseCase)
+export const cancelUserSubscriptionUseCase = new CancelUserSubscriptionUseCase(
+  stripe,
+  rollbackToGuestPlanUseCase
+)
 export const cancelUserSubscriptionController = new CancelUserSubscriptionController(
   cancelUserSubscriptionUseCase
 )

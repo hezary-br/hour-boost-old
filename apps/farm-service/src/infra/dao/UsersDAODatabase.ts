@@ -18,7 +18,7 @@ import {
 import type { AllUsersClientsStorage, UsersSACsFarmingClusterStorage } from "~/application/services"
 import type { GetPersonaStateUseCase } from "~/application/use-cases/GetPersonaStateUseCase"
 import type { GetUserSteamGamesUseCase } from "~/application/use-cases/GetUserSteamGamesUseCase"
-import { databasePlanToDomain } from "~/infra/mappers/databasePlanToDomain"
+import { mapDatabasePlanToDomainWithUsages } from "~/infra/mappers/databasePlanToDomain"
 import { databaseUsageToDomain } from "~/infra/mappers/databaseUsageToDomain"
 import { domainPlanToSession } from "~/infra/mappers/domainPlanToSession"
 import { __recoveringAccounts } from "~/momentarily"
@@ -76,7 +76,7 @@ export class UsersDAODatabase implements UsersDAO {
 
     if (!dbUser) return null
 
-    const planDomain = databasePlanToDomain(dbUser.plan)
+    const planDomain = mapDatabasePlanToDomainWithUsages(dbUser.plan)
 
     const result: UserSessionShallow = {
       email: dbUser.email,
@@ -94,7 +94,7 @@ export class UsersDAODatabase implements UsersDAO {
     const usersAdminListDatabase = await getUserAdminListDatabase(this.prisma)
 
     const finalResultPromises = usersAdminListDatabase.map(async user => {
-      const plan = databasePlanToDomain(user.plan)
+      const plan = mapDatabasePlanToDomainWithUsages(user.plan)
 
       const steamAccounts = await Promise.all(
         user.steamAccounts.map(async sa => {
@@ -145,7 +145,7 @@ export class UsersDAODatabase implements UsersDAO {
 
     return foundUser
       ? {
-          plan: databasePlanToDomain(foundUser.plan),
+          plan: mapDatabasePlanToDomainWithUsages(foundUser.plan),
           userId: foundUser.id_user,
           username: foundUser.username,
         }
@@ -186,7 +186,7 @@ export class UsersDAODatabase implements UsersDAO {
 
     if (!dbUser) return null
 
-    const planDomain = databasePlanToDomain(dbUser.plan)
+    const planDomain = mapDatabasePlanToDomainWithUsages(dbUser.plan)
     const plan = domainPlanToSession(planDomain)
 
     const steamAccounts: SteamAccountSession[] = await Promise.all(
