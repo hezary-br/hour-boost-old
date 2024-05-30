@@ -32,6 +32,7 @@ import {
   updatePreapproval,
   validatePlanCommand,
 } from "~/presentation/routes/mercado-pago/checkout.utils"
+import { planAllNamesSchema } from "~/schemas/planAllNamesSchema"
 import { nice } from "~/utils/helpers"
 
 export const router_checkout: Router = Router()
@@ -42,9 +43,7 @@ router_checkout.post("/plan/preapproval", ClerkExpressRequireAuth(), async (req,
     z.object({
       userId: z.string().min(1, "Informe o ID do usuário."),
       email: z.string().email("Informe um e-mail válido."),
-      planName: z.enum(["DIAMOND", "GOLD", "GUEST", "SILVER"], {
-        message: "Tipo de plano inválido.",
-      }),
+      planName: planAllNamesSchema,
     })
   )
   if (invalidBody) return res.status(invalidBody.status).json(invalidBody.json)
