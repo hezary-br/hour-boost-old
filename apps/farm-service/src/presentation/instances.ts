@@ -21,6 +21,7 @@ import {
 } from "~/application/use-cases"
 import { AddUsageTimeToPlanUseCase } from "~/application/use-cases/AddUsageTimeToPlanUseCase"
 import { BanUserUseCase } from "~/application/use-cases/BanUserUseCase"
+import { CancelUserSubscriptionUseCase } from "~/application/use-cases/CancelUserSubscriptionUseCase"
 import { ChangeUserPlanUseCase } from "~/application/use-cases/ChangeUserPlanUseCase"
 import { PurchaseNewPlanUseCase } from "~/application/use-cases/PurchaseNewPlanUseCase"
 import { RetrieveSessionListUseCase } from "~/application/use-cases/RetrieveSessionListUseCase"
@@ -63,6 +64,7 @@ import { PreapprovalRepositoryDatabase } from "~/infra/repository/PreapprovalRep
 import { ClerkAuthentication } from "~/infra/services"
 import { stripe } from "~/infra/services/stripe"
 import { AddSteamGuardCodeController } from "~/presentation/controllers"
+import { CancelUserSubscriptionController } from "~/presentation/controllers/CancelUserSubscriptionController"
 import { CreateMeController } from "~/presentation/controllers/CreateMeController"
 import { PurchaseNewPlanController } from "~/presentation/controllers/PurchaseNewPlanController"
 import { RefreshGamesUseCase } from "~/presentation/presenters"
@@ -267,6 +269,10 @@ export const purchaseNewPlanUseCase = new PurchaseNewPlanUseCase(usersRepository
 export const purchaseNewPlanController = new PurchaseNewPlanController(purchaseNewPlanUseCase)
 export const unbanUserUseCase = new UnbanUserUseCase(usersRepository)
 export const addSteamGuardCodeController = new AddSteamGuardCodeController(allUsersClientsStorage)
+export const cancelUserSubscriptionUseCase = new CancelUserSubscriptionUseCase(stripe)
+export const cancelUserSubscriptionController = new CancelUserSubscriptionController(
+  cancelUserSubscriptionUseCase
+)
 const addSteamAccount = new AddSteamAccount(usersRepository, idGenerator)
 
 export const addSteamAccountUseCase = new AddSteamAccountUseCase(

@@ -1,5 +1,5 @@
 import { DataOrFail, Fail } from "core"
-import { stripe } from "~/infra/services/stripe"
+import Stripe from "stripe"
 import {
   cancelStripeSubscription,
   getLastSubscription,
@@ -12,10 +12,12 @@ interface ICancelUserSubscriptionUseCase {
 }
 
 export class CancelUserSubscriptionUseCase implements ICancelUserSubscriptionUseCase {
+  constructor(private readonly stripe: Stripe) {}
+
   async execute({ email }: CancelUserSubscriptionUseCaseDTO) {
-    const [error$1, customer] = await getStripeCustomerByEmailOrFail(stripe, email)
+    const [error$1, customer] = await getStripeCustomerByEmailOrFail(this.stripe, email)
     if (error$1) return bad(error$1)
-    const [error$2, subscription] = await getLastSubscription(stripe, customer.id)
+    const [error$2, subscription] = await getLastSubscription(this.stripe, customer.id)
     if (error$2) return bad(error$2)
     if (!subscription) {
       return bad(
@@ -25,7 +27,7 @@ export class CancelUserSubscriptionUseCase implements ICancelUserSubscriptionUse
         })
       )
     }
-    const [error$3, result] = await cancelStripeSubscription(stripe, subscription.id)
+    const [error$3, result] = await cancelStripeSubscription(this.stripe, subscription.id)
     if (error$3) return bad(error$3)
     return nice(result)
   }

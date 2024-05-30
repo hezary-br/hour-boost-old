@@ -3,12 +3,19 @@ import { GetResult, PlanAllNames } from "core"
 import express, { Router } from "express"
 import { Stripe } from "stripe"
 import { z } from "zod"
+import { EAppResults } from "~/application/use-cases"
 import { ALS_username, ctxLog } from "~/application/use-cases/RestoreAccountManySessionsUseCase"
 import { env } from "~/env"
 import { prisma } from "~/infra/libs"
 import { stripe } from "~/infra/services/stripe"
+import { rateLimit } from "~/inline-middlewares/rate-limit"
 import { validateBody } from "~/inline-middlewares/validate-payload"
-import { changeUserPlanUseCase, purchaseNewPlanController, usersRepository } from "~/presentation/instances"
+import {
+  cancelUserSubscriptionController,
+  changeUserPlanUseCase,
+  purchaseNewPlanController,
+  usersRepository,
+} from "~/presentation/instances"
 import { RequestHandlerPresenter } from "~/presentation/presenters/RequestHandlerPresenter"
 import { Subscription } from "~/presentation/routes/stripe/Subscription"
 import {
@@ -116,25 +123,55 @@ router_webhook.post("/stripe/webhook", express.raw({ type: "application/json" })
   return res.sendStatus(200)
 })
 
-router_checkout.delete("/subscription/notification/:subscriptionNotificationId", async (req, res) => {
-  const { subscriptionNotificationId } = req.params
+router_checkout.delete("/subscription/current", ClerkExpressRequireAuth(), async (req, res) => {
+  const [limited] = await rateLimit(req)
+  if (limited) return res.status(limited.status).json(limited.json)
 
-  await prisma.subscriptionApprovedNotification.delete({
-    where: { id_subscription: subscriptionNotificationId },
+  const foundUser = await prisma.user.findUnique({
+    where: { id_user: req.auth.userId! },
+    select: { email: true },
   })
 
-  return res.status(200).json({ code: "DELETED-SUCCESSFULLY" })
-})
+  if (!foundUser) {
+    return res.status(404).json({
+      code: EAppResults["USER-NOT-FOUND"],
+      message: `Usuário não encontrado com id [${req.auth.userId}]`,
+    })
+  }
 
-router_checkout.get("/subscription/notification/:subscriptionNotificationId", async (req, res) => {
-  const { subscriptionNotificationId } = req.params
-
-  const subscriptionApprovedNotification = await prisma.subscriptionApprovedNotification.findUnique({
-    where: { id_subscription: subscriptionNotificationId },
+  const presentation = await cancelUserSubscriptionController.handle({
+    email: foundUser.email,
   })
-
-  return res.status(200).json(subscriptionApprovedNotification)
+  return RequestHandlerPresenter.handle(presentation, res)
 })
+
+router_checkout.delete(
+  "/subscription/notification/:subscriptionNotificationId",
+  ClerkExpressRequireAuth(),
+  async (req, res) => {
+    const { subscriptionNotificationId } = req.params
+
+    await prisma.subscriptionApprovedNotification.delete({
+      where: { id_subscription: subscriptionNotificationId },
+    })
+
+    return res.status(200).json({ code: "DELETED-SUCCESSFULLY" })
+  }
+)
+
+router_checkout.get(
+  "/subscription/notification/:subscriptionNotificationId",
+  ClerkExpressRequireAuth(),
+  async (req, res) => {
+    const { subscriptionNotificationId } = req.params
+
+    const subscriptionApprovedNotification = await prisma.subscriptionApprovedNotification.findUnique({
+      where: { id_subscription: subscriptionNotificationId },
+    })
+
+    return res.status(200).json(subscriptionApprovedNotification)
+  }
+)
 
 router_checkout.post("/plan/preapproval", ClerkExpressRequireAuth(), async (req, res) => {
   const [invalidBody, body] = validateBody(
