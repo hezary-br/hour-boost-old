@@ -143,3 +143,9 @@ export async function getLastSubscription(stripe: Stripe, customerId: string) {
   }
   return nice(result.data[0] ?? null)
 }
+
+export async function cancelStripeSubscription(stripe: Stripe, subscriptionId: string) {
+  const [error, result] = await saferAsync(() => stripe.subscriptions.cancel(subscriptionId))
+  if (error) return bad(Fail.create("FAILED-TO-CANCEL-STRIPE-SUBSCRIPTION", 400, { subscriptionId }))
+  return nice(result)
+}
