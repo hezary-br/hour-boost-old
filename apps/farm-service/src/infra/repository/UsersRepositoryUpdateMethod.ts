@@ -45,35 +45,9 @@ export function updateUser(user: User) {
             id_plan: user.plan_old.id_plan,
           }
         : undefined,
-      upsert: {
+      connectOrCreate: {
         where: {
-          id_plan: plan.id_plan,
-        },
-        update: {
-          customPlan: plan.custom
-            ? {
-                upsert: {
-                  where: {
-                    originalPlanId: plan.id_plan,
-                  },
-                  create: {
-                    autoRelogin: plan.autoRestarter,
-                    maxGamesAllowed: plan.maxGamesAllowed,
-                    maxSteamAccounts: plan.maxSteamAccounts,
-                    maxUsageTime: plan instanceof PlanUsage ? plan.maxUsageTime : 0,
-                    priceInCents: plan.price,
-                    createdAt: new Date(),
-                    id_plan: makeID(),
-                  },
-                  update: {
-                    autoRelogin: plan.autoRestarter,
-                    maxGamesAllowed: plan.maxGamesAllowed,
-                    maxSteamAccounts: plan.maxSteamAccounts,
-                    maxUsageTime: plan instanceof PlanUsage ? plan.maxUsageTime : 0,
-                  },
-                },
-              }
-            : undefined,
+          id_plan: user.plan.id_plan,
         },
         create: {
           createdAt: new Date(),
@@ -106,6 +80,37 @@ export function updateUser(user: User) {
               },
             })),
           },
+        },
+      },
+      update: {
+        where: {
+          id_plan: plan.id_plan,
+        },
+        data: {
+          customPlan: plan.custom
+            ? {
+                upsert: {
+                  where: {
+                    originalPlanId: plan.id_plan,
+                  },
+                  create: {
+                    autoRelogin: plan.autoRestarter,
+                    maxGamesAllowed: plan.maxGamesAllowed,
+                    maxSteamAccounts: plan.maxSteamAccounts,
+                    maxUsageTime: plan instanceof PlanUsage ? plan.maxUsageTime : 0,
+                    priceInCents: plan.price,
+                    createdAt: new Date(),
+                    id_plan: makeID(),
+                  },
+                  update: {
+                    autoRelogin: plan.autoRestarter,
+                    maxGamesAllowed: plan.maxGamesAllowed,
+                    maxSteamAccounts: plan.maxSteamAccounts,
+                    maxUsageTime: plan instanceof PlanUsage ? plan.maxUsageTime : 0,
+                  },
+                },
+              }
+            : undefined,
         },
       },
     },

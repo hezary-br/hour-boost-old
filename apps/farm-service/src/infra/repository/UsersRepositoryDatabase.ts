@@ -1,5 +1,5 @@
 import type { PrismaClient } from "@prisma/client"
-import type { PrettifySoft, Role, RoleName, Status, StatusName, UsersRepository } from "core"
+import type { Role, RoleName, Status, StatusName, UsersRepository } from "core"
 import {
   ActiveStatus,
   AdminRole,

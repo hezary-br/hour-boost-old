@@ -262,10 +262,15 @@ export const addUsageTimeToPlanUseCase = new AddUsageTimeToPlanUseCase(
   steamAccountClientStateCacheRepository,
   planRepository
 )
-export const rollbackToGuestPlanUseCase = new RollbackToGuestPlanUseCase(planDAO, changeUserPlanUseCase)
+export const rollbackToGuestPlanUseCase = new RollbackToGuestPlanUseCase(
+  planDAO,
+  changeUserPlanUseCase,
+  usersRepository
+)
 export const cancelUserSubscriptionUseCase = new CancelUserSubscriptionUseCase(
   stripe,
-  rollbackToGuestPlanUseCase
+  rollbackToGuestPlanUseCase,
+  usersRepository
 )
 export const cancelUserSubscriptionController = new CancelUserSubscriptionController(
   cancelUserSubscriptionUseCase
