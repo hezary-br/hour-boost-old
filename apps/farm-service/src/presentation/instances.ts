@@ -259,20 +259,21 @@ export const addUsageTimeToPlanUseCase = new AddUsageTimeToPlanUseCase(
   steamAccountClientStateCacheRepository,
   planRepository
 )
+export const cancelUserSubscriptionUseCase = new CancelUserSubscriptionUseCase(stripe)
+export const cancelUserSubscriptionController = new CancelUserSubscriptionController(
+  cancelUserSubscriptionUseCase
+)
 export const banUserUseCase = new BanUserUseCase(
   usersRepository,
   removeSteamAccount,
   planRepository,
-  steamAccountClientStateCacheRepository
+  steamAccountClientStateCacheRepository,
+  cancelUserSubscriptionUseCase
 )
 export const purchaseNewPlanUseCase = new PurchaseNewPlanUseCase(usersRepository)
 export const purchaseNewPlanController = new PurchaseNewPlanController(purchaseNewPlanUseCase)
 export const unbanUserUseCase = new UnbanUserUseCase(usersRepository)
 export const addSteamGuardCodeController = new AddSteamGuardCodeController(allUsersClientsStorage)
-export const cancelUserSubscriptionUseCase = new CancelUserSubscriptionUseCase(stripe)
-export const cancelUserSubscriptionController = new CancelUserSubscriptionController(
-  cancelUserSubscriptionUseCase
-)
 const addSteamAccount = new AddSteamAccount(usersRepository, idGenerator)
 
 export const addSteamAccountUseCase = new AddSteamAccountUseCase(

@@ -5,6 +5,7 @@ import {
   SteamAccountClientStateCacheRepository,
   type UsersRepository,
 } from "core"
+import { CancelUserSubscriptionUseCase } from "~/application/use-cases/CancelUserSubscriptionUseCase"
 import { getUser } from "~/application/use-cases/helpers/getUser"
 import { persistUsagesOnDatabase } from "~/application/utils/persistUsagesOnDatabase"
 import { RemoveSteamAccount } from "~/features/remove-steam-account/domain"
@@ -15,7 +16,8 @@ export class BanUserUseCase implements IBanUserUseCase {
     private readonly usersRepository: UsersRepository,
     private readonly removeSteamAccount: RemoveSteamAccount,
     private readonly planRepository: PlanRepository,
-    private readonly steamAccountClientStateCacheRepository: SteamAccountClientStateCacheRepository
+    private readonly steamAccountClientStateCacheRepository: SteamAccountClientStateCacheRepository,
+    private readonly cancelUserSubscriptionUseCase: CancelUserSubscriptionUseCase
   ) {}
 
   async execute(banningUserId: string) {
@@ -54,6 +56,10 @@ export class BanUserUseCase implements IBanUserUseCase {
       return bad(Fail.create("LIST::PERSISTING-USAGES", 400, { errors: errorList_persisting }))
 
     await this.usersRepository.update(user)
+    const [errorCancellingSubscription] = await this.cancelUserSubscriptionUseCase.execute({
+      email: user.email,
+    })
+    if (errorCancellingSubscription) return bad(errorCancellingSubscription)
 
     return nice()
   }
