@@ -1,5 +1,5 @@
 import { CancelUserSubscriptionUseCase } from "~/application/use-cases/CancelUserSubscriptionUseCase"
-import { ResponseAPI, createResponse, createResponseNoJSON } from "~/types/response-api"
+import { ResponseAPI, createResponse } from "~/types/response-api"
 import { assertNever } from "~/utils/assertNever"
 
 interface ICancelUserSubscriptionController {
@@ -21,13 +21,13 @@ export class CancelUserSubscriptionController implements ICancelUserSubscription
         case "ERROR-GETTING-LAST-SUBSCRIPTION":
         case "FAILED-TO-CANCEL-STRIPE-SUBSCRIPTION":
         case "SUBSCRIPTION-NOT-FOUND":
-          return createResponse(error.httpStatus, { message: `Erro ao cancelar a subscription.` })
+          return createResponse(error.httpStatus, { message: `Erro ao cancelar a assinatura.` })
         default:
           assertNever(error)
       }
     }
 
-    return createResponseNoJSON(200)
+    return createResponse(200, { message: "Assinatura cancelada com sucesso." })
   }
 }
 
