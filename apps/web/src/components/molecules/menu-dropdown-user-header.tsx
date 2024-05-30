@@ -1,3 +1,4 @@
+import { CancelPlanModal } from "@/use-cases/cancel-plan/components/modal"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -43,6 +44,9 @@ export const MenuDropdownUserHeader = React.forwardRef<
             <HeaderLink to="/home">Home</HeaderLink>
             <HeaderLink to="/dashboard">Dashboard</HeaderLink>
             <HeaderLink to="/plans">Mudar plano</HeaderLink>
+            <CancelPlanModal>
+              <HeaderButton>Cancelar plano</HeaderButton>
+            </CancelPlanModal>
             {isAdmin && (
               <>
                 <HeaderLink to="/admin">Painel Admin</HeaderLink>
@@ -108,6 +112,23 @@ export const HeaderLink = React.forwardRef<React.ElementRef<typeof Link>, Header
           className
         )}
         href={to}
+        {...props}
+      />
+    )
+  }
+)
+
+export type HeaderButtonProps = React.ComponentPropsWithoutRef<"button">
+
+export const HeaderButton = React.forwardRef<React.ElementRef<"button">, HeaderButtonProps>(
+  function HeaderButtonComponent({ className, ...props }, ref) {
+    return (
+      <button
+        ref={ref}
+        className={cn(
+          "hover:bg-accent relative flex w-full cursor-default select-none items-center px-2 py-1.5 text-sm outline-none transition-colors transition-none hover:text-white data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+          className
+        )}
         {...props}
       />
     )
