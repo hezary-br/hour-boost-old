@@ -176,6 +176,10 @@ query_routerAdmin.post("/ban-user", ClerkExpressRequireAuth(), async (req, res) 
         return res.status(error.httpStatus).json({ code: error.code, message: "Usuário não encontrado." })
       case "LIST::REMOVING-ACCOUNTS":
       case "LIST::PERSISTING-USAGES":
+      case "ERROR-GETTING-LAST-SUBSCRIPTION":
+      case "FAILED-TO-CANCEL-STRIPE-SUBSCRIPTION":
+      case "STRIPE-CUSTOMER-NOT-FOUND":
+      case "SUBSCRIPTION-NOT-FOUND":
         console.log("ERROR: ", error.code, error.payload)
         return res.status(GENERIC_ERROR_STATUS).json(GENERIC_ERROR_JSON)
       default:
