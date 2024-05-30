@@ -9,4 +9,5 @@ export const ECacheKeys = {
   preAprovalPlan: (planName?: string, userId?: string) => ["PRE-APPROVAL-PLAN", planName, userId],
   changeUserPlan: (userId: string) => ["CHANGE-USER-PLAN", userId],
   addSteamGuard: (accountName: string) => ["ADD-STEAM-GUARD", accountName],
+  cancelSubscription: (userId?: string) => ["CANCEL-SUBSCRIPTION", userId],
 }
