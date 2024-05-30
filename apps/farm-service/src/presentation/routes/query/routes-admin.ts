@@ -179,7 +179,11 @@ query_routerAdmin.post("/ban-user", ClerkExpressRequireAuth(), async (req, res) 
       case "ERROR-GETTING-LAST-SUBSCRIPTION":
       case "FAILED-TO-CANCEL-STRIPE-SUBSCRIPTION":
       case "STRIPE-CUSTOMER-NOT-FOUND":
-      case "SUBSCRIPTION-NOT-FOUND":
+      case "COULD-NOT-PERSIST-ACCOUNT-USAGE":
+      case "LIST::COULD-NOT-RESET-FARM":
+      case "LIST::TRIMMING-ACCOUNTS":
+      case "LIST::UPDATING-CACHE":
+      case "PLAN-NOT-FOUND":
         console.log("ERROR: ", error.code, error.payload)
         return res.status(GENERIC_ERROR_STATUS).json(GENERIC_ERROR_JSON)
       default:

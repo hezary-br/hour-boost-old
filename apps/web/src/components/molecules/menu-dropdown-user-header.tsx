@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils"
 import { useClerk } from "@clerk/clerk-react"
 import Link from "next/link"
 import { useRouter } from "next/router"
-import React from "react"
+import React, { useEffect, useState } from "react"
 
 export type MenuDropdownUserHeaderProps = React.ComponentPropsWithoutRef<typeof DropdownMenuContent> & {
   children: React.ReactNode
@@ -26,6 +26,25 @@ export const MenuDropdownUserHeader = React.forwardRef<
   const isAdmin = isAdminQuery.status === "pending" ? isAdminServerMeta : !!isAdminQuery.data
 
   const userIsBanned = useServerMeta()?.session?.status === "BANNED"
+  const router = useRouter()
+  useEffect(() => void console.log(router), [router])
+
+  const [transiting, setTransiting] = useState(false)
+
+  useEffect(() => {
+    const handleStart = url => url !== router.asPath && setTransiting(true)
+    const handleComplete = url => url === router.asPath && setTransiting(false)
+
+    router.events.on("routeChangeStart", handleStart)
+    router.events.on("routeChangeComplete", handleComplete)
+    router.events.on("routeChangeError", handleComplete)
+
+    return () => {
+      router.events.off("routeChangeStart", handleStart)
+      router.events.off("routeChangeComplete", handleComplete)
+      router.events.off("routeChangeError", handleComplete)
+    }
+  })
   // userIsBanned && "pointer-events-none cursor-not-allowed opacity-50"
 
   return (
@@ -33,10 +52,11 @@ export const MenuDropdownUserHeader = React.forwardRef<
       <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
       <DropdownMenuContent
         {...props}
-        className={cn("", className)}
+        className={cn("relative", className)}
         ref={ref}
         align="end"
       >
+        {transiting && <div className="pointer-events-none absolute inset-0 z-30 bg-black/40" />}
         {userIsBanned ? (
           <DropdownMenuItemLogout>Sair</DropdownMenuItemLogout>
         ) : (

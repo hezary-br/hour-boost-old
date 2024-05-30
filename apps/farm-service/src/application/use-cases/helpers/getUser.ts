@@ -16,3 +16,18 @@ export async function getUser(usersRepository: UsersRepository, userId: string) 
   }
   return nice(user)
 }
+
+export async function getUserByEmail(usersRepository: UsersRepository, email: string) {
+  const user = await usersRepository.getByEmail(email)
+  if (!user) {
+    const fail = new Fail({
+      code: EAppResults["USER-NOT-FOUND"],
+      httpStatus: 404,
+      payload: {
+        givenEmail: email,
+      },
+    })
+    return bad(fail)
+  }
+  return nice(user)
+}

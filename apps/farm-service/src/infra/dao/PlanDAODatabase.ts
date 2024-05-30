@@ -8,7 +8,7 @@ export class PlanDAODatabase implements PlanDAO {
 
   async getFirstGuestPlan(userId: string): Promise<PlanUsage> {
     const [foundDBPlan] = await this.prisma.plan.findMany({
-      where: { ownerId: userId, name: "GUEST" },
+      where: { onceBelongedTo: userId, name: "GUEST" },
       orderBy: { createdAt: "asc" },
       include: { usages: true, customPlan: true },
       take: 1,
