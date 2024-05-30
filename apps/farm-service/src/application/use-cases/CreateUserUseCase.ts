@@ -18,9 +18,9 @@ export class CreateUserUseCase {
       profilePic: authUser.profilePic,
       username: authUser.username,
     })
-    await this.initUserGateway.execute(user)
     await this.usersRepository.create(user)
     this.usersSACsFarmingClusterStorage.add(user.username, user.plan)
+    await this.initUserGateway.execute(user)
     return user
   }
 }

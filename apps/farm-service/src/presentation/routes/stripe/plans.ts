@@ -1,4 +1,5 @@
 import type { PlanAllNames } from "core"
+import { z } from "zod"
 import { env } from "~/env"
 
 export type AppStripePlan<TName extends PlanAllNames = PlanAllNames> = {
@@ -27,8 +28,15 @@ export const appStripePlansPlanNameKey: {
   },
 }
 
+export const stripePriceIdListSchema = z.enum([
+  env.STRIPE_SUBSCRIPTIONS_PLAN_ID_GUEST,
+  env.STRIPE_SUBSCRIPTIONS_PLAN_ID_SILVER,
+  env.STRIPE_SUBSCRIPTIONS_PLAN_ID_GOLD,
+  env.STRIPE_SUBSCRIPTIONS_PLAN_ID_DIAMOND,
+])
+
 export const appStripePlansPriceIdKey: {
-  [K: string]: PlanAllNames
+  [K: z.infer<typeof stripePriceIdListSchema>]: PlanAllNames
 } = {
   [env.STRIPE_SUBSCRIPTIONS_PLAN_ID_GUEST]: "GUEST",
   [env.STRIPE_SUBSCRIPTIONS_PLAN_ID_SILVER]: "SILVER",

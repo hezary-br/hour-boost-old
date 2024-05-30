@@ -1,9 +1,8 @@
 import { ClerkExpressRequireAuth } from "@clerk/clerk-sdk-node"
-import { saferAsync } from "@hourboost/utils"
-import { Fail, GetResult, PlanAllNames } from "core"
+import { GetResult, PlanAllNames } from "core"
 import express, { Router } from "express"
 import { Stripe } from "stripe"
-import { custom, z } from "zod"
+import { z } from "zod"
 import { ALS_username, ctxLog } from "~/application/use-cases/RestoreAccountManySessionsUseCase"
 import { env } from "~/env"
 import { prisma } from "~/infra/libs"
@@ -15,14 +14,17 @@ import { Subscription } from "~/presentation/routes/stripe/Subscription"
 import {
   createStripeCustomer,
   createSubscriptionStripe,
+  getLastSubcriptionItemOrFail,
   getStripeCustomerByEmail,
   getStripeSubscriptions,
 } from "~/presentation/routes/stripe/methods"
 import {
   appStripePlansPlanNameKey,
   appStripePlansPriceIdKey as mapPlanNameByStripePriceIdKey,
+  stripePriceIdListSchema,
 } from "~/presentation/routes/stripe/plans"
 import { upsertActualSubscription } from "~/presentation/routes/stripe/utils"
+import { planAllNamesSchema } from "~/schemas/planAllNamesSchema"
 import { bad, nice, only } from "~/utils/helpers"
 
 export const router_checkout: Router = Router()
@@ -44,14 +46,19 @@ router_webhook.post("/stripe/webhook", express.raw({ type: "application/json" })
   }
 
   switch (event.type) {
+    case "customer.subscription.deleted":
+      break // TODO
     case "customer.subscription.created":
+      break
     case "customer.subscription.updated":
       console.log("Handling webhook event: ", event.type)
+      const stripePriceIdParse = stripePriceIdListSchema.safeParse(event.data.object.items.data[0]?.price.id) // TODO
+      if (!stripePriceIdParse.success) return res.status(400).send("PriceId desconhecido.")
       const stripeCustomerId = event.data.object.customer as string
       const id_subscription = event.data.object.id as string
       const stripeStatus = event.data.object.status
-      const stripePriceId = event.data.object.items.data[0].price.id
       let { user_email } = event.data.object.metadata
+      const stripePriceId = stripePriceIdParse.data
 
       if (!user_email) {
         const customer = await getStripeCustomerById(stripeCustomerId)
@@ -78,7 +85,7 @@ router_webhook.post("/stripe/webhook", express.raw({ type: "application/json" })
           return res.sendStatus(errorUpserting.httpStatus)
         }
 
-        const newPlanName = mapPlanNameByStripePriceIdKey[stripePriceId]
+        const newPlanName = mapPlanNameByStripePriceIdKey[stripePriceId]!
 
         const [errorChangingPlan] = await changeUserPlanUseCase.execute({
           newPlanName,
@@ -135,9 +142,7 @@ router_checkout.post("/plan/preapproval", ClerkExpressRequireAuth(), async (req,
     z.object({
       userId: z.string().min(1, "Informe o ID do usuário."),
       email: z.string().email("Informe um e-mail válido."),
-      planName: z.enum(["DIAMOND", "GOLD", "GUEST", "SILVER"], {
-        message: "Tipo de plano inválido.",
-      }),
+      planName: planAllNamesSchema,
     })
   )
   if (invalidBody) return res.status(invalidBody.status).json(invalidBody.json)
@@ -160,15 +165,17 @@ export async function createSubscriptionCheckoutSessionByEmail({
   userId,
   name,
 }: CreateSubscriptionCheckoutSessionByEmailProps) {
-  const [error, customer] = await getOrCreateCustomer({ email, name })
-  if(error) return bad(error)
+  const [errorCreating, customer] = await getOrCreateCustomer({ email, name })
+  if (errorCreating) return bad(errorCreating)
 
-  const { url } = await createSubscriptionCheckoutSession({
+  const [error, checkoutSession] = await createSubscriptionCheckoutSession({
     customerId: customer.id,
     planName,
     userId,
     email,
   })
+  if (error) return bad(error)
+  const { url } = checkoutSession
 
   return nice({ url })
 }
@@ -185,7 +192,7 @@ type CreateCustomerProps = {
 }
 
 export async function getOrCreateCustomer({ email, name }: CreateCustomerProps) {
-  const customersWithThisEmail = await getStripeCustomerByEmail(stripe, { email })
+  const customersWithThisEmail = await getStripeCustomerByEmail(stripe, email)
   if (customersWithThisEmail) return nice(customersWithThisEmail)
 
   const [error, customerCreated] = await createStripeCustomer(stripe, { email, name })
@@ -286,7 +293,7 @@ export async function createSubscriptionCheckoutSession({
   userId,
   planName,
   email,
-}: CreateSubscriptionCheckoutSessionProps): Promise<{ url: string }> {
+}: CreateSubscriptionCheckoutSessionProps) {
   const { priceId } = appStripePlansPlanNameKey[planName]
 
   const { id_subscription: subscriptionIdNotification } =
@@ -316,17 +323,15 @@ export async function createSubscriptionCheckoutSession({
 
     url = session.url
   } else {
-    const currentSubscription = await stripe.subscriptionItems.list({
-      subscription: subscription.id,
-      limit: 1,
-    })
+    const [error, currentSubscriptionItem] = await getLastSubcriptionItemOrFail(stripe, currentSubscriptionId)
+    if (error) return bad(error)
 
     const session = await createBillingPortalSession({
       customerId,
       subscriptionIdNotification,
       priceId,
       subscriptionId: currentSubscriptionId,
-      subscriptionItemId: currentSubscription.data[0].id,
+      subscriptionItemId: currentSubscriptionItem.id,
     })
     url = session.url
   }
@@ -335,7 +340,7 @@ export async function createSubscriptionCheckoutSession({
     throw new Error("No URL for this session.")
   }
 
-  return { url }
+  return nice({ url })
 }
 
 function extractId(subscription: Stripe.Subscription | undefined | null) {
