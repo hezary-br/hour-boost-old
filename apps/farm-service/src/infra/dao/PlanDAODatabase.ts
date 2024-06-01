@@ -6,6 +6,18 @@ import { mapDatabasePlanToDomainWithUsages } from "~/infra/mappers/databasePlanT
 export class PlanDAODatabase implements PlanDAO {
   constructor(private readonly prisma: PrismaClient) {}
 
+  async getUserCurrent(userId: string) {
+    const dbPlan = await this.prisma.plan.findFirst({
+      where: { ownerId: userId },
+      include: {
+        usages: true,
+        customPlan: true,
+      },
+    })
+
+    return mapDatabasePlanToDomainWithUsages(dbPlan)
+  }
+
   async getFirstGuestPlan(userId: string): Promise<PlanUsage> {
     const [foundDBPlan] = await this.prisma.plan.findMany({
       where: { onceBelongedTo: userId, name: "GUEST" },

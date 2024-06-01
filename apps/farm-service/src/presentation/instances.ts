@@ -23,6 +23,7 @@ import { AddUsageTimeToPlanUseCase } from "~/application/use-cases/AddUsageTimeT
 import { BanUserUseCase } from "~/application/use-cases/BanUserUseCase"
 import { CancelUserSubscriptionUseCase } from "~/application/use-cases/CancelUserSubscriptionUseCase"
 import { ChangeUserPlanUseCase } from "~/application/use-cases/ChangeUserPlanUseCase"
+import { GetUserPlanUseCase } from "~/application/use-cases/GetUserPlanUseCase"
 import { PurchaseNewPlanUseCase } from "~/application/use-cases/PurchaseNewPlanUseCase"
 import { RetrieveSessionListUseCase } from "~/application/use-cases/RetrieveSessionListUseCase"
 import { RollbackToGuestPlanUseCase } from "~/application/use-cases/RollbackToGuestPlanUseCase"
@@ -285,6 +286,7 @@ export const banUserUseCase = new BanUserUseCase(
 export const purchaseNewPlanUseCase = new PurchaseNewPlanUseCase(usersRepository)
 export const purchaseNewPlanController = new PurchaseNewPlanController(purchaseNewPlanUseCase)
 export const unbanUserUseCase = new UnbanUserUseCase(usersRepository)
+export const getUserPlanUseCase = new GetUserPlanUseCase(planDAO)
 export const addSteamGuardCodeController = new AddSteamGuardCodeController(allUsersClientsStorage)
 const addSteamAccount = new AddSteamAccount(usersRepository, idGenerator)
 
