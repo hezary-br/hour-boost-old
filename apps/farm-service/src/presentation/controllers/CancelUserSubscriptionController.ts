@@ -27,21 +27,21 @@ export class CancelUserSubscriptionController implements ICancelUserSubscription
           return createResponse(error.httpStatus, {
             message: `Não foi possível encontrar a assinatura atual.`,
           })
-        case "PLAN-NOT-FOUND":
-          return createResponse(error.httpStatus, {
-            message: `Nenhum plano encontrado com ID [${error.payload.givenPlanId}]`,
-          })
+        // case "PLAN-NOT-FOUND":
+        //   return createResponse(error.httpStatus, {
+        //     message: `Nenhum plano encontrado com ID [${error.payload.givenPlanId}]`,
+        //   })
         case "FAILED-TO-CANCEL-STRIPE-SUBSCRIPTION":
           console.log(error)
           return createResponse(error.httpStatus, { message: `Erro ao cancelar a assinatura.` })
-        case "COULD-NOT-PERSIST-ACCOUNT-USAGE":
-        case "LIST::COULD-NOT-RESET-FARM":
-        case "LIST::TRIMMING-ACCOUNTS":
-        case "LIST::UPDATING-CACHE":
-          console.log(error)
-          return createResponse(error.httpStatus, {
-            message: `Assinatura cancelada! Mas aconteceu algum erro ao resetar o farm, sugerimos que você renicie manualmente o farm das contas.`,
-          })
+        // case "COULD-NOT-PERSIST-ACCOUNT-USAGE":
+        // case "LIST::COULD-NOT-RESET-FARM":
+        // case "LIST::TRIMMING-ACCOUNTS":
+        // case "LIST::UPDATING-CACHE":
+        // console.log(error)
+        // return createResponse(error.httpStatus, {
+        //   message: `Assinatura cancelada! Mas aconteceu algum erro ao resetar o farm, sugerimos que você renicie manualmente o farm das contas.`,
+        // })
         default:
           assertNever(error)
       }

@@ -30,14 +30,14 @@ export class CancelUserSubscriptionUseCase implements ICancelUserSubscriptionUse
     const [errorGettingUser, user] = await getUserByEmail(this.usersRepository, email)
     if (errorGettingUser) return bad(errorGettingUser)
     if (!subscription) {
-      const [error] = await this.rollbackToGuestPlanUseCase.execute({ user })
-      if (error) return bad(error)
+      // const [error] = await this.rollbackToGuestPlanUseCase.execute({ user })
+      // if (error) return bad(error)
       return nice({ code: "NO-ACTIVE-SUBSCRIPTIONS", data: undefined })
     }
     const [error$3, result] = await cancelStripeSubscription(this.stripe, subscription.id)
     if (error$3) return bad(error$3)
-    const [error$4] = await this.rollbackToGuestPlanUseCase.execute({ user })
-    if (error$4) return bad(error$4)
+    // const [error$4] = await this.rollbackToGuestPlanUseCase.execute({ user })
+    // if (error$4) return bad(error$4)
     return nice({ code: "SUBSCRIPTION-CANCELLED", data: result })
   }
 }
