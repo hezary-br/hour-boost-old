@@ -1,21 +1,16 @@
 import { ClerkExpressRequireAuth } from "@clerk/clerk-sdk-node"
 import { GetResult, PlanAllNames } from "core"
-import express, { Router } from "express"
+import { Router } from "express"
 import { Stripe } from "stripe"
 import { z } from "zod"
 import { EAppResults } from "~/application/use-cases"
-import { ALS_username, ctxLog } from "~/application/use-cases/RestoreAccountManySessionsUseCase"
+import { ctxLog } from "~/application/use-cases/RestoreAccountManySessionsUseCase"
 import { env } from "~/env"
 import { prisma } from "~/infra/libs"
 import { stripe } from "~/infra/services/stripe"
 import { rateLimit } from "~/inline-middlewares/rate-limit"
 import { validateBody } from "~/inline-middlewares/validate-payload"
-import {
-  cancelUserSubscriptionController,
-  changeUserPlanUseCase,
-  purchaseNewPlanController,
-  usersRepository,
-} from "~/presentation/instances"
+import { cancelUserSubscriptionController, purchaseNewPlanController } from "~/presentation/instances"
 import { RequestHandlerPresenter } from "~/presentation/presenters/RequestHandlerPresenter"
 import { Subscription } from "~/presentation/routes/stripe/Subscription"
 import {
@@ -25,103 +20,13 @@ import {
   getStripeCustomerByEmail,
   getStripeSubscriptions,
 } from "~/presentation/routes/stripe/methods"
-import {
-  appStripePlansPlanNameKey,
-  appStripePlansPriceIdKey as mapPlanNameByStripePriceIdKey,
-  stripePriceIdListSchema,
-} from "~/presentation/routes/stripe/plans"
-import { upsertActualSubscription } from "~/presentation/routes/stripe/utils"
+import { appStripePlansPlanNameKey } from "~/presentation/routes/stripe/plans"
 import { planAllNamesSchema } from "~/schemas/planAllNamesSchema"
 import { bad, nice, only } from "~/utils/helpers"
 
 export const router_checkout: Router = Router()
-export const router_webhook: Router = Router()
 
 export type StripeSubscriptions = Stripe.Response<Stripe.ApiList<Stripe.Subscription>>
-
-router_webhook.post("/stripe/webhook", express.raw({ type: "application/json" }), async (req, res) => {
-  const body = req.body
-  const signature = req.headers["stripe-signature"] as string
-
-  let event: Stripe.Event
-
-  try {
-    event = stripe.webhooks.constructEvent(body, signature, env.STRIPE_SECRET_WEBHOOK)
-  } catch (error: any) {
-    ctxLog(`Webhook Error: ${error.message}`)
-    return res.status(400).send(`Webhook Error: ${error.message}`)
-  }
-
-  switch (event.type) {
-    case "customer.subscription.deleted":
-      break // TODO
-    case "customer.subscription.created":
-      break
-    case "customer.subscription.updated":
-      console.log("Handling webhook event: ", event.type)
-      const stripePriceIdParse = stripePriceIdListSchema.safeParse(event.data.object.items.data[0]?.price.id) // TODO
-      if (!stripePriceIdParse.success) return res.status(400).send("PriceId desconhecido.")
-      const stripeCustomerId = event.data.object.customer as string
-      const id_subscription = event.data.object.id as string
-      const stripeStatus = event.data.object.status
-      let { user_email } = event.data.object.metadata
-      const stripePriceId = stripePriceIdParse.data
-
-      if (!user_email) {
-        const customer = await getStripeCustomerById(stripeCustomerId)
-        if (!customer?.email) {
-          console.log("NSTH: There is no user email, neither on the customer Id, and the metadata.")
-          return res.sendStatus(500)
-        }
-        user_email = customer.email
-      }
-
-      const user = await usersRepository.getByEmail(user_email)
-      if (!user) return res.sendStatus(404)
-      await ALS_username.run(user.username, async () => {
-        const [errorUpserting, actualSubscription] = await upsertActualSubscription({
-          id_subscription,
-          stripeCustomerId,
-          stripePriceId,
-          stripeStatus,
-          user_email,
-        })
-
-        if (errorUpserting) {
-          ctxLog(errorUpserting)
-          return res.sendStatus(errorUpserting.httpStatus)
-        }
-
-        const newPlanName = mapPlanNameByStripePriceIdKey[stripePriceId]!
-
-        const [errorChangingPlan] = await changeUserPlanUseCase.execute_creatingByPlanName({
-          newPlanName,
-          user,
-        })
-
-        if (errorChangingPlan) {
-          ctxLog(errorChangingPlan)
-          return res.sendStatus(errorChangingPlan.httpStatus)
-        }
-
-        if (!actualSubscription.user) {
-          console.log(
-            "NSTH: Webhook received and tried to update user subscription of a user that was not found.",
-            {
-              user_email,
-              actualSubscription,
-              user,
-            }
-          )
-          return res.sendStatus(404)
-        }
-      })
-      break
-    default:
-  }
-
-  return res.sendStatus(200)
-})
 
 router_checkout.delete("/subscription/current", ClerkExpressRequireAuth(), async (req, res) => {
   const [limited] = await rateLimit(req)
@@ -215,12 +120,6 @@ export async function createSubscriptionCheckoutSessionByEmail({
   const { url } = checkoutSession
 
   return nice({ url })
-}
-
-async function getStripeCustomerById(customerId: string) {
-  const customer = await stripe.customers.retrieve(customerId)
-  if (customer.deleted) return null
-  return customer
 }
 
 type CreateCustomerProps = {

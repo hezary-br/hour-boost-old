@@ -35,7 +35,7 @@ export const stripePriceIdListSchema = z.enum([
   env.STRIPE_SUBSCRIPTIONS_PLAN_ID_DIAMOND,
 ])
 
-export const appStripePlansPriceIdKey: {
+export const mapPlanNameByStripePriceIdKey: {
   [K: z.infer<typeof stripePriceIdListSchema>]: PlanAllNames
 } = {
   [env.STRIPE_SUBSCRIPTIONS_PLAN_ID_GUEST]: "GUEST",

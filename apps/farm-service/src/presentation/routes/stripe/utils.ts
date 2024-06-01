@@ -1,7 +1,7 @@
 import { Fail, User } from "core"
 import { ChangeUserPlanUseCase } from "~/application/use-cases/ChangeUserPlanUseCase"
 import { prisma } from "~/infra/libs"
-import { appStripePlansPriceIdKey } from "~/presentation/routes/stripe/plans"
+import { mapPlanNameByStripePriceIdKey } from "~/presentation/routes/stripe/plans"
 import { bad, nice } from "~/utils/helpers"
 
 interface AppSubscriptionDTO {
@@ -12,10 +12,7 @@ interface AppSubscriptionDTO {
   user_email: string
 }
 
-export async function upsertActualSubscription(
-  dto: AppSubscriptionDTO,
-) {
-
+export async function upsertActualSubscription(dto: AppSubscriptionDTO) {
   const [result] = await Promise.allSettled([
     prisma.subscriptionStripe.upsert({
       where: { user_email: dto.user_email },
