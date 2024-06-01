@@ -1,6 +1,10 @@
 import { Router } from "express"
 import express from "express"
 import Stripe from "stripe"
+import { mapStripeEventToWebhookEvent } from "~/application/services/WebhookEventStripe"
+import { WebhookHTTPAdapter } from "~/application/services/WebhookHTTPAdapter"
+import { WebhookHandler } from "~/application/services/WebhookHandler"
+import { EAppResults } from "~/application/use-cases"
 import { ALS_username, ctxLog } from "~/application/use-cases/RestoreAccountManySessionsUseCase"
 import { env } from "~/env"
 import { stripe } from "~/infra/services/stripe"
@@ -16,103 +20,119 @@ import { getStripeCustomerById } from "~/presentation/routes/stripe/methods"
 import { mapPlanNameByStripePriceIdKey, stripePriceIdListSchema } from "~/presentation/routes/stripe/plans"
 import { upsertActualSubscription } from "~/presentation/routes/stripe/utils"
 import { createResponse } from "~/types/response-api"
+import { assertNever } from "~/utils/assertNever"
 import { bad, nice } from "~/utils/helpers"
 
 export const router_webhook: Router = Router()
 
 router_webhook.post("/stripe/webhook", express.raw({ type: "application/json" }), async (req, res) => {
-  const body = req.body
-  const signature = req.headers["stripe-signature"] as string
-
-  let event: Stripe.Event
-
   try {
-    event = stripe.webhooks.constructEvent(body, signature, env.STRIPE_SECRET_WEBHOOK)
-  } catch (error: any) {
-    ctxLog(`Webhook Error: ${error.message}`)
-    return res.status(400).send(`Webhook Error: ${error.message}`)
-  }
+    const body = req.body
+    const signature = req.headers["stripe-signature"] as string
 
-  const getCurrentPlan = (userId: string) => userApplicationService.getCurrentPlanOrNull(userId)
+    const allEvent = stripe.webhooks.constructEvent(body, signature, env.STRIPE_SECRET_WEBHOOK)
 
-  if (event.type === "customer.subscription.deleted") {
+    const [unknownEvent, event] = checkIsKnownEvent(allEvent)
+    if (unknownEvent) return res.status(400).json({ message: "Unhandled event." })
+
     const [failExtracting, eventData] = extractStripeEventData(event)
     if (failExtracting) return RequestHandlerPresenter.handle(failExtracting, res)
+
     const [failGettingEmail, user_email] = await getUserEmail(
       event.data.object.metadata,
       eventData.stripeCustomerId
     )
     if (failGettingEmail) return res.sendStatus(500)
+
     const user = await usersRepository.getByEmail(user_email)
-    if (!user) return res.sendStatus(404)
-    await ALS_username.run(user.username, async () => {
-      const currentPlan = await getCurrentPlan(user.id_user)
-      const currentPlanIsGuest = currentPlan?.name === "GUEST"
-      if (currentPlanIsGuest) return res.sendStatus(200)
-      const [failRollingBack] = await rollbackToGuestPlanUseCase.execute({ user })
-      if (failRollingBack) {
-        ctxLog(`NSTH: Fail while rolling back from [${currentPlan?.name}] to guest plan GUEST.`, {
-          failRollingBack,
-        })
-        return res.sendStatus(500)
-      }
-      ctxLog(`Success: Rolled back plan from [${currentPlan?.name}] to GUEST`)
-    })
+    if (!user) return res.status(404).json({ code: EAppResults["USER-NOT-FOUND"] })
+
+    const webhookHandler = new WebhookHandler(rollbackToGuestPlanUseCase)
+    const webhookHTTPAdapter = new WebhookHTTPAdapter(webhookHandler)
+    const eventType = mapStripeEventToWebhookEvent(event)
+    const presentation = await webhookHTTPAdapter.execute(eventType, user)
+    return RequestHandlerPresenter.handle(presentation, res)
+  } catch (error: any) {
+    ctxLog(`Webhook Error: ${error.message}`)
+    return res.status(500).send(`Webhook Error: ${error.message}`)
   }
 
-  if (event.type === "customer.subscription.updated" || event.type === "customer.subscription.created") {
-    console.log("Handling webhook event: ", event.type)
-    const [fail, eventData] = extractStripeEventData(event)
-    if (fail) return RequestHandlerPresenter.handle(fail, res)
-    const { id_subscription, stripeCustomerId, stripePriceId, stripeStatus } = eventData
-    const [error, user_email] = await getUserEmail(event.data.object.metadata, stripeCustomerId)
-    if (error) return res.sendStatus(500)
-    const user = await usersRepository.getByEmail(user_email)
-    if (!user) return res.sendStatus(404)
-    await ALS_username.run(user.username, async () => {
-      const [errorUpserting, actualSubscription] = await upsertActualSubscription({
-        id_subscription,
-        stripeCustomerId,
-        stripePriceId,
-        stripeStatus,
-        user_email,
-      })
+  // if (event.type === "customer.subscription.deleted") {
+  //   const [failExtracting, eventData] = extractStripeEventData(event)
+  //   if (failExtracting) return RequestHandlerPresenter.handle(failExtracting, res)
+  //   const [failGettingEmail, user_email] = await getUserEmail(
+  //     event.data.object.metadata,
+  //     eventData.stripeCustomerId
+  //   )
+  //   if (failGettingEmail) return res.sendStatus(500)
+  //   const user = await usersRepository.getByEmail(user_email)
+  //   if (!user) return res.sendStatus(404)
+  //   await ALS_username.run(user.username, async () => {
+  //     const currentPlanIsGuest = user.plan.name === "GUEST"
+  //     if (currentPlanIsGuest) return res.sendStatus(200)
+  //     const [failRollingBack] = await rollbackToGuestPlanUseCase.execute({ user })
+  //     if (failRollingBack) {
+  //       ctxLog(`NSTH: Fail while rolling back from [${user.plan.name}] to guest plan GUEST.`, {
+  //         failRollingBack,
+  //       })
+  //       return res.sendStatus(500)
+  //     }
+  //     ctxLog(`Success: Rolled back plan from [${user.plan.name}] to GUEST`)
+  //   })
+  // }
 
-      if (errorUpserting) {
-        ctxLog(errorUpserting)
-        return res.sendStatus(errorUpserting.httpStatus)
-      }
+  // if (event.type === "customer.subscription.updated" || event.type === "customer.subscription.created") {
+  //   console.log("Handling webhook event: ", event.type)
+  //   const [fail, eventData] = extractStripeEventData(event)
+  //   if (fail) return RequestHandlerPresenter.handle(fail, res)
+  //   const { id_subscription, stripeCustomerId, stripePriceId, stripeStatus } = eventData
+  //   const [error, user_email] = await getUserEmail(event.data.object.metadata, stripeCustomerId)
+  //   if (error) return res.sendStatus(500)
+  //   const user = await usersRepository.getByEmail(user_email)
+  //   if (!user) return res.sendStatus(404)
+  //   await ALS_username.run(user.username, async () => {
+  //     const [errorUpserting, actualSubscription] = await upsertActualSubscription({
+  //       id_subscription,
+  //       stripeCustomerId,
+  //       stripePriceId,
+  //       stripeStatus,
+  //       user_email,
+  //     })
 
-      const newPlanName = mapPlanNameByStripePriceIdKey[stripePriceId]!
-      const currentPlan = await getCurrentPlan(user.id_user)
-      const isSamePlan = currentPlan?.name === newPlanName
-      if (isSamePlan) return res.sendStatus(400)
+  //     if (errorUpserting) {
+  //       ctxLog(errorUpserting)
+  //       return res.sendStatus(errorUpserting.httpStatus)
+  //     }
 
-      const [errorChangingPlan] = await changeUserPlanUseCase.execute_creatingByPlanName({
-        newPlanName,
-        user,
-      })
+  //     const newPlanName = mapPlanNameByStripePriceIdKey[stripePriceId]!
+  //     const isSamePlan = user.plan.name === newPlanName
+  //     if (isSamePlan) return res.sendStatus(400)
 
-      if (errorChangingPlan) {
-        ctxLog(errorChangingPlan)
-        return res.sendStatus(errorChangingPlan.httpStatus)
-      }
+  //     const [errorChangingPlan] = await changeUserPlanUseCase.execute_creatingByPlanName({
+  //       newPlanName,
+  //       user,
+  //     })
 
-      if (!actualSubscription.user) {
-        console.log(
-          "NSTH: Webhook received and tried to update user subscription of a user that was not found.",
-          {
-            user_email,
-            actualSubscription,
-            user,
-          }
-        )
-        return res.sendStatus(404)
-      }
-    })
-  }
+  //     if (errorChangingPlan) {
+  //       ctxLog(errorChangingPlan)
+  //       return res.sendStatus(errorChangingPlan.httpStatus)
+  //     }
 
-  return res.sendStatus(200)
+  //     if (!actualSubscription.user) {
+  //       console.log(
+  //         "NSTH: Webhook received and tried to update user subscription of a user that was not found.",
+  //         {
+  //           user_email,
+  //           actualSubscription,
+  //           user,
+  //         }
+  //       )
+  //       return res.sendStatus(404)
+  //     }
+  //   })
+  // }
+
+  // return res.sendStatus(200)
 })
 
 async function getUserEmail(metadata: Record<string, string | undefined>, customerId: string) {
@@ -147,4 +167,22 @@ function extractStripeEventData(
     stripeStatus,
     stripeCustomerId,
   })
+}
+
+function checkIsKnownEvent(event: Stripe.Event) {
+  const getKnownEvent = () => {
+    switch (event.type) {
+      case "customer.subscription.created":
+      case "customer.subscription.deleted":
+      case "customer.subscription.updated":
+        return event
+      default:
+        throw new Error()
+    }
+  }
+  try {
+    return nice(getKnownEvent())
+  } catch (error) {
+    return bad(createResponse(400, { message: "Unhandled event." }))
+  }
 }
