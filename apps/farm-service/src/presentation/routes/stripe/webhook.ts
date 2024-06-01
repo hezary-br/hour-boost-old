@@ -4,7 +4,12 @@ import Stripe from "stripe"
 import { ALS_username, ctxLog } from "~/application/use-cases/RestoreAccountManySessionsUseCase"
 import { env } from "~/env"
 import { stripe } from "~/infra/services/stripe"
-import { changeUserPlanUseCase, usersRepository } from "~/presentation/instances"
+import {
+  changeUserPlanUseCase,
+  getUserPlanUseCase,
+  userApplicationService,
+  usersRepository,
+} from "~/presentation/instances"
 import { getStripeCustomerById } from "~/presentation/routes/stripe/methods"
 import { mapPlanNameByStripePriceIdKey, stripePriceIdListSchema } from "~/presentation/routes/stripe/plans"
 import { upsertActualSubscription } from "~/presentation/routes/stripe/utils"
@@ -65,6 +70,9 @@ router_webhook.post("/stripe/webhook", express.raw({ type: "application/json" })
         }
 
         const newPlanName = mapPlanNameByStripePriceIdKey[stripePriceId]!
+        const currentPlan = await userApplicationService.getCurrentPlanOrNull(user.id_user)
+        const isSamePlan = currentPlan?.name === newPlanName
+        if (isSamePlan) return res.sendStatus(400)
 
         const [errorChangingPlan] = await changeUserPlanUseCase.execute_creatingByPlanName({
           newPlanName,

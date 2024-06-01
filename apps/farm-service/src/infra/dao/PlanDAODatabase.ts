@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client"
 import { PlanUsage } from "core"
 import { PlanDAO } from "~/infra/dao/PlanDAO"
-import { mapDatabasePlanToDomainWithUsages } from "~/infra/mappers/databasePlanToDomain"
+import { ensurePlan, mapDatabasePlanToDomainWithUsages } from "~/infra/mappers/databasePlanToDomain"
 
 export class PlanDAODatabase implements PlanDAO {
   constructor(private readonly prisma: PrismaClient) {}
@@ -15,6 +15,7 @@ export class PlanDAODatabase implements PlanDAO {
       },
     })
 
+    if (!dbPlan) return null
     return mapDatabasePlanToDomainWithUsages(dbPlan)
   }
 

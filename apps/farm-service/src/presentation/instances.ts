@@ -6,6 +6,7 @@ import { FarmServiceBuilder } from "~/application/factories"
 import { AllUsersClientsStorage, UsersSACsFarmingClusterStorage } from "~/application/services"
 import { HashService } from "~/application/services/HashService"
 import { TokenService } from "~/application/services/TokenService"
+import { UserApplicationService } from "~/application/services/UserApplicationService"
 import {
   AddSteamAccountUseCase,
   CheckSteamAccountOwnerStatusUseCase,
@@ -288,6 +289,7 @@ export const purchaseNewPlanController = new PurchaseNewPlanController(purchaseN
 export const unbanUserUseCase = new UnbanUserUseCase(usersRepository)
 export const getUserPlanUseCase = new GetUserPlanUseCase(planDAO)
 export const addSteamGuardCodeController = new AddSteamGuardCodeController(allUsersClientsStorage)
+export const userApplicationService = new UserApplicationService(planDAO)
 const addSteamAccount = new AddSteamAccount(usersRepository, idGenerator)
 
 export const addSteamAccountUseCase = new AddSteamAccountUseCase(
