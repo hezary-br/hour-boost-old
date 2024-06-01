@@ -47,7 +47,7 @@ export class ChangeUserPlanUseCase implements IChangeUserPlanUseCase {
     const plan = await this.planRepository.getById(planId)
     if (!plan) return bad(Fail.create(EAppResults["PLAN-NOT-FOUND"], 404, { givenPlanId: planId }))
 
-    return this.execute({ plan, user })
+    return await this.execute({ plan, user })
   }
 
   async execute({ plan, user }: ChangeUserPlanUseCasePayload) {
@@ -56,7 +56,8 @@ export class ChangeUserPlanUseCase implements IChangeUserPlanUseCase {
       this.allUsersClientsStorage
     )
     if (errorGettingUserSACList && errorGettingUserSACList?.code !== "USER-STORAGE-NOT-FOUND") {
-      return bad(Fail.create(errorGettingUserSACList.code, 400))
+      errorGettingUserSACList.code satisfies never
+      // return bad(Fail.create(errorGettingUserSACList.code, 400))
     }
 
     const [errorTrimmingSteamAccounts, trimSteamAccountsInfo] = this.trimSteamAccounts.execute({
