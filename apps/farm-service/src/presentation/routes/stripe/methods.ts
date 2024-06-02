@@ -1,7 +1,9 @@
 import { saferAsync } from "@hourboost/utils"
-import { Fail, PlanAllNames, User } from "core"
+import { Fail, PlanAllNames } from "core"
 import Stripe from "stripe"
-import { appStripePlansPlanNameKey } from "~/presentation/routes/stripe/plans"
+import { StripeKnownEvents } from "~/application/services/WebhookEventStripe"
+import { appStripePlansPlanNameKey, stripePriceIdListSchema } from "~/presentation/routes/stripe/plans"
+import { createResponse } from "~/types/response-api"
 import { bad, nice } from "~/utils/helpers"
 
 type GetOrCreateSubscriptionStripeProps = {
@@ -154,4 +156,34 @@ export async function getStripeCustomerById(stripe: Stripe, customerId: string) 
   const customer = await stripe.customers.retrieve(customerId)
   if (customer.deleted) return null
   return customer
+}
+
+export function extractStripeEventData(event: StripeKnownEvents) {
+  const stripePriceIdParse = stripePriceIdListSchema.safeParse(event.data.object.items.data[0]?.price.id) // TODO
+  if (!stripePriceIdParse.success) {
+    return bad(createResponse(400, { message: "PriceId desconhecido." }))
+  }
+  const stripeCustomerId = event.data.object.customer as string
+  const id_subscription = event.data.object.id as string
+  const stripeStatus = event.data.object.status
+  const stripePriceId = stripePriceIdParse.data
+
+  return nice({
+    id_subscription,
+    stripePriceId,
+    stripeStatus,
+    stripeCustomerId,
+  })
+}
+
+export async function getUserEmail(stripe: Stripe, user_email: string | undefined, customerId: string) {
+  if (!user_email) {
+    const customer = await getStripeCustomerById(stripe, customerId)
+    if (!customer?.email) {
+      console.log("NSTH: There is no user email, neither on the customer Id, and the metadata.")
+      return bad(Fail.create("NSTH-CUSTOMER-WITHOUT-EMAIL", 500))
+    }
+    user_email = customer.email
+  }
+  return nice(user_email)
 }
