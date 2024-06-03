@@ -7,13 +7,13 @@ import { stripePriceIdListSchema } from "~/presentation/routes/stripe/plans"
 import { createResponse } from "~/types/response-api"
 import { bad, nice } from "~/utils/helpers"
 
-export const mapStripeEventToWebhookEvent = (event: StripeKnownEvents): EventMapping => {
+export const mapStripeEventToWebhookEvent = (event: StripeKnownEvents, user_email: string): EventMapping => {
   switch (event.type) {
     case "customer.subscription.updated": {
       const data: EventData[typeof event.type] = {
         customerId: event.data.object.customer as string,
         subscriptionId: event.data.object.id as string,
-        "metadata.user_email": event.data.object.metadata.user_email,
+        "metadata.user_email": event.data.object.metadata.user_email ?? user_email,
         priceId: event.data.object.items.data[0]?.price.id as z.infer<typeof stripePriceIdListSchema>,
         status: event.data.object.status,
       }
@@ -23,7 +23,7 @@ export const mapStripeEventToWebhookEvent = (event: StripeKnownEvents): EventMap
       const data: EventData[typeof event.type] = {
         customerId: event.data.object.customer as string,
         subscriptionId: event.data.object.id as string,
-        "metadata.user_email": event.data.object.metadata.user_email,
+        "metadata.user_email": event.data.object.metadata.user_email ?? user_email,
         priceId: event.data.object.items.data[0]?.price.id as z.infer<typeof stripePriceIdListSchema>,
         status: event.data.object.status,
       }

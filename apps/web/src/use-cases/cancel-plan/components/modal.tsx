@@ -62,7 +62,11 @@ export const CancelPlanModal = React.forwardRef<React.ElementRef<typeof DialogCo
             />
           </DialogHeader>
           <div className="flex justify-between">
-            <Button variant="outline">Fechar</Button>
+            <Button
+              variant="outline"
+            >
+              Fechar
+            </Button>
             <Button
               variant="destructive"
               disabled={!submitDisabled}

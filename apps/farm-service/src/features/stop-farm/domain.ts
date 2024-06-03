@@ -19,12 +19,11 @@ export class StopFarmDomain implements IStopFarmDomain {
     const [errorFindingUserCluster, userCluster] = this.usersClusterStorage.get(username)
     if (errorFindingUserCluster) return bad(errorFindingUserCluster)
 
-    const [errorPausingFarmOnAccount, usages] = userCluster.pauseFarmOnAccountSync({
+    const [errorPausingFarmOnAccount, results] = userCluster.pauseFarmOnAccountSync({
       accountName,
       isFinalizingSession,
     })
     if (errorPausingFarmOnAccount) return bad(errorPausingFarmOnAccount)
-
-    return nice({ usages })
+    return nice(results)
   }
 }
