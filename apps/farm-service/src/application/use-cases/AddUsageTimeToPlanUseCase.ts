@@ -35,6 +35,7 @@ export class AddUsageTimeToPlanUseCase implements IAddUsageTimeToPlanUseCase {
     const [errorFlushUpdating, data] = await this.flushUpdateSteamAccountDomain.execute({
       plan: user.plan,
       user,
+      isFinalizingSession: false,
     })
     if (errorFlushUpdating) return bad(errorFlushUpdating)
 

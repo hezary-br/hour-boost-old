@@ -118,6 +118,7 @@ export function assignPlanCurry({ user, changeUserPlanUseCase }: AssignPlanProps
     const [errorAssigning] = await changeUserPlanUseCase.execute_creatingByPlanName({
       newPlanName: planName,
       user,
+      isFinalizingSession: false,
     })
     if (errorAssigning) {
       console.log(errorAssigning, { code: "FAILED-TO-ASSIGN-PLAN" })

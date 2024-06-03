@@ -12,6 +12,7 @@ export interface IFlushUpdateSteamAccountDomain {
 type FlushUpdateSteamAccountDomainProps = {
   user: User
   plan: PlanUsage | PlanInfinity
+  isFinalizingSession: boolean
 }
 
 export class FlushUpdateSteamAccountDomain implements IFlushUpdateSteamAccountDomain {
@@ -20,7 +21,7 @@ export class FlushUpdateSteamAccountDomain implements IFlushUpdateSteamAccountDo
     private readonly resetFarmEntities: ResetFarmEntities
   ) {}
 
-  async execute({ user, plan }: FlushUpdateSteamAccountDomainProps) {
+  async execute({ user, plan, isFinalizingSession }: FlushUpdateSteamAccountDomainProps) {
     let [error, updatedCacheStates = []] = getUserSACs_OnStorage_ByUser_UpdateStates(
       user,
       this.allUsersClientsStorage,
@@ -40,7 +41,7 @@ export class FlushUpdateSteamAccountDomain implements IFlushUpdateSteamAccountDo
         userId: user.id_user,
         accountName: state.accountName,
         username: user.username,
-        isFinalizingSession: false,
+        isFinalizingSession,
         plan,
       })
     })

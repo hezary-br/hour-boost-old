@@ -228,6 +228,7 @@ async function changeUserPlanDuePreapprovalCancelment({
   const [error] = await changeUserPlanUseCase.execute_creatingByPlanName({
     newPlanName: "GUEST",
     user,
+    isFinalizingSession: false,
   })
   if (error)
     return bad(

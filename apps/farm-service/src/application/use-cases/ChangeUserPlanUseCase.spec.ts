@@ -49,6 +49,7 @@ test("should change user plan from guest to diamond", async () => {
   const [errorChangingUserPlan] = await i.changeUserPlanUseCase.execute_creatingByPlanName({
     newPlanName: "DIAMOND",
     user,
+    isFinalizingSession: false,
   })
   expect(errorChangingUserPlan).toBeNull()
 
@@ -66,6 +67,7 @@ test("should change user plan from silver to diamond", async () => {
   const [errorChangingUserPlan] = await i.changeUserPlanUseCase.execute_creatingByPlanName({
     newPlanName: "DIAMOND",
     user,
+    isFinalizingSession: false,
   })
   expect(errorChangingUserPlan).toBeNull()
 
@@ -99,6 +101,7 @@ describe("user is farming test suite", () => {
     const [errorChangingUserPlan] = await i.changeUserPlanUseCase.execute_creatingByPlanName({
       newPlanName: "GUEST",
       user,
+      isFinalizingSession: false,
     })
     const gamesPlaying2 = (await getAccountOnCacheImpl(s.me.accountName))?.gamesPlaying
     expect(gamesPlaying2).toHaveLength(1)
@@ -143,6 +146,7 @@ describe("user is farming test suite", () => {
     const [errorChangingUserPlan] = await i.changeUserPlanUseCase.execute_creatingByPlanName({
       newPlanName: "GUEST",
       user,
+      isFinalizingSession: false,
     })
     if (errorChangingUserPlan) throw errorChangingUserPlan
     const gamesPlaying2 = (await getAccountOnCacheImpl(s.me.accountName))?.gamesPlaying
@@ -170,6 +174,7 @@ describe("user is farming test suite", () => {
     const [errorChangingUserPlan] = await i.changeUserPlanUseCase.execute_creatingByPlanName({
       newPlanName: "GUEST",
       user,
+      isFinalizingSession: false,
     })
     expect(errorChangingUserPlan).toBeNull()
 
@@ -223,6 +228,7 @@ describe("user is farming test suite", () => {
     const [errorChangingUserPlan] = await i.changeUserPlanUseCase.execute_creatingByPlanName({
       newPlanName: "GUEST",
       user,
+      isFinalizingSession: false,
     })
     if (errorChangingUserPlan) throw errorChangingUserPlan.payload
     expect(errorChangingUserPlan).toBeNull()
