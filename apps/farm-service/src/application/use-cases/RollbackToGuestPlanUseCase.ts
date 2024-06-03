@@ -17,7 +17,11 @@ export class RollbackToGuestPlanUseCase implements IRollbackToGuestPlanUseCase {
 
   async execute({ user }: RollbackToGuestPlanUseCaseDTO) {
     const plan = await this.planDAO.getFirstGuestPlan(user.id_user)
-    const [error] = await this.changeUserPlanUseCase.execute_toPlanId({ planId: plan.id_plan, user })
+    const [error] = await this.changeUserPlanUseCase.execute_toPlanId({
+      planId: plan.id_plan,
+      user,
+      isFinalizingSession: true,
+    })
     if (error) return bad(error)
 
     return nice("SUCCESS")

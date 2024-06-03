@@ -43,13 +43,14 @@ export class WebhookHandler {
 
     if (errorUpserting) return bad(errorUpserting)
 
-    const newPlanName = mapPlanNameByStripePriceIdKey[webhookData.priceId]
+    const newPlanName = mapPlanNameByStripePriceIdKey[webhookData.priceId]!
     const isSamePlan = user.plan.name === newPlanName
     if (isSamePlan) return bad(Fail.create("TRIED-UPDATING-TO-PLAN-USER-ALREADY-HAS", 400))
 
     const [errorChangingPlan] = await this.changeUserPlanUseCase.execute_creatingByPlanName({
       newPlanName,
       user,
+      isFinalizingSession: true,
     })
 
     if (errorChangingPlan) return bad(errorChangingPlan)

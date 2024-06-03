@@ -36,21 +36,25 @@ export class ChangeUserPlanUseCase implements IChangeUserPlanUseCase {
     private readonly flushUpdateSteamAccountDomain: FlushUpdateSteamAccountDomain
   ) {}
 
-  async execute_creatingByPlanName({ newPlanName, user }: ChangeUserPlanUseCaseCreatingByPlanNamePayload) {
+  async execute_creatingByPlanName({
+    newPlanName,
+    user,
+    isFinalizingSession,
+  }: ChangeUserPlanUseCaseCreatingByPlanNamePayload) {
     const [errorChangingPlan, newPlan] = this.planService.createPlan({ currentPlan: user.plan, newPlanName })
     if (errorChangingPlan) return bad(errorChangingPlan)
 
-    return this.execute({ plan: newPlan, user })
+    return this.execute({ plan: newPlan, user, isFinalizingSession })
   }
 
-  async execute_toPlanId({ planId, user }: ChangeUserPlanUseCaseToByPlanIdPayload) {
+  async execute_toPlanId({ planId, user, isFinalizingSession }: ChangeUserPlanUseCaseToByPlanIdPayload) {
     const plan = await this.planRepository.getById(planId)
     if (!plan) return bad(Fail.create(EAppResults["PLAN-NOT-FOUND"], 404, { givenPlanId: planId }))
 
-    return await this.execute({ plan, user })
+    return await this.execute({ plan, user, isFinalizingSession })
   }
 
-  async execute({ plan, user }: ChangeUserPlanUseCasePayload) {
+  async execute({ plan, user, isFinalizingSession }: ChangeUserPlanUseCasePayload) {
     const [errorGettingUserSACList, userSacList = []] = getUserSACs_OnStorage_ByUser(
       user,
       this.allUsersClientsStorage
@@ -70,6 +74,7 @@ export class ChangeUserPlanUseCase implements IChangeUserPlanUseCase {
     const [errorFlushUpdatingFarm, result] = await this.flushUpdateSteamAccountDomain.execute({
       user,
       plan,
+      isFinalizingSession,
     })
     if (errorFlushUpdatingFarm) return bad(errorFlushUpdatingFarm)
     const { resetFarmResultList, updatedCacheStates } = result
@@ -87,7 +92,9 @@ export class ChangeUserPlanUseCase implements IChangeUserPlanUseCase {
       )
     )
     if (errorPersistingUsages)
-      return bad(Fail.create("COULD-NOT-PERSIST-ACCOUNT-USAGE", 400, errorPersistingUsages))
+      return bad(
+        Fail.create("COULD-NOT-PERSIST-ACCOUNT-USAGE", 400, { code: errorPersistingUsages.map(e => e.code) })
+      )
 
     const fails: Fail[] = []
 
@@ -141,16 +148,19 @@ export class ChangeUserPlanUseCase implements IChangeUserPlanUseCase {
 export type ChangeUserPlanUseCaseCreatingByPlanNamePayload = {
   user: User
   newPlanName: PlanAllNames
+  isFinalizingSession: boolean
 }
 
 export type ChangeUserPlanUseCaseToByPlanIdPayload = {
   user: User
   planId: string
+  isFinalizingSession: boolean
 }
 
 export type ChangeUserPlanUseCasePayload = {
   user: User
   plan: PlanInfinity | PlanUsage
+  isFinalizingSession: boolean
 }
 
 interface IChangeUserPlanUseCase {

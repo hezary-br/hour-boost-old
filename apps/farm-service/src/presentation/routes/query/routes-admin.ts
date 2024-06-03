@@ -248,6 +248,7 @@ query_routerAdmin.post("/change-user-plan", async (req, res) => {
   const [error] = await changeUserPlanUseCase.execute_creatingByPlanName({
     newPlanName,
     user: user!,
+    isFinalizingSession: false,
   })
 
   if (error) {

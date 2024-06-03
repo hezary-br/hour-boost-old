@@ -37,6 +37,7 @@ export class SetMaxSteamAccountsUseCase implements ISetMaxSteamAccountsUseCase {
     const [error, flushUpdateData] = await this.flushUpdateSteamAccountDomain.execute({
       user,
       plan: user.plan,
+      isFinalizingSession: false,
     })
     if (error) return bad(error)
 

@@ -19,6 +19,7 @@ export class FlushUpdateSteamAccountUseCase implements IFlushUpdateSteamAccountU
     const [errorFlushUpdating, data] = await this.flushUpdateSteamAccountDomain.execute({
       plan: user.plan,
       user,
+      isFinalizingSession: false,
     })
     if (errorFlushUpdating) return bad(errorFlushUpdating)
 
