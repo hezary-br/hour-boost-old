@@ -4,6 +4,7 @@ import { EAppResults } from "~/application/use-cases"
 import { getUserSACs_OnStorage_ByUser_UpdateStates } from "~/utils/getUser"
 import { bad, nice } from "~/utils/helpers"
 import { ResetFarmEntities } from "~/utils/resetFarm"
+import { resetSession } from "~/utils/resetSession"
 
 export interface IFlushUpdateSteamAccountDomain {
   execute(props: FlushUpdateSteamAccountDomainProps): Promise<DataOrFail<Fail>>
@@ -13,6 +14,7 @@ type FlushUpdateSteamAccountDomainProps = {
   user: User
   plan: PlanUsage | PlanInfinity
   isFinalizingSession: boolean
+  shouldResetSession?: boolean
 }
 
 export class FlushUpdateSteamAccountDomain implements IFlushUpdateSteamAccountDomain {
@@ -21,7 +23,8 @@ export class FlushUpdateSteamAccountDomain implements IFlushUpdateSteamAccountDo
     private readonly resetFarmEntities: ResetFarmEntities
   ) {}
 
-  async execute({ user, plan, isFinalizingSession }: FlushUpdateSteamAccountDomainProps) {
+  async execute({ user, plan, isFinalizingSession, shouldResetSession }: FlushUpdateSteamAccountDomainProps) {
+    shouldResetSession ??= false
     let [error, updatedCacheStates = []] = getUserSACs_OnStorage_ByUser_UpdateStates(
       user,
       this.allUsersClientsStorage,
@@ -36,6 +39,7 @@ export class FlushUpdateSteamAccountDomain implements IFlushUpdateSteamAccountDo
     }
 
     const promises = updatedCacheStates.map(state => {
+      if (shouldResetSession) resetSession(state)
       return this.resetFarmEntities({
         state,
         userId: user.id_user,

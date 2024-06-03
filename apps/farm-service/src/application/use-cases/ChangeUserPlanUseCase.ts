@@ -21,6 +21,7 @@ import { bad, nice } from "~/utils/helpers"
 import { nonNullable } from "~/utils/nonNullable"
 import { EAppResults, type RestoreAccountSessionUseCase } from "."
 import type { AllUsersClientsStorage, FarmSession } from "../services"
+import { resetSession } from "~/utils/resetSession"
 
 export class ChangeUserPlanUseCase implements IChangeUserPlanUseCase {
   constructor(
@@ -75,6 +76,7 @@ export class ChangeUserPlanUseCase implements IChangeUserPlanUseCase {
       user,
       plan,
       isFinalizingSession,
+      shouldResetSession: true,
     })
     if (errorFlushUpdatingFarm) return bad(errorFlushUpdatingFarm)
     const { resetFarmResultList, updatedCacheStates } = result
@@ -104,10 +106,8 @@ export class ChangeUserPlanUseCase implements IChangeUserPlanUseCase {
     for (const state of updatedCacheStatesFiltered) {
       // I just changed my plan, and I expect farm started to be null
       // So I can start a new farm session with the new plan
-      if (state.isFarming()) {
-        // reset farm started at, add extra few seconds till it reach the client
-        state.setFarmStartedAt(new Date(Date.now() + 1000 * 5))
-      }
+      resetSession(state)
+
       await this.steamAccountClientStateCacheRepository.save(state)
       const [error] = await this.restoreAccountSessionUseCase.execute({
         plan,
