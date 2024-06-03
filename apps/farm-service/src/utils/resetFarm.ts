@@ -149,7 +149,7 @@ export function resetFarm(stopFarmDomain: StopFarmDomain) {
           assertNever(error)
       }
     }
-    const promise = data?.promises.savingCachePromise
+    const promise = data?.savingCachePromise
     if (promise) await promise
 
     const [errorRestoringSACState] = await restoreSACStateOnApplication(userCluster, plan)(sac, state)
