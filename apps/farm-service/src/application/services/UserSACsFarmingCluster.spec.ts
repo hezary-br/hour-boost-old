@@ -205,14 +205,14 @@ test("should check if account is farming properly", async () => {
   /**
    * pause
    */
-  const [errorPausing, usages] = meCluster.pauseFarmOnAccountSync({
+  const [errorPausing, result] = meCluster.pauseFarmOnAccountSync({
     accountName: s.me.accountName,
     isFinalizingSession: true,
   })
   expect(errorPausing).toBeNull()
   expect(meCluster.getAccountsStatus()).toStrictEqual({})
   expect(meCluster.farmService.hasAccountsFarming()).toBe(false)
-  expect(usages?.type).toBe("STOP-ONE")
+  expect(result?.usages.type).toBe("STOP-ONE")
   expect(meCluster.isAccountFarmingOnService(s.me.accountName)).toBe(false)
 
   /**
