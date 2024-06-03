@@ -1,4 +1,9 @@
-import { ApplicationError, type PlanRepository, type SteamAccountClientStateCacheRepository } from "core"
+import {
+  AppAccountStatusIddle,
+  ApplicationError,
+  type PlanRepository,
+  type SteamAccountClientStateCacheRepository,
+} from "core"
 import { UserClientsStorage } from "~/application/services"
 import type { SteamAccountClient } from "~/application/services/steam"
 import type { FarmGamesUseCase } from "~/application/use-cases/FarmGamesUseCase"
@@ -195,7 +200,20 @@ export class AllUsersClientsStorage {
   }
 
   listUsers() {
-    const usersIDs = {} as Record<string, Record<string, { farming: boolean }>>
+    const usersIDs = {} as Record<
+      string,
+      Record<
+        string,
+        {
+          farming: boolean
+          logged: boolean
+          gamesPlaying: number[]
+          gamesStaging: number[]
+          status: AppAccountStatusIddle
+          farmStartedAt: string | null
+        }
+      >
+    >
     for (const [userId, client] of this.users.entries()) {
       usersIDs[userId] = client.getAccountsStatus()
     }

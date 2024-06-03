@@ -102,6 +102,12 @@ export class ChangeUserPlanUseCase implements IChangeUserPlanUseCase {
       user.steamAccounts.data.map(sa => sa.credentials.accountName).includes(c.accountName)
     )
     for (const state of updatedCacheStatesFiltered) {
+      // I just changed my plan, and I expect farm started to be null
+      // So I can start a new farm session with the new plan
+      if (state.isFarming()) {
+        // reset farm started at, add extra few seconds till it reach the client
+        state.setFarmStartedAt(new Date(Date.now() + 1000 * 5))
+      }
       await this.steamAccountClientStateCacheRepository.save(state)
       const [error] = await this.restoreAccountSessionUseCase.execute({
         plan,

@@ -1,8 +1,8 @@
 import {
   CacheState,
+  Fail,
   type CacheStateDTO,
   type DataOrFail,
-  Fail,
   type Mutable,
   type PlanInfinity,
   type PlanUsage,
@@ -12,7 +12,7 @@ import type { SteamAccountClient } from "~/application/services/steam"
 import { handleSteamClientError } from "~/application/use-cases"
 import type { Publisher } from "~/infra/queue"
 import type { FailGeneric } from "~/types/EventsApp.types"
-import { type Pretify, bad, nice } from "~/utils/helpers"
+import { bad, nice, type Pretify } from "~/utils/helpers"
 import { restoreSACStateOnApplication } from "~/utils/restoreSACStateOnApplication"
 
 type Payload = {

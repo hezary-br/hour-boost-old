@@ -226,17 +226,12 @@ export class UserSACsFarmingCluster implements IUserSACsFarmingCluster {
     if (this.sacList.list.size === 0) {
       return bad(Fail.create("DO-NOT-HAVE-ACCOUNTS-FARMING", 403))
     }
-    // return [new ApplicationError("Usuário não possui contas farmando.", 402)]
     const sac = this.sacList.get(accountName)
     if (!sac) {
       return bad(Fail.create("TRIED-TO-STOP-FARM-ON-NON-FARMING-ACCOUNT", 403))
     }
-    // this.farmService.pauseFarmOnAccount(accountName)
     sac.stopFarm()
     if (isFinalizingSession) {
-      console.log("44: isFinalizingSession true, salvando esse cache", sac.getCache().toDTO(), {
-        startedAt: sac.getCache().toDTO().farmStartedAt,
-      })
       const savingCachePromise = this.sacStateCacheRepository.save(sac.getCache())
       return nice({ savingCachePromise })
     }
@@ -255,14 +250,15 @@ export class UserSACsFarmingCluster implements IUserSACsFarmingCluster {
   }
 
   pauseFarmOnAccountSync(props: NSUserCluster.PauseFarmOnAccountProps) {
-    const [errorPausingFarm, promises] = this.pauseFarmOnAccountImpl(props)
+    const [errorPausingFarm, pauseResults] = this.pauseFarmOnAccountImpl(props)
     if (errorPausingFarm) return bad(errorPausingFarm)
     const [error, usages] = this.farmService.pauseFarmOnAccountSync(
       props.accountName,
       props.isFinalizingSession
     )
     if (error) return bad(error)
-    return nice({ usages, promises })
+    const { savingCachePromise } = pauseResults
+    return nice({ usages, savingCachePromise })
   }
 
   setFarmService(newFarmService: FarmUsageService | FarmInfinityService) {

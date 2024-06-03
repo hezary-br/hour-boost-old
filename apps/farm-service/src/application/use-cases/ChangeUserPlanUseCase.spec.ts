@@ -14,6 +14,7 @@ import { getAccountOnCache } from "~/utils/getAccount"
 import { getSACOn_AllUsersClientsStorage_ByUserId } from "~/utils/getSAC"
 import { isAccountFarmingOnClusterByUsername } from "~/utils/isAccount"
 import { PlanBuilder } from "../factories/PlanFactory"
+import { makeFarmGames } from "~/application/use-cases/__tests_helpers"
 
 const log = console.log
 // console.log = () => {}
@@ -73,6 +74,49 @@ test("should change user plan from silver to diamond", async () => {
 
   const user2 = await i.usersRepository.getByID(s.me.userId)
   expect(user2?.plan).toBeInstanceOf(DiamondPlan)
+})
+
+test.only("should have reseted farm started at in cache so user can start new fresh farm session", async () => {
+  Object.assign(globalThis, { __users: i.usersMemory.users, __plans: i.planRepository })
+  jest.useFakeTimers({ doNotFake: ["setTimeout"] })
+  jest.setSystemTime(new Date("2024-06-10T10:00:00"))
+  const silverPlan = new PlanBuilder(s.me.userId).infinity().silver()
+  await i.changeUserPlan(silverPlan)
+  const user = await i.usersRepository.getByID(s.me.userId)
+  expect(user?.plan).toBeInstanceOf(SilverPlan)
+  if (!user) throw "no user"
+
+  const { status } = await i.farmGames(s.me.accountName, [200], user.id_user)
+  expect(status).toBe(200)
+  jest.advanceTimersByTime(1000 * 3600 * 1.5) // 1.5 hour
+
+  const getAccountFarmStartedAtInApp = async () => {
+    const user = await i.usersDAO.getByID(s.me.userId)
+    return user?.steamAccounts.find(sa => sa.accountName === s.me.accountName)?.farmStartedAt
+  }
+
+  const farmStartedAt = await getAccountFarmStartedAtInApp()
+  expect(farmStartedAt).toBe(null)
+
+  const [errorChangingUserPlan] = await i.changeUserPlanUseCase.execute_creatingByPlanName({
+    newPlanName: "DIAMOND",
+    user,
+    isFinalizingSession: false,
+  })
+  expect(errorChangingUserPlan).toBeNull()
+  jest.advanceTimersByTime(1000 * 3600 * 2) // 2 hours
+
+  const [error] = await i.stopFarmUseCase.execute({
+    accountName: s.me.accountName,
+    isFinalizingSession: true,
+    username: s.me.username,
+  })
+  expect(error).toBeNull()
+
+  const farmStartedAt2 = await getAccountFarmStartedAtInApp()
+  expect(farmStartedAt2).toBe(null)
+
+  jest.useRealTimers()
 })
 
 describe("user is farming test suite", () => {

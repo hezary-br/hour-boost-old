@@ -218,6 +218,7 @@ const handleSACClientError = (
   if (type === "error") {
     const [error] = args ?? []
     if (!error) {
+      console.log({ sacError: error })
       return bad(new ClientAppResult({ code: "UNKNOWN-CLIENT-ERROR", fatal: true }))
     }
     const steamClientError = handleSteamClientError(error)
