@@ -18,6 +18,8 @@ export class WebhookHandler {
       return await this.handleCancellation({ user, webhookData: webhook.data })
     if (webhook.type === "updated") return await this.handleUpdated({ user, webhookData: webhook.data })
     if (webhook.type === "created") return await this.handleCreated({ user, webhookData: webhook.data })
+    if (webhook.type === "invoice-payment-failed")
+      return await this.handleInvoicePaymentFailed({ user, webhookData: webhook.data })
     if (webhook.type === "unknown") return bad(Fail.create("UNHANDLED-EVENT", 400))
     assertNever(webhook)
   }
@@ -39,6 +41,15 @@ export class WebhookHandler {
 
   private async handleCreated({ user, webhookData }: Handle<NSWebhook.WebhookEventCreated>) {
     return await this.handleUpdated({ user, webhookData })
+  }
+
+  private async handleInvoicePaymentFailed({
+    user,
+    webhookData,
+  }: Handle<NSWebhook.WebhookEventInvoicePaymentFailed>) {
+    const [error, result] = await this.handleCancellation({ user, webhookData })
+    if (error) return bad(error)
+    return nice(result)
   }
 
   private async handleUpdated({ user, webhookData }: Handle<NSWebhook.WebhookEventUpdated>) {
@@ -80,6 +91,7 @@ export type EventMapping =
   | WebhookEventUpdatedMapping
   | WebhookEventCreatedMapping
   | WebhookEventCancellationMapping
+  | WebhookEventInvoicePaymentFailedMapping
   | WebhookEventUnknownMapping
 
 export type WebhookEventUpdatedMapping = {
@@ -95,6 +107,11 @@ export type WebhookEventCreatedMapping = {
 export type WebhookEventCancellationMapping = {
   type: "cancellation"
   data: NSWebhook.WebhookEventCancellation
+}
+
+export type WebhookEventInvoicePaymentFailedMapping = {
+  type: "invoice-payment-failed"
+  data: NSWebhook.WebhookEventInvoicePaymentFailed
 }
 
 export type WebhookEventUnknownMapping = {
@@ -114,6 +131,8 @@ export namespace NSWebhook {
     status: string
     "metadata.user_email": string
   }
+
+  export interface WebhookEventInvoicePaymentFailed {}
 
   export type WebhookEventCreated = WebhookEventUpdated
 

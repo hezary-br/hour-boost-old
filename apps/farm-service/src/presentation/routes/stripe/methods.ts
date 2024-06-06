@@ -158,26 +158,31 @@ export async function getStripeCustomerById(stripe: Stripe, customerId: string) 
   return customer
 }
 
-export function extractStripeEventData(event: StripeKnownEvents) {
-  const stripePriceIdParse = stripePriceIdListSchema.safeParse(event.data.object.items.data[0]?.price.id) // TODO
-  if (!stripePriceIdParse.success) {
-    return bad(createResponse(400, { message: "PriceId desconhecido." }))
-  }
-  const stripeCustomerId = event.data.object.customer as string
-  const id_subscription = event.data.object.id as string
-  const stripeStatus = event.data.object.status
-  const stripePriceId = stripePriceIdParse.data
+// export function extractStripeEventData(event: StripeKnownEvents) {
+//   const stripePriceIdParse = stripePriceIdListSchema.safeParse(event.data.object.items.data[0]?.price.id) // TODO
+//   if (!stripePriceIdParse.success) {
+//     return bad(createResponse(400, { message: "PriceId desconhecido." }))
+//   }
+//   const stripeCustomerId = event.data.object.customer as string
+//   const id_subscription = event.data.object.id as string
+//   const stripeStatus = event.data.object.status
+//   const stripePriceId = stripePriceIdParse.data
 
-  return nice({
-    id_subscription,
-    stripePriceId,
-    stripeStatus,
-    stripeCustomerId,
-  })
-}
+//   return nice({
+//     id_subscription,
+//     stripePriceId,
+//     stripeStatus,
+//     stripeCustomerId,
+//   })
+// }
 
-export async function getUserEmail(stripe: Stripe, user_email: string | undefined, customerId: string) {
+export async function getUserEmail(
+  stripe: Stripe,
+  user_email: string | undefined,
+  customerId: string | null
+) {
   if (!user_email) {
+    if (!customerId) return bad(Fail.create("NSTH-EVENT-WITHOUT-CUSTOMER-AND-NO-EMAIL", 500))
     const customer = await getStripeCustomerById(stripe, customerId)
     if (!customer?.email) {
       console.log("NSTH: There is no user email, neither on the customer Id, and the metadata.")
@@ -186,4 +191,14 @@ export async function getUserEmail(stripe: Stripe, user_email: string | undefine
     user_email = customer.email
   }
   return nice(user_email)
+}
+
+export function getCustomerId(
+  customer: string | Stripe.Customer | Stripe.DeletedCustomer | null
+): string | null {
+  if (!customer) return null
+  if (typeof customer === "string") {
+    return customer
+  }
+  return customer.id
 }
