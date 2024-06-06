@@ -25,11 +25,13 @@ import {
   query_routerUser,
 } from "~/presentation/routes/query"
 import { query_routerAdmin } from "~/presentation/routes/query/routes-admin"
+import { router_checkout } from "~/presentation/routes/stripe"
 import { env } from "./env"
+import { router_webhook } from "~/presentation/routes/stripe/webhook"
 
-prefix(console, {
-  format: ":date(yyyy/mm/dd HH:MM:ss.l)",
-})
+// prefix(console, {
+//   format: ":date(yyyy/mm/dd HH:MM:ss.l)",
+// })
 
 declare global {
   namespace Express {
@@ -44,8 +46,9 @@ app.use(
   })
 )
 
-app.use(express.json())
 app.use(cookieParser())
+app.use(router_webhook)
+app.use(express.json())
 
 app.use(query_routerUser)
 app.use("/admin", query_routerAdmin)
@@ -54,6 +57,7 @@ app.use(query_routerPlan)
 app.use(query_routerGeneral)
 app.use(command_routerSteam)
 app.use(command_routerPlan)
+app.use(router_checkout)
 
 app.get("/recovering-accounts", (req, res) => {
   res.json({

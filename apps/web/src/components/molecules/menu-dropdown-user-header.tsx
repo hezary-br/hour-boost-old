@@ -1,3 +1,4 @@
+import { CancelPlanModal } from "@/use-cases/cancel-plan/components/modal"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,7 +11,7 @@ import { cn } from "@/lib/utils"
 import { useClerk } from "@clerk/clerk-react"
 import Link from "next/link"
 import { useRouter } from "next/router"
-import React from "react"
+import React, { useEffect, useState } from "react"
 
 export type MenuDropdownUserHeaderProps = React.ComponentPropsWithoutRef<typeof DropdownMenuContent> & {
   children: React.ReactNode
@@ -22,9 +23,30 @@ export const MenuDropdownUserHeader = React.forwardRef<
 >(function MenuDropdownUserHeaderComponent({ children, className, ...props }, ref) {
   const isAdminServerMeta = useServerMeta()?.session?.role === "ADMIN"
   const isAdminQuery = useUser(user => user.role === "ADMIN")
+  const userPlanQuery = useUser(user => user.plan.name)
   const isAdmin = isAdminQuery.status === "pending" ? isAdminServerMeta : !!isAdminQuery.data
+  const canCancelPlan = userPlanQuery.status === "success" && userPlanQuery.data !== "GUEST"
 
   const userIsBanned = useServerMeta()?.session?.status === "BANNED"
+  const router = useRouter()
+  useEffect(() => void console.log(router), [router])
+
+  const [transiting, setTransiting] = useState(false)
+
+  useEffect(() => {
+    const handleStart = url => url !== router.asPath && setTransiting(true)
+    const handleComplete = url => url === router.asPath && setTransiting(false)
+
+    router.events.on("routeChangeStart", handleStart)
+    router.events.on("routeChangeComplete", handleComplete)
+    router.events.on("routeChangeError", handleComplete)
+
+    return () => {
+      router.events.off("routeChangeStart", handleStart)
+      router.events.off("routeChangeComplete", handleComplete)
+      router.events.off("routeChangeError", handleComplete)
+    }
+  })
   // userIsBanned && "pointer-events-none cursor-not-allowed opacity-50"
 
   return (
@@ -32,16 +54,23 @@ export const MenuDropdownUserHeader = React.forwardRef<
       <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
       <DropdownMenuContent
         {...props}
-        className={cn("", className)}
+        className={cn("relative", className)}
         ref={ref}
         align="end"
       >
+        {transiting && <div className="pointer-events-none absolute inset-0 z-30 bg-black/40" />}
         {userIsBanned ? (
           <DropdownMenuItemLogout>Sair</DropdownMenuItemLogout>
         ) : (
           <>
             <HeaderLink to="/home">Home</HeaderLink>
             <HeaderLink to="/dashboard">Dashboard</HeaderLink>
+            <HeaderLink to="/plans">Mudar plano</HeaderLink>
+            {canCancelPlan && (
+              <CancelPlanModal>
+                <HeaderButton>Cancelar plano</HeaderButton>
+              </CancelPlanModal>
+            )}
             {isAdmin && (
               <>
                 <HeaderLink to="/admin">Painel Admin</HeaderLink>
@@ -107,6 +136,23 @@ export const HeaderLink = React.forwardRef<React.ElementRef<typeof Link>, Header
           className
         )}
         href={to}
+        {...props}
+      />
+    )
+  }
+)
+
+export type HeaderButtonProps = React.ComponentPropsWithoutRef<"button">
+
+export const HeaderButton = React.forwardRef<React.ElementRef<"button">, HeaderButtonProps>(
+  function HeaderButtonComponent({ className, ...props }, ref) {
+    return (
+      <button
+        ref={ref}
+        className={cn(
+          "hover:bg-accent relative flex w-full cursor-default select-none items-center px-2 py-1.5 text-sm outline-none transition-colors transition-none hover:text-white data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+          className
+        )}
         {...props}
       />
     )

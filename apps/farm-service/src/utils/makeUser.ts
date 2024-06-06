@@ -1,10 +1,8 @@
 import {
   ActiveStatus,
   GuestPlan,
-  type 
-  PlanInfinity,
-  type 
-  PlanUsage,
+  type PlanInfinity,
+  type PlanUsage,
   SteamAccountList,
   UsageList,
   User,

@@ -1,6 +1,11 @@
 import type { SteamAccountClient } from "~/application/services/steam"
+import { ctxLog } from "~/application/use-cases/RestoreAccountManySessionsUseCase"
 import type { EventParameters } from "~/infra/services"
-import { type EventParametersTimeout, type FarmGamesEventsResolve, SingleEventResolver } from "~/types/EventsApp.types"
+import {
+  type EventParametersTimeout,
+  type FarmGamesEventsResolve,
+  SingleEventResolver,
+} from "~/types/EventsApp.types"
 
 type RequiredEventTimeoutNames = keyof (EventParameters & EventParametersTimeout)
 export type EventPromises = Partial<Record<RequiredEventTimeoutNames, boolean>>
@@ -13,7 +18,7 @@ export class SteamClientEventsRequired {
 
   createEventPromiseResolver<K extends keyof EventParameters>(eventName: K) {
     return new Promise<SingleEventResolver<EventParameters, K>>(res => {
-      if (eventName === "loggedOn") console.log("createEventPromiseResolver.setting lastHandler")
+      if (eventName === "loggedOn") ctxLog("logged, setting lastHandler")
       this.sac.setLastHandler(eventName, (...args) => res(new SingleEventResolver({ type: eventName, args })))
       // this.sac.client.on(eventName, (...args) => res({ type: eventName, args }))
     })

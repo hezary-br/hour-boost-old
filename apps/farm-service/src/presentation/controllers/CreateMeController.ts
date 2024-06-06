@@ -25,6 +25,7 @@ export class CreateMeController {
       role: me.role.name,
       userId,
       status: me.status.name,
+      planName: me.plan.name,
     })
     if (errorSigningToken) {
       return createResponseNoJSON(400)

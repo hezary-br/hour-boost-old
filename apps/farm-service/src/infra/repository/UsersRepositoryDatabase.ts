@@ -13,13 +13,18 @@ import {
   User,
   UserRole,
 } from "core"
-import { databasePlanToDomain } from "~/infra/mappers/databasePlanToDomain"
+import { ensurePlan, mapDatabasePlanToDomainWithUsages } from "~/infra/mappers/databasePlanToDomain"
 import { databaseUsageToDomain } from "~/infra/mappers/databaseUsageToDomain"
 import { getPlanCreation, updateUser } from "~/infra/repository/UsersRepositoryUpdateMethod"
 import { toPostgreSQL, toSQLDate } from "~/utils/toSQL"
 
 export class UsersRepositoryDatabase implements UsersRepository {
   constructor(private readonly prisma: PrismaClient) {}
+
+  async getByEmail(email: string): Promise<User | null> {
+    const dbUser = await prismaGetUser(this.prisma, { email })
+    return dbUser ? prismaUserToDomain(dbUser) : null
+  }
 
   async findMany(): Promise<User[]> {
     const users = await prismaFindMany(this.prisma)
@@ -119,7 +124,7 @@ export function statusFactory(status: StatusName): Status {
 }
 
 function prismaUserFindManyToUserDomain(user: PrismaFindMany[number]): User {
-  const userPlan = databasePlanToDomain(user.plan)
+  const userPlan = mapDatabasePlanToDomainWithUsages(ensurePlan(user.plan))
 
   const steamAccounts: SteamAccountList = new SteamAccountList({
     data: user.steamAccounts.map(sa =>
@@ -177,7 +182,7 @@ export function prismaUserToDomain(dbUser: PrismaGetUser) {
     ),
   })
 
-  const userPlan = databasePlanToDomain(dbUser.plan)
+  const userPlan = mapDatabasePlanToDomainWithUsages(ensurePlan(dbUser.plan))
 
   return User.restore({
     email: dbUser.email,
@@ -199,10 +204,11 @@ export function prismaUserToDomain(dbUser: PrismaGetUser) {
   })
 }
 
-export type IGetUserProps = { userId: string } | { username: string }
+export type IGetUserProps = { userId: string } | { username: string } | { email: string }
 export type PrismaFindMany = Awaited<ReturnType<typeof prismaFindMany>>
 export type PrismaGetUser = Awaited<ReturnType<typeof prismaGetUser>>
-export type PrismaPlan = NonNullable<PrismaGetUser>["plan"]
+export type PrismaPlanWithUsages = NonNullable<NonNullable<PrismaGetUser>["plan"]>
+export type PrismaPlan = Omit<NonNullable<PrismaPlanWithUsages>, "usages"> | null
 export function prismaGetUser(prisma: PrismaClient, props: IGetUserProps) {
   return prisma.user.findUnique({
     where:
@@ -210,9 +216,13 @@ export function prismaGetUser(prisma: PrismaClient, props: IGetUserProps) {
         ? {
             username: props.username,
           }
-        : {
-            id_user: props.userId,
-          },
+        : "userId" in props
+          ? {
+              id_user: props.userId,
+            }
+          : {
+              email: props.email,
+            },
     include: {
       plan: { include: { usages: true, customPlan: true } },
       purchases: true,

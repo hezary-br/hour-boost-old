@@ -1,5 +1,5 @@
 import { ClerkExpressRequireAuth, type WithAuthProp } from "@clerk/clerk-sdk-node"
-import { Router, type Request, type Response } from "express"
+import { type Request, type Response, Router } from "express"
 import { GetPersonaStateUseCase } from "~/application/use-cases/GetPersonaStateUseCase"
 
 import z from "zod"

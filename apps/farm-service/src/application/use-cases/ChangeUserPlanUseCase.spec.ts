@@ -1,12 +1,12 @@
 import { jest } from "@jest/globals"
 import { DiamondPlan, GuestPlan, SilverPlan } from "core"
 import {
-  makeTestInstances,
-  password,
-  validSteamAccounts,
   type CustomInstances,
   type MakeTestInstancesProps,
   type PrefixKeys,
+  makeTestInstances,
+  password,
+  validSteamAccounts,
 } from "~/__tests__/instances"
 import { testUsers as s } from "~/infra/services/UserAuthenticationInMemory"
 import { StopFarmController } from "~/presentation/controllers"
@@ -14,6 +14,7 @@ import { getAccountOnCache } from "~/utils/getAccount"
 import { getSACOn_AllUsersClientsStorage_ByUserId } from "~/utils/getSAC"
 import { isAccountFarmingOnClusterByUsername } from "~/utils/isAccount"
 import { PlanBuilder } from "../factories/PlanFactory"
+import { makeFarmGames } from "~/application/use-cases/__tests_helpers"
 
 const log = console.log
 // console.log = () => {}
@@ -46,9 +47,10 @@ test("should change user plan from guest to diamond", async () => {
   expect(user?.plan).toBeInstanceOf(GuestPlan)
   if (!user) throw "no user"
 
-  const [errorChangingUserPlan] = await i.changeUserPlanUseCase.execute({
+  const [errorChangingUserPlan] = await i.changeUserPlanUseCase.execute_creatingByPlanName({
     newPlanName: "DIAMOND",
     user,
+    isFinalizingSession: false,
   })
   expect(errorChangingUserPlan).toBeNull()
 
@@ -63,14 +65,58 @@ test("should change user plan from silver to diamond", async () => {
   expect(user?.plan).toBeInstanceOf(SilverPlan)
   if (!user) throw "no user"
 
-  const [errorChangingUserPlan] = await i.changeUserPlanUseCase.execute({
+  const [errorChangingUserPlan] = await i.changeUserPlanUseCase.execute_creatingByPlanName({
     newPlanName: "DIAMOND",
     user,
+    isFinalizingSession: false,
   })
   expect(errorChangingUserPlan).toBeNull()
 
   const user2 = await i.usersRepository.getByID(s.me.userId)
   expect(user2?.plan).toBeInstanceOf(DiamondPlan)
+})
+
+test.only("should have reseted farm started at in cache so user can start new fresh farm session", async () => {
+  Object.assign(globalThis, { __users: i.usersMemory.users, __plans: i.planRepository })
+  jest.useFakeTimers({ doNotFake: ["setTimeout"] })
+  jest.setSystemTime(new Date("2024-06-10T10:00:00"))
+  const silverPlan = new PlanBuilder(s.me.userId).infinity().silver()
+  await i.changeUserPlan(silverPlan)
+  const user = await i.usersRepository.getByID(s.me.userId)
+  expect(user?.plan).toBeInstanceOf(SilverPlan)
+  if (!user) throw "no user"
+
+  const { status } = await i.farmGames(s.me.accountName, [200], user.id_user)
+  expect(status).toBe(200)
+  jest.advanceTimersByTime(1000 * 3600 * 1.5) // 1.5 hour
+
+  const getAccountFarmStartedAtInApp = async () => {
+    const user = await i.usersDAO.getByID(s.me.userId)
+    return user?.steamAccounts.find(sa => sa.accountName === s.me.accountName)?.farmStartedAt
+  }
+
+  const farmStartedAt = await getAccountFarmStartedAtInApp()
+  expect(farmStartedAt).toBe(null)
+
+  const [errorChangingUserPlan] = await i.changeUserPlanUseCase.execute_creatingByPlanName({
+    newPlanName: "DIAMOND",
+    user,
+    isFinalizingSession: false,
+  })
+  expect(errorChangingUserPlan).toBeNull()
+  jest.advanceTimersByTime(1000 * 3600 * 2) // 2 hours
+
+  const [error] = await i.stopFarmUseCase.execute({
+    accountName: s.me.accountName,
+    isFinalizingSession: true,
+    username: s.me.username,
+  })
+  expect(error).toBeNull()
+
+  const farmStartedAt2 = await getAccountFarmStartedAtInApp()
+  expect(farmStartedAt2).toBe(null)
+
+  jest.useRealTimers()
 })
 
 describe("user is farming test suite", () => {
@@ -96,9 +142,10 @@ describe("user is farming test suite", () => {
     expect(user?.plan).toBeInstanceOf(DiamondPlan)
     if (!user) throw "no user"
 
-    const [errorChangingUserPlan] = await i.changeUserPlanUseCase.execute({
+    const [errorChangingUserPlan] = await i.changeUserPlanUseCase.execute_creatingByPlanName({
       newPlanName: "GUEST",
       user,
+      isFinalizingSession: false,
     })
     const gamesPlaying2 = (await getAccountOnCacheImpl(s.me.accountName))?.gamesPlaying
     expect(gamesPlaying2).toHaveLength(1)
@@ -140,9 +187,10 @@ describe("user is farming test suite", () => {
     expect(user?.plan).toBeInstanceOf(DiamondPlan)
     if (!user) throw "no user"
 
-    const [errorChangingUserPlan] = await i.changeUserPlanUseCase.execute({
+    const [errorChangingUserPlan] = await i.changeUserPlanUseCase.execute_creatingByPlanName({
       newPlanName: "GUEST",
       user,
+      isFinalizingSession: false,
     })
     if (errorChangingUserPlan) throw errorChangingUserPlan
     const gamesPlaying2 = (await getAccountOnCacheImpl(s.me.accountName))?.gamesPlaying
@@ -167,9 +215,10 @@ describe("user is farming test suite", () => {
     expect(user?.plan).toBeInstanceOf(DiamondPlan)
     if (!user) throw "no user"
 
-    const [errorChangingUserPlan] = await i.changeUserPlanUseCase.execute({
+    const [errorChangingUserPlan] = await i.changeUserPlanUseCase.execute_creatingByPlanName({
       newPlanName: "GUEST",
       user,
+      isFinalizingSession: false,
     })
     expect(errorChangingUserPlan).toBeNull()
 
@@ -220,9 +269,10 @@ describe("user is farming test suite", () => {
       [s.me.accountName2]: "FARMING",
     })
     // corta conta adicional e persiste usages dessa conta cortada
-    const [errorChangingUserPlan] = await i.changeUserPlanUseCase.execute({
+    const [errorChangingUserPlan] = await i.changeUserPlanUseCase.execute_creatingByPlanName({
       newPlanName: "GUEST",
       user,
+      isFinalizingSession: false,
     })
     if (errorChangingUserPlan) throw errorChangingUserPlan.payload
     expect(errorChangingUserPlan).toBeNull()

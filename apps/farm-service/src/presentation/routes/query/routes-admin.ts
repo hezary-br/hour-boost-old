@@ -176,6 +176,14 @@ query_routerAdmin.post("/ban-user", ClerkExpressRequireAuth(), async (req, res) 
         return res.status(error.httpStatus).json({ code: error.code, message: "Usuário não encontrado." })
       case "LIST::REMOVING-ACCOUNTS":
       case "LIST::PERSISTING-USAGES":
+      case "ERROR-GETTING-LAST-SUBSCRIPTION":
+      case "FAILED-TO-CANCEL-STRIPE-SUBSCRIPTION":
+      case "STRIPE-CUSTOMER-NOT-FOUND":
+        // case "COULD-NOT-PERSIST-ACCOUNT-USAGE":
+        // case "LIST::COULD-NOT-RESET-FARM":
+        // case "LIST::TRIMMING-ACCOUNTS":
+        // case "LIST::UPDATING-CACHE":
+        // case "PLAN-NOT-FOUND":
         console.log("ERROR: ", error.code, error.payload)
         return res.status(GENERIC_ERROR_STATUS).json(GENERIC_ERROR_JSON)
       default:
@@ -215,6 +223,7 @@ query_routerAdmin.post("/unban-user", async (req, res) => {
 
 query_routerAdmin.post("/change-user-plan", async (req, res) => {
   const [_, isAdmin] = await ensureAdmin(req, res)
+  console.log({ secret: req.body, env: process.env.ACTIONS_SECRET })
   const authorized = isAdmin || req.body.secret === process.env.ACTIONS_SECRET
   if (!authorized) {
     return res.status(500).json({ message: "Unauthorized. :)" })
@@ -236,9 +245,10 @@ query_routerAdmin.post("/change-user-plan", async (req, res) => {
       .status(errorGettingUser.httpStatus)
       .json({ code: errorGettingUser.code, message: "Usuário não encontrado." })
   }
-  const [error] = await changeUserPlanUseCase.execute({
+  const [error] = await changeUserPlanUseCase.execute_creatingByPlanName({
     newPlanName,
     user: user!,
+    isFinalizingSession: false,
   })
 
   if (error) {

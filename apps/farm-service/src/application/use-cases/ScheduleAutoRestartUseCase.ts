@@ -28,57 +28,61 @@ export class ScheduleAutoRestartUseCase implements IScheduleRestartRelogin {
     if (hasCronAlready) return bad(new Fail({ code: "ALREADY-HAS-CRON" }))
 
     const interval = setInterval(async () => {
-      const [errorWhileRestarting, result] = await this.autoRestartCron.run({
-        accountName,
-        forceRestoreSessionOnApplication: true,
-      })
+      try {
+        const [errorWhileRestarting, result] = await this.autoRestartCron.run({
+          accountName,
+          forceRestoreSessionOnApplication: true,
+        })
 
-      appendFile(
-        "logs/scheduler.txt",
-        `${new Date().toISOString()} [${accountName}] ${JSON.stringify([errorWhileRestarting, result])} \r\n`,
-        () => {}
-      )
-      if (errorWhileRestarting) {
-        this.autoRestarterScheduler.stopCron(accountName)
-        this.logger.log(`dismissing cron for account [${accountName}]`)
+        appendFile(
+          "logs/scheduler.txt",
+          `${new Date().toISOString()} [${accountName}] ${JSON.stringify([errorWhileRestarting, result])} \r\n`,
+          () => {}
+        )
+        if (errorWhileRestarting) {
+          this.autoRestarterScheduler.stopCron(accountName)
+          this.logger.log(`dismissing cron for account [${accountName}]`)
 
-        switch (errorWhileRestarting.code) {
-          case "[AutoRestarterCron]::PLAN-NOT-FOUND":
-            this.logger.log(`plano não encontrado com id [${errorWhileRestarting.payload.planId}]`)
-            return
-          case "STEAM-ACCOUNT-IS-NOT-OWNED":
-            this.logger.log(`steam account não não tinha dono {${accountName}}`)
-            return
-          case "STEAM-ACCOUNT-NOT-FOUND":
-            this.logger.log(`steam account não foi encontrada {${accountName}}`)
-            return
-          case "USER-NOT-FOUND":
-            this.logger.log(`usuario não encontrado com id [${errorWhileRestarting.payload.user}]`)
-            return
-          case "KNOWN-ERROR":
-          case "OTHER-SESSION-STILL-ON":
-          case "PLAN-DOES-NOT-SUPPORT-AUTO-RELOGIN":
-          case "UNKNOWN-APPLICATION-ERROR":
-          case "UNKNOWN-CLIENT-ERROR":
-          case "[FarmUsageService]:PLAN-MAX-USAGE-EXCEEDED":
-          case "[RestoreAccountSessionUseCase]::PLAN-NOT-FOUND":
-          case "[RestoreAccountSessionUseCase]::SAC-NOT-FOUND":
-          case "[RestoreAccountSessionUseCase]::UNKNOWN-CLIENT-ERROR":
-          case "[RestoreAccountSessionUseCase]::[FarmInfinityService]:ACCOUNT-ALREADY-FARMING":
-          case "[RestoreAccountSessionUseCase]::DIDNT-ADD-GAMES":
-          case "[RestoreAccountSessionUseCase]::SAC-IS-REQUIRING-STEAM-GUARD":
-          case "cluster.farmWithAccount()::UNKNOWN-CLIENT-ERROR":
-            return this.logger.log(`erro não tratado: ${errorWhileRestarting.code}`)
+          switch (errorWhileRestarting.code) {
+            case "[AutoRestarterCron]::PLAN-NOT-FOUND":
+              this.logger.log(`plano não encontrado com id [${errorWhileRestarting.payload.planId}]`)
+              return
+            case "STEAM-ACCOUNT-IS-NOT-OWNED":
+              this.logger.log(`steam account não não tinha dono {${accountName}}`)
+              return
+            case "STEAM-ACCOUNT-NOT-FOUND":
+              this.logger.log(`steam account não foi encontrada {${accountName}}`)
+              return
+            case "USER-NOT-FOUND":
+              this.logger.log(`usuario não encontrado com id [${errorWhileRestarting.payload.user}]`)
+              return
+            case "KNOWN-ERROR":
+            case "OTHER-SESSION-STILL-ON":
+            case "PLAN-DOES-NOT-SUPPORT-AUTO-RELOGIN":
+            case "UNKNOWN-APPLICATION-ERROR":
+            case "UNKNOWN-CLIENT-ERROR":
+            case "[FarmUsageService]:PLAN-MAX-USAGE-EXCEEDED":
+            case "[RestoreAccountSessionUseCase]::PLAN-NOT-FOUND":
+            case "[RestoreAccountSessionUseCase]::SAC-NOT-FOUND":
+            case "[RestoreAccountSessionUseCase]::UNKNOWN-CLIENT-ERROR":
+            case "[RestoreAccountSessionUseCase]::[FarmInfinityService]:ACCOUNT-ALREADY-FARMING":
+            case "[RestoreAccountSessionUseCase]::DIDNT-ADD-GAMES":
+            case "[RestoreAccountSessionUseCase]::SAC-IS-REQUIRING-STEAM-GUARD":
+            case "cluster.farmWithAccount()::UNKNOWN-CLIENT-ERROR":
+              return this.logger.log(`erro não tratado: ${errorWhileRestarting.code}`)
 
-          default:
-            errorWhileRestarting satisfies never
-            throw new Error("Error in type.")
+            default:
+              errorWhileRestarting satisfies never
+              throw new Error("Error in type.")
+          }
         }
-      }
 
-      if (result.fatal) {
-        this.logger.log(`fatal, dismissing cron for account [${accountName}]`)
-        this.autoRestarterScheduler.stopCron(accountName)
+        if (result.fatal) {
+          this.logger.log(`fatal, dismissing cron for account [${accountName}]`)
+          this.autoRestarterScheduler.stopCron(accountName)
+        }
+      } catch (error) {
+        console.log("NSTH: ", error)
       }
     }, 1000 * intervalInSeconds)
 

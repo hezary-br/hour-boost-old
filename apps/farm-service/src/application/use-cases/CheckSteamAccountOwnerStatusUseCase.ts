@@ -1,4 +1,10 @@
-import { ApplicationError, type DataOrError, SteamAccount, type SteamAccountsRepository, type UseCase } from "core"
+import {
+  ApplicationError,
+  type DataOrError,
+  SteamAccount,
+  type SteamAccountsRepository,
+  type UseCase,
+} from "core"
 
 export namespace CheckSteamAccountOwnerStatusUseCaseHandle {
   export type Payload = {

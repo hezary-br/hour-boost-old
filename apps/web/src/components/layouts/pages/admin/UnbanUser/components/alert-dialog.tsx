@@ -10,11 +10,11 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
+import { Accent } from "@/components/atoms/Accent"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import React, { useState } from "react"
-import { twc } from "react-twc"
 import { toast } from "sonner"
 import { useUserAdminItemId } from "../../UserItemAction/context"
 import { useUserAdminListItem } from "../../hooks/useUserAdminListItem"
@@ -92,5 +92,3 @@ export const AlertDialogUnbanUser = React.forwardRef<
 })
 
 AlertDialogUnbanUser.displayName = "AlertDialogUnbanUser"
-
-export const Accent = twc.span`inline-flex items-center text-xs/none h-4 rounded-sm px-2 bg-accent text-white font-semibold`

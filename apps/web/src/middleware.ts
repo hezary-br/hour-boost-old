@@ -9,7 +9,7 @@ import { NextResponse } from "next/server"
 
 export default authMiddleware({
   ignoredRoutes: ["/"],
-  publicRoutes: ["/home"],
+  publicRoutes: ["/home", "/plans"],
   async afterAuth(auth, req) {
     let hbIdentificationToken: string | null = null
     let hbHasId: string | null = null
@@ -18,7 +18,7 @@ export default authMiddleware({
     const url = req.nextUrl.clone()
 
     const response = NextResponse.rewrite(url)
-    const isMaintance = process.env["NEXT_PUBLIC_MAINTANCE"] === "true"
+    const maintanceMode = process.env["NEXT_PUBLIC_MAINTANCE"]
 
     if (PAGE_HELPERS.includes(url.pathname)) {
       url.pathname = "/404"
@@ -26,7 +26,7 @@ export default authMiddleware({
       return NextResponse.rewrite(url, response)
     }
 
-    if (isMaintance) {
+    if (maintanceMode === "true") {
       response.cookies.set(HBHeaders["hb-has-id"], "false")
       response.cookies.delete(HBHeaders["hb-identification"])
       if (auth.sessionId) {
@@ -87,6 +87,22 @@ export default authMiddleware({
       }
       devlog("[MIDDLEWARE]: --> LOG: tem token: ", !!userToken)
 
+      if (maintanceMode === "admin" && userToken?.role !== "ADMIN") {
+        response.cookies.set(HBHeaders["hb-has-id"], "false")
+        response.cookies.delete(HBHeaders["hb-identification"])
+        if (auth.sessionId) {
+          await clerkClient.sessions.revokeSession(auth.sessionId)
+        }
+        if (!auth.isPublicRoute) {
+          url.pathname = "/maintance"
+          devlog("[MIDDLEWARE]: Em manutenção.")
+          return NextResponse.rewrite(url, response)
+        }
+
+        appendResponseCookiesToRequest(req, response)
+        return response
+      }
+
       if (userToken?.status === "BANNED" && !auth.isPublicRoute) {
         setCookiesToResponse(response, [
           ["hb-user-banned", "true"],
@@ -137,11 +153,6 @@ export default authMiddleware({
         }
       }
 
-      console.log({
-        "userToken?.status": userToken?.status,
-        "auth.isPublicRoute": auth.isPublicRoute,
-      })
-
       setCookiesToResponse(response, [
         [HBHeaders["hb-identification"], hbIdentificationToken],
         [HBHeaders["hb-has-user"], hbHasUser],
@@ -159,5 +170,5 @@ export default authMiddleware({
 })
 
 export const config = {
-  matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|trpc)(.*)"],
+  matcher: "/((?!api|static|.*\\..*|_next).*)",
 }

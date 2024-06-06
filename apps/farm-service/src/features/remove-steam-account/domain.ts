@@ -54,7 +54,7 @@ export class RemoveSteamAccount implements IRemoveSteamAccount {
           })
         )
       }
-      farmSession = farmSessionResult
+      farmSession = farmSessionResult.usages
     }
 
     const steamAccount = user.steamAccounts.data[steamAccountIndex]

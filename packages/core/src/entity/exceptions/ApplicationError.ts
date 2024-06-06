@@ -37,7 +37,7 @@ export class Fail<
   const TCode extends string = string,
   const THTTPStatus = number,
   const TPayload extends Record<string, any> | undefined = Record<string, any> | undefined,
-> extends Error {
+> {
   // payload: TPayload extends Record<string, any> ? TPayload : undefined
   payload: TPayload
   code: TCode
@@ -52,7 +52,6 @@ export class Fail<
     payload?: TPayload
     httpStatus?: THTTPStatus
   }) {
-    super(code)
     this.code = code as TCode
     this.payload = payload as TPayload
     this.httpStatus = httpStatus as THTTPStatus

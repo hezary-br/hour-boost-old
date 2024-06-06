@@ -8,6 +8,7 @@ import {
   RestoreAccountSessionUseCase,
   ScheduleAutoRestartUseCase,
 } from "~/application/use-cases"
+import { ctxLog } from "~/application/use-cases/RestoreAccountManySessionsUseCase"
 import { AutoRestarterScheduler } from "~/domain/cron/AutoRestarterScheduler"
 import { testUsers as s } from "~/infra/services/UserAuthenticationInMemory"
 
@@ -21,7 +22,12 @@ const i = makeTestInstances(
 )
 
 const autoRestarterScheduler = new AutoRestarterScheduler()
-const createUser = new CreateUserUseCase(i.usersRepository, i.userAuthentication, i.usersClusterStorage)
+const createUser = new CreateUserUseCase(
+  i.usersRepository,
+  i.userAuthentication,
+  i.usersClusterStorage,
+  i.initUserGateway
+)
 
 const addSteamAccount = new AddSteamAccount(i.usersRepository, i.idGenerator)
 const addSteamAccountUseCase = new AddSteamAccountUseCase(
@@ -72,7 +78,7 @@ async function main() {
     intervalInSeconds: 15,
   })
   if (errorScheduling) {
-    console.log({ msg: errorScheduling.message, code: errorScheduling.code })
+    ctxLog({ code: errorScheduling.code })
     return
   }
   const sac2 = i.allUsersClientsStorage.getAccountClientOrThrow(s.me.userId, s.me.accountName)

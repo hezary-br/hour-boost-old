@@ -19,7 +19,7 @@ export class AddUsageTimeToPlanUseCase implements IAddUsageTimeToPlanUseCase {
     private readonly usersRepository: UsersRepository,
     private readonly flushUpdateSteamAccountDomain: FlushUpdateSteamAccountDomain,
     private readonly steamAccountClientStateCacheRepository: SteamAccountClientStateCacheRepository,
-    private readonly planRepository: PlanRepository,
+    private readonly planRepository: PlanRepository
   ) {}
 
   async execute({ mutatingUserId, usageTimeInSeconds }: AddUsageTimeToPlanUseCasePayload) {
@@ -35,6 +35,7 @@ export class AddUsageTimeToPlanUseCase implements IAddUsageTimeToPlanUseCase {
     const [errorFlushUpdating, data] = await this.flushUpdateSteamAccountDomain.execute({
       plan: user.plan,
       user,
+      isFinalizingSession: false,
     })
     if (errorFlushUpdating) return bad(errorFlushUpdating)
 

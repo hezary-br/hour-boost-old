@@ -1,9 +1,10 @@
 import {
-  type DataOrFail,
   Fail,
-  type GetError,
-  type PlanAllNames,
+  PlanInfinity,
   PlanRepository,
+  PlanUsage,
+  type DataOrFail,
+  type PlanAllNames,
   type SteamAccountClientStateCacheRepository,
   type User,
   type UsersRepository,
@@ -18,8 +19,9 @@ import { Publisher } from "~/infra/queue"
 import { getUserSACs_OnStorage_ByUser } from "~/utils/getUser"
 import { bad, nice } from "~/utils/helpers"
 import { nonNullable } from "~/utils/nonNullable"
-import type { RestoreAccountSessionUseCase } from "."
+import { EAppResults, type RestoreAccountSessionUseCase } from "."
 import type { AllUsersClientsStorage, FarmSession } from "../services"
+import { resetSession } from "~/utils/resetSession"
 
 export class ChangeUserPlanUseCase implements IChangeUserPlanUseCase {
   constructor(
@@ -35,28 +37,46 @@ export class ChangeUserPlanUseCase implements IChangeUserPlanUseCase {
     private readonly flushUpdateSteamAccountDomain: FlushUpdateSteamAccountDomain
   ) {}
 
-  private async executeImpl({ user, newPlanName }: ChangeUserPlanUseCasePayload) {
+  async execute_creatingByPlanName({
+    newPlanName,
+    user,
+    isFinalizingSession,
+  }: ChangeUserPlanUseCaseCreatingByPlanNamePayload) {
     const [errorChangingPlan, newPlan] = this.planService.createPlan({ currentPlan: user.plan, newPlanName })
     if (errorChangingPlan) return bad(errorChangingPlan)
 
+    return this.execute({ plan: newPlan, user, isFinalizingSession })
+  }
+
+  async execute_toPlanId({ planId, user, isFinalizingSession }: ChangeUserPlanUseCaseToByPlanIdPayload) {
+    const plan = await this.planRepository.getById(planId)
+    if (!plan) return bad(Fail.create(EAppResults["PLAN-NOT-FOUND"], 404, { givenPlanId: planId }))
+
+    return await this.execute({ plan, user, isFinalizingSession })
+  }
+
+  async execute({ plan, user, isFinalizingSession }: ChangeUserPlanUseCasePayload) {
     const [errorGettingUserSACList, userSacList = []] = getUserSACs_OnStorage_ByUser(
       user,
       this.allUsersClientsStorage
     )
     if (errorGettingUserSACList && errorGettingUserSACList?.code !== "USER-STORAGE-NOT-FOUND") {
-      return bad(Fail.create(errorGettingUserSACList.code, 400))
+      errorGettingUserSACList.code satisfies never
+      // return bad(Fail.create(errorGettingUserSACList.code, 400))
     }
 
     const [errorTrimmingSteamAccounts, trimSteamAccountsInfo] = this.trimSteamAccounts.execute({
       user,
-      plan: newPlan,
+      plan,
     })
     if (errorTrimmingSteamAccounts) return bad(errorTrimmingSteamAccounts)
 
-    user.assignPlan(newPlan)
+    user.assignPlan(plan)
     const [errorFlushUpdatingFarm, result] = await this.flushUpdateSteamAccountDomain.execute({
       user,
-      plan: newPlan,
+      plan,
+      isFinalizingSession,
+      shouldResetSession: true,
     })
     if (errorFlushUpdatingFarm) return bad(errorFlushUpdatingFarm)
     const { resetFarmResultList, updatedCacheStates } = result
@@ -74,7 +94,9 @@ export class ChangeUserPlanUseCase implements IChangeUserPlanUseCase {
       )
     )
     if (errorPersistingUsages)
-      return bad(Fail.create("COULD-NOT-PERSIST-ACCOUNT-USAGE", 400, errorPersistingUsages))
+      return bad(
+        Fail.create("COULD-NOT-PERSIST-ACCOUNT-USAGE", 400, { code: errorPersistingUsages.map(e => e.code) })
+      )
 
     const fails: Fail[] = []
 
@@ -82,9 +104,13 @@ export class ChangeUserPlanUseCase implements IChangeUserPlanUseCase {
       user.steamAccounts.data.map(sa => sa.credentials.accountName).includes(c.accountName)
     )
     for (const state of updatedCacheStatesFiltered) {
+      // I just changed my plan, and I expect farm started to be null
+      // So I can start a new farm session with the new plan
+      resetSession(state)
+
       await this.steamAccountClientStateCacheRepository.save(state)
       const [error] = await this.restoreAccountSessionUseCase.execute({
-        plan: newPlan,
+        plan,
         sac: userSacList.find(sac => sac.accountName === state.accountName)!,
         username: user.username,
         state,
@@ -123,32 +149,26 @@ export class ChangeUserPlanUseCase implements IChangeUserPlanUseCase {
     }
     return nice()
   }
+}
 
-  async execute(props: ChangeUserPlanUseCasePayload) {
-    const [error, result] = await this.executeImpl(props)
-    if (error) {
-      return this.handleFail(error, props)
-    }
-    return nice(result)
-  }
+export type ChangeUserPlanUseCaseCreatingByPlanNamePayload = {
+  user: User
+  newPlanName: PlanAllNames
+  isFinalizingSession: boolean
+}
 
-  handleFail(error: GetError<ChangeUserPlanUseCase["executeImpl"]>, props: ChangeUserPlanUseCasePayload) {
-    switch (error.code) {
-      case "LIST::TRIMMING-ACCOUNTS":
-      case "LIST::UPDATING-CACHE":
-      case "LIST::COULD-NOT-RESET-FARM":
-      case "COULD-NOT-PERSIST-ACCOUNT-USAGE":
-        return bad(error)
-    }
-  }
+export type ChangeUserPlanUseCaseToByPlanIdPayload = {
+  user: User
+  planId: string
+  isFinalizingSession: boolean
 }
 
 export type ChangeUserPlanUseCasePayload = {
   user: User
-  newPlanName: PlanAllNames
+  plan: PlanInfinity | PlanUsage
+  isFinalizingSession: boolean
 }
 
 interface IChangeUserPlanUseCase {
-  execute(...args: any[]): Promise<DataOrFail<Fail>>
-  handleFail(...args: any[]): DataOrFail<any>
+  execute_creatingByPlanName(...args: any[]): Promise<DataOrFail<Fail>>
 }

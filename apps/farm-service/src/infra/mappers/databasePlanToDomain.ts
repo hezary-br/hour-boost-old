@@ -12,10 +12,13 @@ import {
   makeError,
 } from "core"
 import { databaseUsageListToDomain } from "~/infra/mappers/databaseUsageToDomain"
-import { PrismaPlan } from "~/infra/repository"
+import { PrismaPlanWithUsages } from "~/infra/repository"
 
-export function databasePlanToDomain(plan: PrismaPlan): PlanUsage | PlanInfinity {
-  if (!plan) throw makeError("Usuário sem plano!", { plan })
+export function ensurePlan(plan: PrismaPlanWithUsages | null | undefined): PrismaPlanWithUsages {
+  if (!plan) throw makeError("Usuário sem plano.", { plan })
+  return plan
+}
+export function mapDatabasePlanToDomainWithUsages(plan: PrismaPlanWithUsages): PlanUsage | PlanInfinity {
   if (!plan.onceBelongedTo) throw makeError("Plano sem dono", { plan })
   if (plan.customPlan) {
     const restoreFromCustomInfinityProps: PlanInfinityRestoreFromCustomProps = {

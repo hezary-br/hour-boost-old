@@ -1,8 +1,8 @@
 import {
   CacheState,
+  Fail,
   type CacheStateDTO,
   type DataOrFail,
-  Fail,
   type Mutable,
   type PlanInfinity,
   type PlanUsage,
@@ -12,7 +12,7 @@ import type { SteamAccountClient } from "~/application/services/steam"
 import { handleSteamClientError } from "~/application/use-cases"
 import type { Publisher } from "~/infra/queue"
 import type { FailGeneric } from "~/types/EventsApp.types"
-import { type Pretify, bad, nice } from "~/utils/helpers"
+import { bad, nice, type Pretify } from "~/utils/helpers"
 import { restoreSACStateOnApplication } from "~/utils/restoreSACStateOnApplication"
 
 type Payload = {
@@ -69,15 +69,12 @@ export class RestoreAccountSessionUseCase implements IRestoreAccountSessionUseCa
         return bad(errorRestoringOnApplication)
       }
       if (errorRestoringOnApplication.code === "cluster.farmWithAccount()::UNKNOWN-CLIENT-ERROR") {
-        const fail = new Fail({
-          code: errorRestoringOnApplication.code,
-          httpStatus: 400,
-          payload: errorRestoringOnApplication.payload,
-        })
-        if (fail.code === "cluster.farmWithAccount()::UNKNOWN-CLIENT-ERROR") {
-          fail.payload
-        }
-        return bad(fail)
+        return bad(errorRestoringOnApplication)
+        // const fail = new Fail({
+        //   code: errorRestoringOnApplication.code,
+        //   httpStatus: 400,
+        //   payload: errorRestoringOnApplication.payload,
+        // })
       }
       return bad(
         new Fail({

@@ -8,6 +8,14 @@ export class UsersRepositoryInMemory implements UsersRepository {
     private readonly usersMemory: UsersInMemory,
     private readonly steamAccountsMemory: SteamAccountsInMemory
   ) {}
+  async getByEmail(email: string): Promise<User | null> {
+    const user = this.usersMemory.users.find(u => u.email === email)
+    if (!user) return null
+    for (const usage of user.plan.usages.data) {
+      user.usages.add(usage)
+    }
+    return this.attachDBSteamAccountsToUser(user)
+  }
 
   async dropAll(): Promise<void> {
     return this.usersMemory.dropAll()

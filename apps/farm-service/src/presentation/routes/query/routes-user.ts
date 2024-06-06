@@ -10,6 +10,7 @@ import { token } from "~/infra/singletons/token-factory"
 import { GetMeController } from "~/presentation/controllers"
 import {
   createMeController,
+  initUserGateway,
   tokenService,
   userAuthentication,
   usersClusterStorage,
@@ -18,7 +19,12 @@ import {
 } from "~/presentation/instances"
 
 export const query_routerUser: Router = Router()
-export const createUser = new CreateUserUseCase(usersRepository, userAuthentication, usersClusterStorage)
+export const createUser = new CreateUserUseCase(
+  usersRepository,
+  userAuthentication,
+  usersClusterStorage,
+  initUserGateway
+)
 export const getUser = new GetUser(usersDAO)
 
 query_routerUser.head("/me", ClerkExpressWithAuth(), async (req, res) => {
@@ -38,6 +44,7 @@ query_routerUser.head("/me", ClerkExpressWithAuth(), async (req, res) => {
     role: user.role,
     userId,
     status: user.status,
+    planName: user.plan.name,
   })
   if (errorSigningToken) {
     return res.status(400).end()
@@ -66,7 +73,7 @@ query_routerUser.get("/me", ClerkExpressWithAuth({}), async (req: WithAuthProp<R
       case "ERROR-SIGNING-IDENTIFICATION-TOKEN":
         return res.status(500).json({
           message: `Aconteceu um erro ao pegar dados do usuário de ID [${userId}]`,
-          errorMessage: error.message,
+          errorCode: error.code,
         })
       default:
         error satisfies never

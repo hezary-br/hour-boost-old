@@ -3,6 +3,7 @@ import { HeaderDashboard } from "@/components/layouts/Header/header-dashboard"
 import { UserPlanStatus } from "@/components/layouts/UserPlanStatus/component"
 import { ErrorBoundary } from "@/contexts/ERROR-BOUNDARY"
 import { injectServerMeta } from "@/contexts/server-meta"
+import { PlanSubscribedDialog } from "@/pages/dashboard/PlanSubscribedDialog"
 import { UserSession } from "core"
 import { GetServerSideProps } from "next"
 import Head from "next/head"
@@ -33,6 +34,7 @@ export default function DashboardPage() {
           <UserPlanStatus />
           {/* <Fallback /> */}
           <DashboardSteamAccountsList />
+          <PlanSubscribedDialog />
         </div>
       </ErrorBoundary>
     </>

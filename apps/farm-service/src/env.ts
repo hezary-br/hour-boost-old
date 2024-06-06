@@ -1,3 +1,5 @@
+import dotenv from "dotenv"
+dotenv.config()
 import { createEnv } from "@t3-oss/env-core"
 import { z } from "zod"
 
@@ -7,6 +9,17 @@ const makeRuntimeEnvs = () =>
       DATABASE_URL: z.string().url(),
       CLERK_SECRET_KEY: z.string().min(1),
       REDIS_UPSTASH_TLS: z.string().min(1),
+      MERCADO_PAGO_PUBLIC_KEY: z.string().min(1),
+      MERCADO_PAGO_ACCESS_TOKEN: z.string().min(1),
+      MERCADO_PAGO_PLAN_ID_GOLD: z.string().min(1),
+      STRIPE_PUBLISHABLE_KEY: z.string().min(1),
+      STRIPE_SECRET_KEY: z.string().min(1),
+      STRIPE_SECRET_WEBHOOK: z.string().min(1),
+      STRIPE_SUBSCRIPTIONS_PLAN_ID_GUEST: z.string().min(1),
+      STRIPE_SUBSCRIPTIONS_PLAN_ID_SILVER: z.string().min(1),
+      STRIPE_SUBSCRIPTIONS_PLAN_ID_GOLD: z.string().min(1),
+      STRIPE_SUBSCRIPTIONS_PLAN_ID_DIAMOND: z.string().min(1),
+      MERCADO_PAGO_TEST_USER_EMAIL: z.string().email().optional(),
       EXAMPLE_ACCOUNT_NAME: z.string().nullable().default(null),
       EXAMPLE_ACCOUNT_PASSWORD: z.string().nullable().default(null),
       NODE_ENV: z.enum(["DEV", "PRODUCTION", "DEBUG", "TEST"]),
@@ -44,19 +57,32 @@ export const envTest: RuntimeEnvs = {
   CLERK_SECRET_KEY: "test",
   DATABASE_URL: "test",
   REDIS_UPSTASH_TLS: "test",
+  MERCADO_PAGO_ACCESS_TOKEN: "test",
+  MERCADO_PAGO_PUBLIC_KEY: "test",
+  MERCADO_PAGO_PLAN_ID_GOLD: "",
   TOKEN_IDENTIFICATION_HASH: "test",
   CLIENT_URL: "http://localhost:3000",
   COOKIE_DOMAIN: ".hourboost.com.br",
   ACTIONS_SECRET: "test",
   EXAMPLE_ACCOUNT_NAME: "test",
   EXAMPLE_ACCOUNT_PASSWORD: "test",
+  MERCADO_PAGO_TEST_USER_EMAIL: "",
   PORT: 4000,
   HASH_SECRET: "test",
   STOP_ENDPOINT: "http://localhost:4000/farm/stop/all",
   SECRET: "test",
+  STRIPE_PUBLISHABLE_KEY: "",
+  STRIPE_SECRET_KEY: "",
+  STRIPE_SECRET_WEBHOOK: "",
+  STRIPE_SUBSCRIPTIONS_PLAN_ID_GUEST: "",
+  STRIPE_SUBSCRIPTIONS_PLAN_ID_SILVER: "",
+  STRIPE_SUBSCRIPTIONS_PLAN_ID_GOLD: "",
+  STRIPE_SUBSCRIPTIONS_PLAN_ID_DIAMOND: "",
 }
 
-export const selectedEnv = process.env.NODE_ENV === "TEST" ? envTest : makeRuntimeEnvs()
+// export const selectedEnv = process.env.NODE_ENV === "TEST" ? envTest : makeRuntimeEnvs()
+export const selectedEnv = process.env as unknown as RuntimeEnvs
+
 export const env = {
   ...selectedEnv,
   isDevMode() {

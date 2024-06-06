@@ -1,7 +1,7 @@
 import {
-  ApplicationError,
   type AddSteamAccount,
   type AddSteamAccountHTTPResponse,
+  ApplicationError,
   type DataOrError,
   type UseCase,
   type UsersDAO,

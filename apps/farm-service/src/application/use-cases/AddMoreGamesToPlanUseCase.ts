@@ -22,6 +22,7 @@ export class AddMoreGamesToPlanUseCase implements IAddMoreGamesToPlanUseCase {
     const [error, data] = await this.flushUpdateSteamAccountDomain.execute({
       user,
       plan: user.plan,
+      isFinalizingSession: false,
     })
     if (error) return bad(error)
     const { resetFarmResultList, updatedCacheStates } = data

@@ -12,6 +12,7 @@ import type {
 } from "~/application/services"
 import type { SteamAccountClient } from "~/application/services/steam"
 import { StopFarmDomain } from "~/features/stop-farm/domain"
+import { assertNever } from "~/utils/assertNever"
 import { getSACOn_AllUsersClientsStorage_ByUserId } from "~/utils/getSAC"
 import { bad, nice } from "~/utils/helpers"
 import { restoreSACStateOnApplication } from "~/utils/restoreSACStateOnApplication"
@@ -62,6 +63,7 @@ export function makeResetFarm({
     const [errorFindingCluster, userCluster] = usersSACsFarmingClusterStorage.get(username)
     if (errorFindingCluster) return bad(errorFindingCluster)
 
+    console.log("44: restart state got from redis", { state })
     const stopFarmDomain = new StopFarmDomain(usersSACsFarmingClusterStorage)
     const result = await resetFarm(stopFarmDomain)({
       accountName,
@@ -144,9 +146,11 @@ export function resetFarm(stopFarmDomain: StopFarmDomain) {
         case "[Users-Cluster-Storage]:CLUSTER-NOT-FOUND":
           return bad(error)
         default:
-          error satisfies never
+          assertNever(error)
       }
     }
+    const promise = data?.savingCachePromise
+    if (promise) await promise
 
     const [errorRestoringSACState] = await restoreSACStateOnApplication(userCluster, plan)(sac, state)
     if (errorRestoringSACState) return bad(errorRestoringSACState)

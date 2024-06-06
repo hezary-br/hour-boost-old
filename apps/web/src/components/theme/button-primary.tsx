@@ -1,8 +1,8 @@
-import React, { CSSProperties } from "react"
-import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import st from "./button-primary.module.css"
+import { cn } from "@/lib/utils"
 import { cssVariables } from "@/util/units/cssVariables"
+import React from "react"
+import st from "./button-primary.module.css"
 
 export type ButtonPrimaryProps = React.ComponentPropsWithoutRef<typeof Button> & {
   colorScheme?: keyof typeof buttonPrimaryHueThemes
@@ -28,15 +28,14 @@ export const backgroundHueThemes = {
 
 export const ButtonPrimary = React.forwardRef<React.ElementRef<typeof Button>, ButtonPrimaryProps>(
   function ButtonPrimaryComponent({ colorScheme = "default", style, children, className, ...props }, ref) {
-    const [appleHue, bananaHue] = buttonPrimaryHueThemes[colorScheme]
-    const hues = Object.entries({ appleHue, bananaHue })
+    const cs = generateColorSchema(colorScheme)
 
     return (
       <Button
         {...props}
-        className={cn("px-5 py-0 font-semibold text-white", st.buttonStyles, className)}
+        className={cn("px-5 py-0 font-semibold text-white", cs?.className, className)}
         ref={ref}
-        style={cssVariables(hues, style)}
+        style={{ ...style, ...cs?.style }}
       >
         {children}
       </Button>
@@ -45,3 +44,14 @@ export const ButtonPrimary = React.forwardRef<React.ElementRef<typeof Button>, B
 )
 
 ButtonPrimary.displayName = "ButtonPrimary"
+
+export function generateColorSchema(colorScheme?: keyof typeof buttonPrimaryHueThemes) {
+  if (!colorScheme) return
+  const [appleHue, bananaHue] = buttonPrimaryHueThemes[colorScheme]
+  const hues = Object.entries({ appleHue, bananaHue })
+
+  return {
+    style: cssVariables(hues),
+    className: st.buttonStyles
+  }
+}

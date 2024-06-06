@@ -32,7 +32,7 @@ COPY .gitignore .gitignore
 COPY --from=builder /app/out/json/ .
 COPY --from=builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
 # RUN pnpm install
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-lockfile
+RUN --mount=type=cache,id=pnpm-cache,target=/pnpm/store pnpm install --prod --frozen-lockfile
 COPY --from=builder /app/out/full/apps/farm-service/prisma/schema.prisma ./apps/farm-service/prisma/schema.prisma
 RUN npx prisma generate --schema="apps/farm-service/prisma/schema.prisma"
 

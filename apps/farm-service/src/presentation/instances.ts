@@ -6,6 +6,7 @@ import { FarmServiceBuilder } from "~/application/factories"
 import { AllUsersClientsStorage, UsersSACsFarmingClusterStorage } from "~/application/services"
 import { HashService } from "~/application/services/HashService"
 import { TokenService } from "~/application/services/TokenService"
+import { UserApplicationService } from "~/application/services/UserApplicationService"
 import {
   AddSteamAccountUseCase,
   CheckSteamAccountOwnerStatusUseCase,
@@ -21,11 +22,16 @@ import {
 } from "~/application/use-cases"
 import { AddUsageTimeToPlanUseCase } from "~/application/use-cases/AddUsageTimeToPlanUseCase"
 import { BanUserUseCase } from "~/application/use-cases/BanUserUseCase"
+import { CancelUserSubscriptionUseCase } from "~/application/use-cases/CancelUserSubscriptionUseCase"
 import { ChangeUserPlanUseCase } from "~/application/use-cases/ChangeUserPlanUseCase"
+import { GetUserPlanUseCase } from "~/application/use-cases/GetUserPlanUseCase"
+import { PurchaseNewPlanUseCase } from "~/application/use-cases/PurchaseNewPlanUseCase"
 import { RetrieveSessionListUseCase } from "~/application/use-cases/RetrieveSessionListUseCase"
+import { RollbackToGuestPlanUseCase } from "~/application/use-cases/RollbackToGuestPlanUseCase"
 import { SetMaxSteamAccountsUseCase } from "~/application/use-cases/SetMaxSteamAccountsUseCase"
 import { StopFarmUseCase } from "~/application/use-cases/StopFarmUseCase"
 import { UnbanUserUseCase } from "~/application/use-cases/UnbanUserUseCase"
+import { InitUserGatewayStripe } from "~/contracts/InitUserGatewayStripe"
 import type { SteamBuilder } from "~/contracts/SteamBuilder"
 import { AutoRestarterScheduler } from "~/domain/cron"
 import {
@@ -46,6 +52,8 @@ import { FlushUpdateSteamAccountUseCase } from "~/features/flush-update-steam-ac
 import { RemoveSteamAccount } from "~/features/remove-steam-account/domain"
 import { StopFarmDomain } from "~/features/stop-farm/domain"
 import { UsersDAODatabase } from "~/infra/dao"
+import { PlanDAODatabase } from "~/infra/dao/PlanDAODatabase"
+import { PreapprovalDAODatabase } from "~/infra/dao/PreapprovalDAODatabase"
 import { SteamAccountsDAODatabase } from "~/infra/dao/SteamAccountsDAODatabase"
 import { prisma } from "~/infra/libs"
 import { redis } from "~/infra/libs/redis"
@@ -56,9 +64,13 @@ import {
   SteamAccountsRepositoryDatabase,
   UsersRepositoryDatabase,
 } from "~/infra/repository"
+import { PreapprovalRepositoryDatabase } from "~/infra/repository/PreapprovalRepositoryDatabase"
 import { ClerkAuthentication } from "~/infra/services"
+import { stripe } from "~/infra/services/stripe"
 import { AddSteamGuardCodeController } from "~/presentation/controllers"
+import { CancelUserSubscriptionController } from "~/presentation/controllers/CancelUserSubscriptionController"
 import { CreateMeController } from "~/presentation/controllers/CreateMeController"
+import { PurchaseNewPlanController } from "~/presentation/controllers/PurchaseNewPlanController"
 import { RefreshGamesUseCase } from "~/presentation/presenters"
 import { EventEmitterBuilder, SteamAccountClientBuilder, UserClusterBuilder } from "~/utils/builders"
 import { UsageBuilder } from "~/utils/builders/UsageBuilder"
@@ -93,6 +105,10 @@ export const steamAccountsRepository = new SteamAccountsRepositoryDatabase(prism
 export const steamAccountClientStateCacheRepository = new SteamAccountClientStateCacheRedis(redis)
 export const userAuthentication = new ClerkAuthentication(clerkClient)
 export const usersRepository = new UsersRepositoryDatabase(prisma)
+export const preapprovalRepository = new PreapprovalRepositoryDatabase(prisma)
+export const preapprovalDAO = new PreapprovalDAODatabase(prisma)
+export const planDAO = new PlanDAODatabase(prisma)
+export const initUserGateway = new InitUserGatewayStripe(stripe)
 export const idGenerator = new IDGeneratorUUID()
 
 export const sacBuilder = new SteamAccountClientBuilder(emitterBuilder, publisher, steamUserBuilder)
@@ -111,6 +127,7 @@ export const userClusterBuilder = new UserClusterBuilder(
   steamAccountsRepository
 )
 export const usersClusterStorage = new UsersSACsFarmingClusterStorage(userClusterBuilder)
+console.log({ FarmGamesUseCase })
 export const farmGamesUseCase = new FarmGamesUseCase(usersClusterStorage)
 export const allUsersClientsStorage = new AllUsersClientsStorage(
   sacBuilder,
@@ -231,7 +248,8 @@ export const scheduleAutoRestartUseCase = new ScheduleAutoRestartUseCase(
 export const createUserUseCase = new CreateUserUseCase(
   usersRepository,
   userAuthentication,
-  usersClusterStorage
+  usersClusterStorage,
+  initUserGateway
 )
 export const retrieveSessionAccountsUseCase = new RetrieveSessionListUseCase(
   steamAccountClientStateCacheRepository
@@ -246,14 +264,32 @@ export const addUsageTimeToPlanUseCase = new AddUsageTimeToPlanUseCase(
   steamAccountClientStateCacheRepository,
   planRepository
 )
+export const rollbackToGuestPlanUseCase = new RollbackToGuestPlanUseCase(
+  planDAO,
+  changeUserPlanUseCase,
+  usersRepository
+)
+export const cancelUserSubscriptionUseCase = new CancelUserSubscriptionUseCase(
+  stripe,
+  rollbackToGuestPlanUseCase,
+  usersRepository
+)
+export const cancelUserSubscriptionController = new CancelUserSubscriptionController(
+  cancelUserSubscriptionUseCase
+)
 export const banUserUseCase = new BanUserUseCase(
   usersRepository,
   removeSteamAccount,
   planRepository,
-  steamAccountClientStateCacheRepository
+  steamAccountClientStateCacheRepository,
+  cancelUserSubscriptionUseCase
 )
+export const purchaseNewPlanUseCase = new PurchaseNewPlanUseCase(usersRepository)
+export const purchaseNewPlanController = new PurchaseNewPlanController(purchaseNewPlanUseCase)
 export const unbanUserUseCase = new UnbanUserUseCase(usersRepository)
+export const getUserPlanUseCase = new GetUserPlanUseCase(planDAO)
 export const addSteamGuardCodeController = new AddSteamGuardCodeController(allUsersClientsStorage)
+export const userApplicationService = new UserApplicationService(planDAO)
 const addSteamAccount = new AddSteamAccount(usersRepository, idGenerator)
 
 export const addSteamAccountUseCase = new AddSteamAccountUseCase(

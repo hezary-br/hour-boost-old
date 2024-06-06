@@ -9,21 +9,65 @@ datasource db {
 }
 
 model User {
-  id_user       String         @id
-  createdAt     DateTime
-  email         String         @unique
-  username      String         @unique
-  profilePic    String
-  plan          Plan?          @relation("user_plan")
-  planOnceHad   Plan[]         @relation("plan_once_user_had")
-  custom_plan   CustomPlan?    @relation("custom_user_plan")
-  role          Role
-  status        Status
-  steamAccounts SteamAccount[] @relation("user_steam_accounts")
-  purchases     Purchase[]     @relation("user_purchases")
-  usages        Usage[]        @relation("user_usages")
+  id_user                           String                             @id
+  createdAt                         DateTime
+  email                             String                             @unique
+  username                          String                             @unique
+  profilePic                        String
+  plan                              Plan?                              @relation("user_plan")
+  planOnceHad                       Plan[]                             @relation("plan_once_user_had")
+  custom_plan                       CustomPlan?                        @relation("custom_user_plan")
+  role                              Role
+  status                            Status
+  steamAccounts                     SteamAccount[]                     @relation("user_steam_accounts")
+  preapprovals                      Preapproval[]                      @relation("user_preapprovals")
+  subscriptions                     SubscriptionStripe[]               @relation("user_subscriptions")
+  purchases                         Purchase[]                         @relation("user_purchases")
+  usages                            Usage[]                            @relation("user_usages")
+  subscriptionApprovedNotifications SubscriptionApprovedNotification[] @relation("user_subscription_approved_notification")
 
   @@map("users")
+}
+
+model Preapproval {
+  id_preapproval        String   @id
+  createdAt             DateTime
+  user_id               String?
+  user                  User?    @relation("user_preapprovals", fields: [user_id], references: [id_user], onDelete: Cascade)
+  planName              String
+  status                String
+  previousPreapprovalId String?
+  payerId               Int?
+  isCurrent             Boolean?
+
+  @@map("preapprovals")
+}
+
+model SubscriptionStripe {
+  id_subscription String   @id
+  createdAt       DateTime
+  updatedAt       DateTime
+  user_email      String?  @unique
+  user            User?    @relation("user_subscriptions", fields: [user_email], references: [email], onDelete: Cascade)
+
+  stripeCustomerId String?
+  stripeStatus     String?
+  stripePriceId    String?
+
+  @@map("subscriptions")
+}
+
+model SubscriptionApprovedNotification {
+  id_subscription String   @id
+  createdAt       DateTime
+  updatedAt       DateTime
+
+  user_id String?
+  user    User?   @relation("user_subscription_approved_notification", fields: [user_id], references: [id_user], onDelete: Cascade)
+
+  planName String?
+
+  @@map("subscription_approved_notification")
 }
 
 model SteamAccount {

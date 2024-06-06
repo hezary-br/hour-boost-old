@@ -1,11 +1,12 @@
 import {
-  ApplicationError,
   type AppAccountStatusIddle,
+  ApplicationError,
   type PlanRepository,
   type SteamAccountClientStateCacheRepository,
 } from "core"
 import type { SteamAccountClient } from "~/application/services/steam"
 import type { FarmGamesUseCase } from "~/application/use-cases/FarmGamesUseCase"
+import { ctxLog } from "~/application/use-cases/RestoreAccountManySessionsUseCase"
 import type { Publisher } from "~/infra/queue"
 import { Logger } from "~/utils/Logger"
 import { PlanMaxUsageExceededCommand } from "../commands/PlanMaxUsageExceededCommand"
@@ -27,7 +28,7 @@ export class UserClientsStorage {
   }
 
   addAccountClient(sac: SteamAccountClient) {
-    this.logger.log("Appending refreshtoken cache listener on refreshToken event.")
+    ctxLog("Appending refreshtoken cache listener on refreshToken event.")
     // mais correto seria deixar esse handler como fixo no evento de refreshToken
     // em vez de depender de ser o ultimo handler
     sac.emitter.once("gotRefreshToken", async ({ accountName, userId, planId, refreshToken, username }) => {
@@ -59,12 +60,12 @@ export class UserClientsStorage {
 
       const { accountName, username, gamesPlaying, isFarming, planId, farmStartedAt } = state
       // sac.setStatus(status)
-      this.logger.log(`${accountName} relogou com state.`)
+      ctxLog(`${accountName} relogou com state.`)
       if (isFarming) {
-        this.logger.log(`${accountName} relogou farmando os jogos ${gamesPlaying}`)
+        ctxLog(`${accountName} relogou farmando os jogos ${gamesPlaying}`)
         const plan = await this.planRepository.getById(planId)
         if (!plan) {
-          this.logger.log("Plan not found! Contact the developer.", { planId, accountName })
+          ctxLog("Plan not found! Contact the developer.", { planId, accountName })
           return
         }
         const [error] = await this.farmGamesUseCase.execute({
@@ -95,7 +96,7 @@ export class UserClientsStorage {
     })
 
     sac.emitter.on("relog", () => {
-      this.logger.log(`Usuário relogou sem state.`)
+      ctxLog(`Usuário relogou sem state.`)
     })
 
     this.steamAccountClients.set(sac.accountName, sac)

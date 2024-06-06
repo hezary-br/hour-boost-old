@@ -493,9 +493,8 @@ declare namespace jest {
   type NonFunctionPropertyNames<T> = keyof { [K in keyof T as T[K] extends Func ? never : K]: T[K] }
   type GetAccessor = "get"
   type SetAccessor = "set"
-  type PropertyAccessors<M extends keyof T, T extends {}> = M extends NonFunctionPropertyNames<Required<T>>
-    ? GetAccessor | SetAccessor
-    : never
+  type PropertyAccessors<M extends keyof T, T extends {}> =
+    M extends NonFunctionPropertyNames<Required<T>> ? GetAccessor | SetAccessor : never
   type FunctionProperties<T> = { [K in keyof T as T[K] extends (...args: any[]) => any ? K : never]: T[K] }
   type FunctionPropertyNames<T> = keyof FunctionProperties<T>
   type RemoveIndex<T> = {

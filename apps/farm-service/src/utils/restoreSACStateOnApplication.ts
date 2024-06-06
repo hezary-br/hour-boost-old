@@ -1,7 +1,8 @@
-import { type CacheState, Fail, PlanInfinity, PlanUsage } from "core"
+import { Fail, PlanInfinity, PlanUsage, type CacheState } from "core"
 import type { UserSACsFarmingCluster } from "~/application/services"
 import type { SteamAccountClient } from "~/application/services/steam"
 import { EAppResults, type SACGenericError } from "~/application/use-cases"
+import { ALS_moduleName } from "~/application/use-cases/RestoreAccountManySessionsUseCase"
 import { env } from "~/env"
 import { bad, nice } from "~/utils/helpers"
 
@@ -12,10 +13,11 @@ export function restoreSACStateOnApplication(
   return async (sac: SteamAccountClient, state: CacheState) => {
     const isAccountFarming = userCluster.isAccountFarmingOnService(sac.accountName)
     if (!userCluster.hasSteamAccountClient(sac.accountName) && !isAccountFarming) {
-      const [errorAddingSac] = userCluster.addSAC(sac)
-
-      if (errorAddingSac?.code === "TRIED_TO_ADD::ALREADY_EXISTS") {
-      }
+      ALS_moduleName.run("Cluster", () => {
+        const [errorAddingSac] = userCluster.addSAC(sac)
+        if (errorAddingSac?.code === "TRIED_TO_ADD::ALREADY_EXISTS") {
+        }
+      })
     }
 
     sac.restoreCacheHollowSession({

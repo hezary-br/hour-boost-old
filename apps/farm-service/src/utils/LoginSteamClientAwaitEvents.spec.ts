@@ -1,10 +1,8 @@
 import { LoginSteamWithCredentials } from "~/utils/LoginSteamWithCredentials"
 
 import {
-  type 
-  CustomInstances,
-  type 
-  MakeTestInstancesProps,
+  type CustomInstances,
+  type MakeTestInstancesProps,
   makeTestInstances,
   password,
   validSteamAccounts,

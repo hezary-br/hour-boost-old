@@ -18,3 +18,9 @@ generate:
 
 db:
 	cd apps/farm-service && pnpm st
+
+migrate:
+	cd apps/farm-service && pnpm prisma migrate deploy
+
+stripe:
+	stripe listen --forward-to http://localhost:4000/stripe/webhook

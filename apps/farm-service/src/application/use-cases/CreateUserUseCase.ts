@@ -1,11 +1,13 @@
 import { User, type UserAuthentication, type UsersRepository } from "core"
 import type { UsersSACsFarmingClusterStorage } from "~/application/services"
+import { InitUserGateway } from "~/contracts/InitUserGateway"
 
 export class CreateUserUseCase {
   constructor(
     private readonly usersRepository: UsersRepository,
     private readonly userAuthentication: UserAuthentication,
-    private readonly usersSACsFarmingClusterStorage: UsersSACsFarmingClusterStorage
+    private readonly usersSACsFarmingClusterStorage: UsersSACsFarmingClusterStorage,
+    private readonly initUserGateway: InitUserGateway
   ) {}
 
   async execute(userId: string): Promise<User> {
@@ -18,6 +20,7 @@ export class CreateUserUseCase {
     })
     await this.usersRepository.create(user)
     this.usersSACsFarmingClusterStorage.add(user.username, user.plan)
+    await this.initUserGateway.execute(user)
     return user
   }
 }

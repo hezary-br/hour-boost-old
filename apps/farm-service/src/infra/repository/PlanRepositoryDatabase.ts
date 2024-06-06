@@ -1,6 +1,6 @@
 import type { PrismaClient } from "@prisma/client"
 import type { PlanInfinity, PlanRepository, PlanUsage } from "core"
-import { databasePlanToDomain } from "~/infra/mappers/databasePlanToDomain"
+import { mapDatabasePlanToDomainWithUsages } from "~/infra/mappers/databasePlanToDomain"
 
 export class PlanRepositoryDatabase implements PlanRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -11,7 +11,7 @@ export class PlanRepositoryDatabase implements PlanRepository {
       include: { usages: true, customPlan: true },
     })
 
-    return plan ? databasePlanToDomain(plan) : null
+    return plan ? mapDatabasePlanToDomainWithUsages(plan) : null
   }
 
   async list(): Promise<(PlanUsage | PlanInfinity)[]> {
@@ -52,6 +52,6 @@ export class PlanRepositoryDatabase implements PlanRepository {
       include: { usages: true, customPlan: true },
     })
 
-    return plan ? databasePlanToDomain(plan) : null
+    return plan ? mapDatabasePlanToDomainWithUsages(plan) : null
   }
 }

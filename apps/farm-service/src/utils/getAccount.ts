@@ -1,4 +1,4 @@
-import type { CacheState, } from "core"
+import type { CacheState } from "core"
 
 type SACStateCacheRepositoryGet = {
   get(accountName: string): Promise<CacheState | null>

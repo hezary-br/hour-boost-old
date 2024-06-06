@@ -9,11 +9,7 @@ import {
   validSteamAccounts,
 } from "~/__tests__/instances"
 import type { FarmingAccountDetails } from "~/application/services"
-import {
-  type AccountStatusList,
-  FarmService,
-  type NSFarmService,
-} from "~/application/services/FarmService"
+import { type AccountStatusList, FarmService, type NSFarmService } from "~/application/services/FarmService"
 import { SteamAccountClient } from "~/application/services/steam"
 import { testUsers as s } from "~/infra/services/UserAuthenticationInMemory"
 import { getSACOn_AllUsersClientsStorage_ByUserId } from "~/utils/getSAC"
@@ -139,7 +135,7 @@ class FarmServiceImpl extends FarmService {
   hasAccountsFarming(): boolean {
     return this.getActiveFarmingAccountsAmount() > 0
   }
-  farmWithAccount(accountName: string, sac:SteamAccountClient) {
+  farmWithAccount(accountName: string, sac: SteamAccountClient) {
     this.farmWithAccountImpl(accountName, sac)
     return nice(null)
   }
@@ -166,7 +162,12 @@ class FarmServiceImpl extends FarmService {
         acc.status = "IDDLE"
       }
     }
-    return nice({ planId: this.planId, type: "STOP-ALL", usages: [] as Usage[], accountNameList: [] as string[] })
+    return nice({
+      planId: this.planId,
+      type: "STOP-ALL",
+      usages: [] as Usage[],
+      accountNameList: [] as string[],
+    })
   }
   getAccountsStatus(): AccountStatusList {
     const accountStatusList = {} as AccountStatusList
@@ -181,7 +182,7 @@ class FarmServiceImpl extends FarmService {
     this.accountsFarming.set(accountName, {
       status: "FARMING",
       usageAmountInSeconds: 0,
-      sac: sac
+      sac: sac,
     })
     return nice()
   }
