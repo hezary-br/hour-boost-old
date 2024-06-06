@@ -33,7 +33,12 @@ export const mapStripeEventToWebhookEvent = (event: StripeKnownEvents, user_emai
       const data: EventData[typeof event.type] = {}
       return { data, type: "cancellation" }
     }
+    case "invoice.payment_failed": {
+      const data: EventData[typeof event.type] = {}
+      return { data, type: "invoice-payment-failed" }
+    }
     default:
+      event satisfies never
       return { type: "unknown" }
   }
 }
@@ -42,6 +47,7 @@ type EventData = {
   "customer.subscription.created": NSWebhook.WebhookEventCreated
   "customer.subscription.updated": NSWebhook.WebhookEventUpdated
   "customer.subscription.deleted": NSWebhook.WebhookEventCancellation
+  "invoice.payment_failed": NSWebhook.WebhookEventInvoicePaymentFailed
 }
 
 export function checkIsKnownEvent(__event: Stripe.Event) {
@@ -50,6 +56,7 @@ export function checkIsKnownEvent(__event: Stripe.Event) {
       case "customer.subscription.created":
       case "customer.subscription.deleted":
       case "customer.subscription.updated":
+      case "invoice.payment_failed":
         return __event
       default:
         throw new Error()

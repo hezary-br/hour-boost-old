@@ -1,4 +1,5 @@
 import express, { Router } from "express"
+import Stripe from "stripe"
 import { checkIsKnownEvent, mapStripeEventToWebhookEvent } from "~/application/services/WebhookEventStripe"
 import { WebhookHTTPAdapter } from "~/application/services/WebhookHTTPAdapter"
 import { WebhookHandler } from "~/application/services/WebhookHandler"
@@ -8,7 +9,7 @@ import { env } from "~/env"
 import { stripe } from "~/infra/services/stripe"
 import { changeUserPlanUseCase, rollbackToGuestPlanUseCase, usersRepository } from "~/presentation/instances"
 import { RequestHandlerPresenter } from "~/presentation/presenters/RequestHandlerPresenter"
-import { extractStripeEventData, getUserEmail } from "~/presentation/routes/stripe/methods"
+import { getCustomerId, getUserEmail } from "~/presentation/routes/stripe/methods"
 
 export const router_webhook: Router = Router()
 
@@ -23,14 +24,15 @@ router_webhook.post("/stripe/webhook", express.raw({ type: "application/json" })
       const [unknownEvent, event] = checkIsKnownEvent(allEvent)
       if (unknownEvent) return res.status(400).json({ message: "Unhandled event." })
 
-      const [failExtracting, eventData] = extractStripeEventData(event)
-      if (failExtracting) return RequestHandlerPresenter.handle(failExtracting, res)
+      const customerRaw = event.data.object.customer
+      const metadataEmail = event.data.object.metadata?.user_email
+      if (!customerRaw && !metadataEmail) {
+        console.log("NSTH: Stripe event with no customer.", JSON.parse(JSON.stringify(event)))
+        return res.status(404).json({ message: "No customer Id found." })
+      }
+      const customerId = getCustomerId(customerRaw)
 
-      const [failGettingEmail, user_email] = await getUserEmail(
-        stripe,
-        event.data.object.metadata.user_email,
-        eventData.stripeCustomerId
-      )
+      const [failGettingEmail, user_email] = await getUserEmail(stripe, metadataEmail, customerId)
       if (failGettingEmail) return res.sendStatus(500)
 
       const user = await usersRepository.getByEmail(user_email)
