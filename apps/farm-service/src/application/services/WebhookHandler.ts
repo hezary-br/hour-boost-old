@@ -13,6 +13,15 @@ export class WebhookHandler {
     private readonly changeUserPlanUseCase: ChangeUserPlanUseCase
   ) {}
 
+  async execute(webhook: EventMapping, user: User) {
+    if (webhook.type === "cancellation")
+      return await this.handleCancellation({ user, webhookData: webhook.data })
+    if (webhook.type === "updated") return await this.handleUpdated({ user, webhookData: webhook.data })
+    if (webhook.type === "created") return await this.handleCreated({ user, webhookData: webhook.data })
+    if (webhook.type === "unknown") return bad(Fail.create("UNHANDLED-EVENT", 400))
+    assertNever(webhook)
+  }
+
   private async handleCancellation({ user }: Handle<NSWebhook.WebhookEventCancellation>) {
     const currentPlanIsGuest = user.plan.name === "GUEST"
     if (currentPlanIsGuest) return bad(Fail.create("USER-PLAN-IS-ALREADY-GUEST", 400))
@@ -64,15 +73,6 @@ export class WebhookHandler {
       return bad(Fail.create("SUBSCRIPTION-NOT-ATTACHED-TO-ANY-USER", 404, data))
     }
     return nice()
-  }
-
-  async execute(webhook: EventMapping, user: User) {
-    if (webhook.type === "cancellation")
-      return await this.handleCancellation({ user, webhookData: webhook.data })
-    if (webhook.type === "updated") return await this.handleUpdated({ user, webhookData: webhook.data })
-    if (webhook.type === "created") return await this.handleCreated({ user, webhookData: webhook.data })
-    if (webhook.type === "unknown") return bad(Fail.create("UNHANDLED-EVENT", 400))
-    assertNever(webhook)
   }
 }
 
