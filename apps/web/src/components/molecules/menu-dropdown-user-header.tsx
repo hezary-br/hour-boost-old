@@ -23,7 +23,9 @@ export const MenuDropdownUserHeader = React.forwardRef<
 >(function MenuDropdownUserHeaderComponent({ children, className, ...props }, ref) {
   const isAdminServerMeta = useServerMeta()?.session?.role === "ADMIN"
   const isAdminQuery = useUser(user => user.role === "ADMIN")
+  const userPlanQuery = useUser(user => user.plan.name)
   const isAdmin = isAdminQuery.status === "pending" ? isAdminServerMeta : !!isAdminQuery.data
+  const canCancelPlan = userPlanQuery.status === "success" && userPlanQuery.data !== "GUEST"
 
   const userIsBanned = useServerMeta()?.session?.status === "BANNED"
   const router = useRouter()
@@ -64,9 +66,11 @@ export const MenuDropdownUserHeader = React.forwardRef<
             <HeaderLink to="/home">Home</HeaderLink>
             <HeaderLink to="/dashboard">Dashboard</HeaderLink>
             <HeaderLink to="/plans">Mudar plano</HeaderLink>
-            <CancelPlanModal>
-              <HeaderButton>Cancelar plano</HeaderButton>
-            </CancelPlanModal>
+            {canCancelPlan && (
+              <CancelPlanModal>
+                <HeaderButton>Cancelar plano</HeaderButton>
+              </CancelPlanModal>
+            )}
             {isAdmin && (
               <>
                 <HeaderLink to="/admin">Painel Admin</HeaderLink>
